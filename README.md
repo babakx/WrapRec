@@ -29,7 +29,7 @@ This toolbox provide additional layer of data management which allows the consum
 * __Exetensions on existing libraries__
 The object model of RF2 allows this toolbox to easily integare exisign toolboxes into the model and benefits from the exisiting codes. Currently this toolbox have wrappers around [MyMediaLite] (www.mymedialite.net), a recommendation framework wrriten in C#, and [LibFM] (www.libfm.org), a library for factorization machines written in C++.
 
-## Usage Sample
+## Usage Samples
 
 #### Simple train and test scenario
 With a few lines of code you can alreay run a full train/test scenario. This can be done in 3 steps: 1. Define a dataset 2. Define a recommender algorithm 3. Evaluate
@@ -50,3 +50,25 @@ ep.Evaluators.Add(new MAE());
 
 ep.Run();
 ```
+
+#### Custom Data Reader
+RF2 is capable of easily incorporating custom data format into it. In the above example, you can replace class ```MovieLensReader``` with a custom dataset reader. Any class which implements the interface ```IDatasetReader<T>``` can be incoporated into the mode.
+Here is an example of a custom dataset reader.
+
+```javascript
+    public class MyCustomDataReader : IDatasetReader<ItemRating>
+    {
+        string _datasetPath;
+
+        public MyCustomDataReader(string datasetPath)
+        {
+            _datasetPath = datasetPath;
+        }
+        
+        public IEnumerable<ItemRating> ReadSamples()
+        {
+            // logic to read data is here
+        }
+    }
+```
+
