@@ -25,8 +25,12 @@ The toolox is highly customizable to handle context-aware recommendation algorit
 
 * __Relational data interface__
 This toolbox provide additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature allows to benefits from the advatages of [Micorsoft Entity Framework] (http://msdn.microsoft.com/en-us/data/ef.aspx) as well as .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
- 
+
+* __Exetensions on existing libraries__
+The object model of RF2 allows this toolbox to easily integare exisign toolboxes into the model and benefits from the exisiting codes. Currently this toolbox have wrappers around [MyMediaLite] (www.mymedialite.net), a recommendation framework wrriten in C#, and [LibFM] (www.libfm.org), a library for factorization machines written in C++.
+
 ## Usage Sample
+
 
 ```javascript
 // step 1: dataset            
