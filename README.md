@@ -28,7 +28,7 @@ This toolbox provide additional layer of data management which allows the consum
  
 ## Usage Sample
 
-```sh
+```javascript
 // step 1: dataset            
 var dataset = new Dataset<MovieLensItemRating>(new MovieLensReader("/ratings.dat"));
 
