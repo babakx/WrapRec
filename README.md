@@ -56,20 +56,20 @@ RF2 is capable of easily incorporating custom data format into it. In the above 
 Here is an example of a custom dataset reader.
 
 ```javascript
-    public class MyCustomDataReader : IDatasetReader<ItemRating>
-    {
-        string _datasetPath;
+public class MyCustomDataReader : IDatasetReader<ItemRating>
+{
+    string _datasetPath;
 
-        public MyCustomDataReader(string datasetPath)
-        {
-            _datasetPath = datasetPath;
-        }
-        
-        public IEnumerable<ItemRating> ReadSamples()
-        {
-            // logic to read data is here
-        }
+    public MyCustomDataReader(string datasetPath)
+    {
+        _datasetPath = datasetPath;
     }
+    
+    public IEnumerable<ItemRating> ReadSamples()
+    {
+        // logic to read data is here
+    }
+}
 ```
 
 #### Custom Evaluator
