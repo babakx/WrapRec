@@ -94,3 +94,41 @@ The framework provide a configurable evaluation mechanism through pipeline patte
         }
     }
 ```
+
+### Custom Recommender Algorithm
+With a similar logic, custom recommenation algorithm can be implemented by implementing either interface ```IPredictor<T>``` for rating prediction tasks, or interface ```IItemRecommender``` for item recommendation tasks. Here we already wrrapped MyMediaLite rating algorithms into toolbox. Following you can see a sample of a custom recommender algorithm.
+
+
+```javascript
+public class CustomRatingPredictor : IPredictor<ItemRating>
+    {
+        bool _isTrained;
+        Model _trainedModel;
+
+        public void Train(IEnumerable<ItemRating> trainSet)
+        {
+            // logic for training is here
+            // ...
+            
+            // _trainedModel is build
+
+            // if training was successfull
+            _isTrained = true;
+        }
+
+        public void Predict(ItemRating sample)
+        {
+            // update the sample with the predicted rating
+            sample.PredictedRating = _trainedModel.Predict(sample);
+        }
+        
+        public bool IsTrained
+        {
+            get
+            {
+                return _isTrained;
+            }
+        }
+    }
+```
+
