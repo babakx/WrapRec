@@ -27,7 +27,7 @@ The toolox is highly customizable to handle context-aware recommendation algorit
 This toolbox provide additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature allows to benefits from the advatages of [Micorsoft Entity Framework] (http://msdn.microsoft.com/en-us/data/ef.aspx) as well as .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
 
 * __Exetensions on existing libraries__
-The object model of RF2 allows this toolbox to easily integare exisign toolboxes into the model and benefits from the exisiting codes. Currently this toolbox have wrappers around [MyMediaLite] (www.mymedialite.net), a recommendation framework wrriten in C#, and [LibFM] (www.libfm.org), a library for factorization machines written in C++.
+The object model of RF2 allows this toolbox to easily integare exisign toolboxes into the model and benefits from the exisiting codes. Currently this toolbox have wrappers around [MyMediaLite] (http://www.mymedialite.net), a recommendation framework wrriten in C#, and [LibFM] (http://www.libfm.org), a library for factorization machines written in C++.
 
 ## Usage Samples
 
@@ -76,23 +76,23 @@ Here is an example of a custom dataset reader.
 The framework provide a configurable evaluation mechanism through pipeline pattern. If you want to have your own cutom evaluator, all you need is to implement the interface ```IEavluator```. This method already provide you a context onbject which include the results of the tested samples.
 
 ```javascript
-    public class CustomEvaluator : IEvaluator<ItemRating>
+public class CustomEvaluator : IEvaluator<ItemRating>
+{
+    public void Evaluate(EvalutationContext<ItemRating> context)
     {
-        public void Evaluate(EvalutationContext<ItemRating> context)
-        {
-            // make sure that the test samples are predicted
-            context.RunDefaultTrainAndTest();
-            
-            // here you can access to tested samples
-            var testset = context.Dataset.TestSamples;
+        // make sure that the test samples are predicted
+        context.RunDefaultTrainAndTest();
+        
+        // here you can access to tested samples
+        var testset = context.Dataset.TestSamples;
 
-            // here is the evaluation logic
-            double metric = LogicToCalculateMetic(testset);
-            
-            // here you update the context with calculated metric for posisble re-use by other evaluators
-            context["CustomEvaluator"] = metric
-        }
+        // here is the evaluation logic
+        double metric = LogicToCalculateMetic(testset);
+        
+        // here you update the context with calculated metric for posisble re-use by other evaluators
+        context["CustomEvaluator"] = metric
     }
+}
 ```
 
 ### Custom Recommender Algorithm
@@ -101,35 +101,35 @@ With a similar logic, custom recommenation algorithm can be implemented by imple
 
 ```javascript
 public class CustomRatingPredictor : IPredictor<ItemRating>
+{
+    bool _isTrained;
+    Model _trainedModel;
+
+    public void Train(IEnumerable<ItemRating> trainSet)
     {
-        bool _isTrained;
-        Model _trainedModel;
-
-        public void Train(IEnumerable<ItemRating> trainSet)
-        {
-            // logic for training is here
-            // ...
-            
-            // _trainedModel is build
-
-            // if training was successfull
-            _isTrained = true;
-        }
-
-        public void Predict(ItemRating sample)
-        {
-            // update the sample with the predicted rating
-            sample.PredictedRating = _trainedModel.Predict(sample);
-        }
+        // logic for training is here
+        // ...
         
-        public bool IsTrained
+        // _trainedModel is build
+
+        // if training was successfull
+        _isTrained = true;
+    }
+
+    public void Predict(ItemRating sample)
+    {
+        // update the sample with the predicted rating
+        sample.PredictedRating = _trainedModel.Predict(sample);
+    }
+    
+    public bool IsTrained
+    {
+        get
         {
-            get
-            {
-                return _isTrained;
-            }
+            return _isTrained;
         }
     }
+}
 ```
 
 ## Usage and Documentations
