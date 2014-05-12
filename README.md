@@ -72,3 +72,25 @@ Here is an example of a custom dataset reader.
     }
 ```
 
+#### Custom Evaluator
+The framework provide a configurable evaluation mechanism through pipeline pattern. If you want to have your own cutom evaluator, all you need is to implement the interface ```IEavluator```. This method already provide you a context onbject which include the results of the tested samples.
+
+```javascript
+    public class CustomEvaluator : IEvaluator<ItemRating>
+    {
+        public void Evaluate(EvalutationContext<ItemRating> context)
+        {
+            // make sure that the test samples are predicted
+            context.RunDefaultTrainAndTest();
+            
+            // here you can access to tested samples
+            var testset = context.Dataset.TestSamples;
+
+            // here is the evaluation logic
+            double metric = LogicToCalculateMetic(testset);
+            
+            // here you update the context with calculated metric for posisble re-use by other evaluators
+            context["CustomEvaluator"] = metric
+        }
+    }
+```
