@@ -31,10 +31,14 @@ The object model of RF2 allows this toolbox to easily integare exisign toolboxes
 
 ## Usage Sample
 
+#### Simple train and test scenario
+With a few lines of code you can alreay run a full train/test scenario. This can be done in 3 steps: 1. Define a dataset 2. Define a recommender algorithm 3. Evaluate
+
+Following is a sample code, which loads MovieLens data, split it into 70% trainset and 30% testset and evaluate it based on BiasedMatricFactorization algorithm. The evaluation metrics are RMSE and MAE.
 
 ```javascript
 // step 1: dataset            
-var dataset = new Dataset<MovieLensItemRating>(new MovieLensReader("/ratings.dat"));
+var dataset = new Dataset<MovieLensItemRating>(new MovieLensReader("/ratings.dat"), 0.7);
 
 // step 2: recommender
 var recommender = new MediaLiteRatingPredictor(new BiasedMatrixFactorization());
