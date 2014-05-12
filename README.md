@@ -26,3 +26,19 @@ The toolox is highly customizable to handle context-aware recommendation algorit
 * __Relational data interface__
 This toolbox provide additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature allows to benefits from the advatages of [Micorsoft Entity Framework] (http://msdn.microsoft.com/en-us/data/ef.aspx) as well as .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
  
+## Usage Sample
+
+```sh
+// step 1: dataset            
+var dataset = new Dataset<MovieLensItemRating>(new MovieLensReader("/ratings.dat"));
+
+// step 2: recommender
+var recommender = new MediaLiteRatingPredictor(new BiasedMatrixFactorization());
+
+// step3: evaluation
+var ep = new EvaluationPipeline<ItemRating>(new EvalutationContext<ItemRating>(recommender, dataset));
+ep.Evaluators.Add(new RMSE());
+ep.Evaluators.Add(new MAE());
+
+ep.Run();
+```
