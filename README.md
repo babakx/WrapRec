@@ -1,9 +1,9 @@
-Recommendation-Framework2
+WrapRec
 =========================
 
-A framework to implement recommender system algorithms
+A toolkit to implement recommender system algorithms
 
-Recommendation Framework2 is a toolbox, implemented with C#, for recommender system algorithms.
+WrapRec is a toolkit, implemented with C#, for recommender system algorithms.
 
 
 ##Features
