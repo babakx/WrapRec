@@ -133,5 +133,5 @@ public class CustomRatingPredictor : IPredictor<ItemRating>
 ```
 
 ## Usage and Documentations
-Currently this toolbox can be used either directly by downloading the source code or by importing it as a dll to your project. The dll can be downloaded [here] (https://github.com/babakx/Recommendation-Framework2/blob/master/RecommendationFramework2.dll). 
+The project can be easily installed by downloading the package from [NuGet] (http://www.nuget.org/packages/WrapRec.dll/) gallery.
 This project is quite new. The documentation is continuously updated. Please contact Babak Loni, (babak dot loni At gmail dot com) for questions about this toolbox.
