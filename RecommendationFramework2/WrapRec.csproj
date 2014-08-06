@@ -5,10 +5,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{149AE494-C1A9-491B-AC41-89AEB0A08B29}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RF2</RootNamespace>
-    <AssemblyName>RecommendationFramework2</AssemblyName>
+    <AssemblyName>WrapRec</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
@@ -129,6 +129,7 @@
     <Compile Include="Evaluation\MediaLiteItemRankingEvaluators.cs" />
     <Compile Include="Evaluation\PrecisionAndRecall.cs" />
     <Compile Include="Evaluation\ReciprocalRank.cs" />
+    <Compile Include="Experiments\JournalExperiments.cs" />
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
     <Compile Include="IEnumerableExtensions.cs" />

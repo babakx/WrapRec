@@ -37,7 +37,7 @@ namespace RF2.Recommenders
         public LibFmTrainTester(string dataStorePath,
             string libFmPath = "libFm.exe",
             double learningRate = 0.05, 
-            int numIterations = 30, 
+            int numIterations = 100, 
             string dimensions = "1,1,8", 
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
             string regularization = "0,0,0.1")
