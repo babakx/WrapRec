@@ -26,7 +26,7 @@ namespace RF2.Readers
 
         private MovieLensItemRating ParseItemRating(string line)
         {
-            var parts = line.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = line.Split(new string[] { "::", " ", "\t" }, StringSplitOptions.RemoveEmptyEntries);
 
             var ir = new MovieLensItemRating();
             ir.User = new MovieLensUser(parts[0]);

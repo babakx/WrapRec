@@ -210,8 +210,8 @@ namespace RF2.Experiments
                 }
                 else
                 {
-                    trainReader = new AmazonReader(Paths.AmazonMusicTrain75, usersClusterFile, itemsClusterFile, "b");
-                    testReader = new AmazonReader(Paths.AmazonMusicTest25, usersClusterFile, itemsClusterFile, "b");
+                    trainReader = new AmazonReader(Paths.AmazonMusicTrain75, usersClusterFile, itemsClusterFile, "b", true);
+                    testReader = new AmazonReader(Paths.AmazonMusicTest25, usersClusterFile, itemsClusterFile, "b", true);
                 }
 
                 var dataset = new Dataset<ItemRatingWithClusters>(trainReader, testReader);
