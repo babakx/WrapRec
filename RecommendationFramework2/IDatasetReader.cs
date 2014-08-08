@@ -8,6 +8,6 @@ namespace RF2
 {
     public interface IDatasetReader<out T>
     {
-        IEnumerable<T> ReadSamples();
+        IEnumerable<T> ReadAll();
     }
 }

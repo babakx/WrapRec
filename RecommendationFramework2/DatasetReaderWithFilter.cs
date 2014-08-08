@@ -29,7 +29,7 @@ namespace RF2
         }
         
 
-        public IEnumerable<T> ReadSamples()
+        public IEnumerable<T> ReadAll()
         {
             var result = ReadWithoutFiltering();
 

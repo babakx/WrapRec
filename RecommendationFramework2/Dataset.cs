@@ -32,7 +32,7 @@ namespace RF2
             if (testPortion + evalPortion > 1)
                 throw new Exception("Sum of test and evaluation portions should be less than 1.");
 
-            _allSamples = reader.ReadSamples().AsQueryable();
+            _allSamples = reader.ReadAll().AsQueryable();
 
             if (testPortion == 0 && evalPortion == 0)
             {
@@ -51,7 +51,7 @@ namespace RF2
 
         public Dataset(IDatasetReader<T> reader, Func<IEnumerable<T>, Tuple<IEnumerable<T>, IEnumerable<T>, IEnumerable<T>>> trainTestEvalSplitter) 
         {
-            _allSamples = reader.ReadSamples().AsQueryable();
+            _allSamples = reader.ReadAll().AsQueryable();
             
             var splits = trainTestEvalSplitter(_allSamples);
 
@@ -62,8 +62,8 @@ namespace RF2
 
         public Dataset(IDatasetReader<T> trainReader, IDatasetReader<T> testReader)
         {
-            _trainSamples = trainReader.ReadSamples().AsQueryable();
-            _testSamples = testReader.ReadSamples().AsQueryable();
+            _trainSamples = trainReader.ReadAll().AsQueryable();
+            _testSamples = testReader.ReadAll().AsQueryable();
             _evalSamples = Enumerable.Empty<T>().AsQueryable();
             _allSamples = _trainSamples.Concat(_testSamples);
         }

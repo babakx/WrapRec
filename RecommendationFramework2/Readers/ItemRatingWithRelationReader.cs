@@ -21,7 +21,7 @@ namespace RF2.Readers
         
         public override IEnumerable<ItemRatingWithRelations> ReadWithoutFiltering()
         {
-            return _itemRatingsReader.ReadSamples().Select(ir => new ItemRatingWithRelations(ir, _relations)).ToList();
+            return _itemRatingsReader.ReadAll().Select(ir => new ItemRatingWithRelations(ir, _relations)).ToList();
         }
     }
 }

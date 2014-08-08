@@ -19,7 +19,7 @@ namespace RF2.Data.DatasetImporters
         
         public void ImportData(RecSysContext recSysContext, Dataset datasetRecord)
         {
-            var itemRatings = (new MovieLensReader(_datasetPath)).ReadSamples();
+            var itemRatings = (new MovieLensReader(_datasetPath)).ReadAll();
             recSysContext.ImportItemRatings(itemRatings, datasetRecord);
         }
 

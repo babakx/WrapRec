@@ -29,7 +29,7 @@ namespace RF2.Readers
             // 
         }
         
-        public IEnumerable<XDEnabledItemRating> ReadSamples()
+        public IEnumerable<XDEnabledItemRating> ReadAll()
         {
             // this is not the best optimize way to read the ratings because a copy of ItemRating will be created in Memory
             var targetRatings = TargetDomain.RatingsReader.ReadSamples()

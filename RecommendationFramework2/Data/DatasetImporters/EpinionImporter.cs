@@ -28,7 +28,7 @@ namespace RF2.Data.DatasetImporters
             conf.Delimiter = " ";
 
             var epinionReader = new CsvReader<ItemRating>(_datasetPath, conf, new ItemRatingMap());
-            recSysContext.ImportItemRatings(epinionReader.ReadSamples(), datasetRecord);
+            recSysContext.ImportItemRatings(epinionReader.ReadAll(), datasetRecord);
 
             // step 2: importing relations
             var relations = File.ReadAllLines(_relationsPath).ToCsvDictionary(' ')
