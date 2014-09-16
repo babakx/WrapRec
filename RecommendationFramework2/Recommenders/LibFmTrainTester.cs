@@ -7,14 +7,11 @@ using MyMediaLite.Data;
 using System.IO;
 using System.Diagnostics;
 
-namespace RF2.Recommenders
+namespace WrapRec.Recommenders
 {
     public class LibFmTrainTester : ITrainTester<ItemRating>
     {
-        // users and items should be in the same map because libFm views them in the same way 
-        // i.e. it can not distinguesh which feature is user and which feature is item
-        // therefore there shouldn't be duplicate mapped id's between users and items
-        Mapping _usersItemsMap;
+        // Mapping _usersItemsMap;
         
         // path to a folder to save temprorary converted files
         string _dataStorePath;
@@ -28,23 +25,27 @@ namespace RF2.Recommenders
         public FmLearnigAlgorithm LearningAlgorithm { get; set; }
         int _i = 0;
 
+        public LibFmFeatureBuilder FeatureBuilder { get; set; }
+
         public LibFmTrainTester(int i = 0)
-            : this("")
+            : this(new LibFmFeatureBuilder())
         {
             _i = i;
         }
 
-        public LibFmTrainTester(string dataStorePath,
+        public LibFmTrainTester(LibFmFeatureBuilder featureBuilder, string dataStorePath = "",
             string libFmPath = "libFm.exe",
             double learningRate = 0.05, 
             int numIterations = 30, 
-            string dimensions = "1,1,8", 
+            string dimensions = "1,1,10", 
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
             string regularization = "0,0,0.1")
         {
-            _usersItemsMap = new Mapping();
+            //_usersItemsMap = new Mapping();
             _dataStorePath = !String.IsNullOrEmpty(dataStorePath) && dataStorePath.Last() != '\\' ? dataStorePath + "\\" : dataStorePath;
 
+            FeatureBuilder = featureBuilder;
+            
             // default properties
             LibFmPath = libFmPath;
             LearningRate = learningRate;
@@ -121,7 +122,7 @@ namespace RF2.Recommenders
 
         private void SaveLibFmFile(IEnumerable<ItemRating> dataset, string fileName)
         {
-            var output = dataset.Select(ir => ir.ToLibFmFeatureVector(_usersItemsMap)).ToList();
+            var output = dataset.Select(ir => FeatureBuilder.GetLibFmFeatureVector(ir)).ToList();
             File.WriteAllLines(fileName, output);
         }
 

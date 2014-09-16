@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using LinqLib.Sequence;
 using EntityFramework.Extensions;
 
-namespace RF2.Data.Splitters
+namespace WrapRec.Data.Splitters
 {
     public class TrainTestSplitter : ISplitter
     {

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Samples.EntityDataReader;
 using System.Data.SqlClient;
 using System.Configuration;
-using RF2.Readers;
+using WrapRec.Readers;
 using CsvHelper.Configuration;
 using System.IO;
-using RF2.Data.DatasetImporters;
-using RF2.Utilities;
+using WrapRec.Data.DatasetImporters;
+using WrapRec.Utilities;
 
-namespace RF2.Data
+namespace WrapRec.Data
 {
     public class DataManager
     {

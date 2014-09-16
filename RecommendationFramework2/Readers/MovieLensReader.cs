@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using RF2.Entities;
+using WrapRec.Entities;
 using LinqLib.Sequence;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class MovieLensReader : DatasetReaderWithClusters<MovieLensItemRating>
     {

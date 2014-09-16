@@ -1,11 +1,11 @@
-﻿using RF2.Data;
+﻿using WrapRec.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2
+namespace WrapRec
 {
     public class Dataset<T> : IDataset<T>
     {
@@ -100,6 +100,22 @@ namespace RF2
             {
                 return _evalSamples;
             }
+        }
+    }
+
+    public class ItemRatingDataset : Dataset<ItemRating>
+    {
+        public ItemRatingDataset(DataContainer trainContainer, DataContainer testContainer)
+        {
+            _trainSamples = trainContainer.Ratings.AsQueryable();
+            _testSamples = testContainer.Ratings.AsQueryable();
+        }
+
+        public ItemRatingDataset(DataContainer container)
+        {
+            //_trainSamples = container.Ratings.Where(r => r.IsTest == false && r.Domain.IsTarget == true).AsQueryable();
+            _trainSamples = container.Ratings.Where(r => r.IsTest == false).AsQueryable();
+            _testSamples = container.Ratings.Where(r => r.IsTest == true).AsQueryable();
         }
     }
 }

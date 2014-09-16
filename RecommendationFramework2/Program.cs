@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RF2.Experiments;
+using WrapRec.Experiments;
 using System.Runtime.InteropServices;
 using System;
 using MyMediaLite.Data;
@@ -14,7 +14,7 @@ using System.IO;
 using CenterSpace.NMath.Core;
 using CenterSpace.NMath.Stats;
 
-namespace RF2
+namespace WrapRec
 {
     class Program
     {
@@ -25,7 +25,7 @@ namespace RF2
             //(new Ectel2014Experiments()).Run();
             //(new TrustBasedExperiments()).Run();
             //(new Recsys2014Experiments()).Run();
-            //(new Journal2014Experiments()).Run();
+            (new Journal2014Experiments()).Run();
 
             Console.WriteLine("Finished!.");
 

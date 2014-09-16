@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace WrapRec.Entities
 {
-    public class EpinionItemRating : ItemRatingWithClusters
+    public class JointXDItemRating : ItemRating
     {
-        public EpinionItemRating()
-        { }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MyMediaLite.Data;
 
-namespace RF2
+namespace WrapRec
 {
     public class RankedList<T>
     {

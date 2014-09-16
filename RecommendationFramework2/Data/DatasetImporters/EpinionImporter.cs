@@ -1,5 +1,5 @@
 ﻿using CsvHelper.Configuration;
-using RF2.Readers;
+using WrapRec.Readers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Data.SqlClient;
 using Microsoft.Samples.EntityDataReader;
 
-namespace RF2.Data.DatasetImporters
+namespace WrapRec.Data.DatasetImporters
 {
     public class EpinionImporter : IDatasetImporter
     {

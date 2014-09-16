@@ -1,27 +1,42 @@
-﻿using System;
+﻿using WrapRec.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
-namespace RF2
+namespace WrapRec
 {
     public class Domain
     {
         public string Id { get; set; }
         public float Weight { get; set; }
-        public IDatasetReader<ItemRating> RatingsReader { get; set; }
+        public ICollection<ItemRating> Ratings { get; private set; }
 
-        public Domain(string id, IDatasetReader<ItemRating> ratingsReader)
-            : this(id, ratingsReader, 1)
-        { }
+        public bool IsTarget { get; set; }
 
-        public Domain(string id, IDatasetReader<ItemRating> ratingsReader, float weight)
+        public Domain(string id, bool isTarget = false, float weight = 1)
         {
             Id = id;
-            RatingsReader = ratingsReader;
             Weight = weight;
+            IsTarget = isTarget;
+            Ratings = new HashSet<ItemRating>();
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0} {1} Ratings", Id, Ratings.Count);
+        }
+
+        public void WriteHistogram(string path)
+        {
+            var lines = Ratings.GroupBy(r => r.User.Id)
+                .Select(g => new { UserId = g.Key, RatingCount = g.Count() })
+                .OrderByDescending(r => r.RatingCount)
+                .Select(r => string.Format("{0},{1}", r.UserId, r.RatingCount));
+
+            File.WriteAllLines(path, lines);            
+        }
     }
 }

@@ -1,8 +1,8 @@
-﻿using RF2.Entities;
-using RF2.Evaluation;
-using RF2.Readers;
-using RF2.Recommenders;
-using RF2.Utilities;
+﻿using WrapRec.Entities;
+using WrapRec.Evaluation;
+using WrapRec.Readers;
+using WrapRec.Recommenders;
+using WrapRec.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,10 +10,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LinqLib.Sequence;
-using RF2.Utilities;
+using WrapRec.Utilities;
 using MyMediaLite.Data;
 
-namespace RF2.Experiments
+namespace WrapRec.Experiments
 {
     public class Recsys2014Experiments
     {

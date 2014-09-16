@@ -1,4 +1,4 @@
-﻿using RF2.Entities;
+﻿using WrapRec.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +11,12 @@ using CenterSpace.NMath.Core;
 using CenterSpace.NMath.Stats;
 using CenterSpace.NMath.Matrix;
 using System.Data;
-using RF2.Utilities;
+using WrapRec.Utilities;
 using Extreme.Mathematics.LinearAlgebra;
 using Extreme.Mathematics;
 using MyMediaLite.Data;
 
-namespace RF2
+namespace WrapRec
 {
     public class Clusterer
     {

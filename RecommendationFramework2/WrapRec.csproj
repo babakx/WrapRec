@@ -7,7 +7,7 @@
     <ProjectGuid>{149AE494-C1A9-491B-AC41-89AEB0A08B29}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RF2</RootNamespace>
+    <RootNamespace>WrapRec</RootNamespace>
     <AssemblyName>WrapRec</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -68,6 +68,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Extreme.Numerics.Net40.dll</HintPath>
     </Reference>
+    <Reference Include="LibSvm">
+      <HintPath>..\..\DelftClassificationFramework\Lib\LibSvm.dll</HintPath>
+    </Reference>
     <Reference Include="LinqLib">
       <HintPath>..\Lib\LinqLib.dll</HintPath>
     </Reference>
@@ -99,10 +102,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clusterer.cs" />
-    <Compile Include="DataContext.cs" />
+    <Compile Include="CrossDomainDataContainer.cs" />
+    <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
+    <Compile Include="DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
     <Compile Include="DatasetReaderWithFilter.cs" />
+    <Compile Include="Data\DataContext.cs" />
     <Compile Include="Data\ISplitter.cs" />
     <Compile Include="Data\Relation.cs" />
     <Compile Include="Data\DataManager.cs" />
@@ -119,6 +125,7 @@
     <Compile Include="Entities\EpinionItemRating.cs" />
     <Compile Include="Entities\ItemRatingWithRelations.cs" />
     <Compile Include="Entities\ItemRatingWithClusters.cs" />
+    <Compile Include="Entities\JointXDItemRating.cs" />
     <Compile Include="Entities\MovieLensItem.cs" />
     <Compile Include="Entities\MovieLensItemRating.cs" />
     <Compile Include="Entities\MovieLensUser.cs" />
@@ -133,7 +140,8 @@
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
-    <Compile Include="ItemRatingDataset.cs" />
+    <Compile Include="LibFmFeatureBuilder.cs" />
+    <Compile Include="LibSvmFeatureBuilder.cs" />
     <Compile Include="MapEnabledEntity.cs" />
     <Compile Include="Evaluation\EvaluationPipeline.cs" />
     <Compile Include="Evaluation\EvalutationContext.cs" />
@@ -156,6 +164,7 @@
     <Compile Include="ItemRanking.cs" />
     <Compile Include="ITrainTester.cs" />
     <Compile Include="IUserItemMapper.cs" />
+    <Compile Include="MovieTweetingsDataContainer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ItemRating.cs" />
@@ -170,8 +179,10 @@
     <Compile Include="Readers\ItemRatingMap.cs" />
     <Compile Include="Readers\ItemRatingWithRelationReader.cs" />
     <Compile Include="Readers\MovieLensReader.cs" />
+    <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />
     <Compile Include="Recommenders\LibFmTrainTester.cs" />
+    <Compile Include="Recommenders\LibSvmClassifier.cs" />
     <Compile Include="Recommenders\MediaLiteItemRecommender.cs" />
     <Compile Include="Recommenders\MediaLiteRatingPredictor.cs" />
     <Compile Include="User.cs" />
@@ -179,7 +190,9 @@
     <Compile Include="UserRankedList.cs" />
     <Compile Include="EntityDataReader.cs" />
     <Compile Include="Utilities\FileHelper.cs" />
-    <Compile Include="Utilities\Paths.cs" />
+    <Compile Include="Utilities\Paths.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="XDomainClusterer.cs" />
   </ItemGroup>
   <ItemGroup>

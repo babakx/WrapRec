@@ -1,4 +1,4 @@
-﻿using RF2.Entities;
+﻿using WrapRec.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LinqLib.Sequence;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class EpinionReader : DatasetReaderWithClusters<EpinionItemRating>
     {

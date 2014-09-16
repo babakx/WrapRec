@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MyMediaLite;
 using MyMediaLite.Eval;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class MediaLiteItemRankingEvaluators : IEvaluator<ItemRanking>
     {

@@ -1,4 +1,4 @@
-﻿using RF2.Entities;
+﻿using WrapRec.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class AmazonReader : DatasetReaderWithClusters<ItemRatingWithClusters>
     {
