@@ -68,8 +68,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Extreme.Numerics.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="LibSvm">
-      <HintPath>..\..\DelftClassificationFramework\Lib\LibSvm.dll</HintPath>
+    <Reference Include="LibSvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\LibSvm.dll</HintPath>
     </Reference>
     <Reference Include="LinqLib">
       <HintPath>..\Lib\LinqLib.dll</HintPath>
