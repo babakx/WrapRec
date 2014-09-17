@@ -130,7 +130,7 @@
     <Compile Include="Entities\MovieLensItem.cs" />
     <Compile Include="Entities\MovieLensItemRating.cs" />
     <Compile Include="Entities\MovieLensUser.cs" />
-    <Compile Include="Entities\XDEnabledItemRating.cs" />
+    <Compile Include="Entities\XdEnabledItemRating.cs" />
     <Compile Include="Entities\XDItem.cs" />
     <Compile Include="Entities\XDUser.cs" />
     <Compile Include="Evaluation\MAE.cs" />
