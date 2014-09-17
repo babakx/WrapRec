@@ -17,17 +17,25 @@ namespace RecSysChallenge
         
         static void Main(string[] args)
         {
-            Run();
+            string trainSet = _trainSet, testSet = _testSet;
+
+            if (args.Length > 0)
+            {
+                trainSet = args[0];
+                testSet = args[1];
+            }
+
+            Run(trainSet, testSet);
             Console.WriteLine("Finished!");
             Console.Read();
         }
 
-        static void Run()
+        static void Run(string trainingSet, string testSet)
         {
             // step 1: dataset            
             var container = new MovieTweetingsDataContainer();
 
-            var reader = new MovieTweetingsReader(_trainSet, _testSet);
+            var reader = new MovieTweetingsReader(trainingSet, testSet);
             reader.LoadData(container);
 
             Console.WriteLine("Data container statistics:\n {0}", container.ToString());
