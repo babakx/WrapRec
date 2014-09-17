@@ -29,7 +29,7 @@ namespace RecSysChallenge
 
             Console.WriteLine("Importing training set...");
 
-            foreach (string l in File.ReadAllLines(_trainSet).Skip(1).Take(10000))
+            foreach (string l in File.ReadAllLines(_trainSet).Skip(1))
             {
                 var tokens = l.Split(',');
                 string tweetJson = tokens.Skip(4).Aggregate((a, b) => a + ',' + b);
