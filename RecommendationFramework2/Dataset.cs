@@ -113,9 +113,19 @@ namespace WrapRec
 
         public ItemRatingDataset(DataContainer container)
         {
-            //_trainSamples = container.Ratings.Where(r => r.IsTest == false && r.Domain.IsTarget == true).AsQueryable();
-            _trainSamples = container.Ratings.Where(r => r.IsTest == false).AsQueryable();
+            _trainSamples = container.Ratings.Where(r => r.IsTest == false && r.Domain.IsTarget == true).AsQueryable();
+            //_trainSamples = container.Ratings.Where(r => r.IsTest == false).AsQueryable();
             _testSamples = container.Ratings.Where(r => r.IsTest == true).AsQueryable();
+        }
+
+        public ItemRatingDataset(DataContainer container, float testPortion)
+        {
+            _allSamples = container.Ratings.AsQueryable();
+
+            int trainCount = Convert.ToInt32(_allSamples.Count() * (1 - testPortion));
+
+            _trainSamples = _allSamples.Take(trainCount);
+            _testSamples = _allSamples.Skip(trainCount);
         }
     }
 }

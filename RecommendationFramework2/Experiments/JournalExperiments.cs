@@ -17,7 +17,7 @@ namespace WrapRec.Experiments
     public class Journal2014Experiments
     {
 
-        public void Run(int testNum = 5)
+        public void Run(int testNum = 3)
         {
             var startTime = DateTime.Now;
 
@@ -107,7 +107,7 @@ namespace WrapRec.Experiments
             ep.Run();
         }
 
-        public void TestAmazonCrossDomain()
+        public void TestAmazonCrossDomain(int x = 1)
         {
             // step 1: dataset            
             var config = new CsvConfiguration()
@@ -132,24 +132,42 @@ namespace WrapRec.Experiments
             trainReader.LoadData(container);
             testReader.LoadData(container);
             musicReader.LoadData(container);
-            dvdReader.LoadData(container);
-            videoReader.LoadData(container);
+            //dvdReader.LoadData(container);
+            //videoReader.LoadData(container);
 
-            container.PrintStatistics();
+            //container.PrintStatistics();
 
             var dataset = new ItemRatingDataset(container);
 
-            var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain);
+            var xx = new int[1] { 0};
 
-            // step 2: recommender
-            var recommender = new LibFmTrainTester(featureBuilder);
+            var rmse = new List<string>();
+            var mae = new List<string>();
 
-            // step3: evaluation
-            var ep = new EvaluationPipeline<ItemRating>(new EvalutationContext<ItemRating>(recommender, dataset));
-            ep.Evaluators.Add(new RMSE());
-            ep.Evaluators.Add(new MAE());
+            foreach (var item in xx)
+            {
+                var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, item);
 
-            ep.Run();
+                // step 2: recommender
+                var recommender = new LibFmTrainTester(featureBuilder);
+
+                // step3: evaluation
+                var ctx = new EvalutationContext<ItemRating>(recommender, dataset);
+                var ep = new EvaluationPipeline<ItemRating>(ctx);
+                ep.Evaluators.Add(new RMSE());
+                ep.Evaluators.Add(new MAE());
+                ep.Run();
+
+                rmse.Add(ctx["RMSE"].ToString());
+                mae.Add(ctx["MAE"].ToString());
+            }
+
+            Console.WriteLine("RMSE");
+            rmse.ForEach(Console.WriteLine);
+
+            Console.WriteLine("MAE");
+            mae.ForEach(Console.WriteLine);
+
         }
 
         
@@ -192,8 +210,8 @@ namespace WrapRec.Experiments
 
             ep.Run();
 
-            featureBuilder.Mapper.OriginalIDs.ToList().ForEach(Console.WriteLine);
-            featureBuilder.Mapper.InternalIDs.ToList().ForEach(Console.WriteLine);
+            // featureBuilder.Mapper.OriginalIDs.ToList().ForEach(Console.WriteLine);
+            // featureBuilder.Mapper.InternalIDs.ToList().ForEach(Console.WriteLine);
         }
 
 

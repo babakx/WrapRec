@@ -7,15 +7,25 @@ using System.Threading.Tasks;
 
 namespace WrapRec
 {
-    public class MapEnabledEntity 
+    public class Entity 
     {
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
         int _mappedId = -1;
 
-        public MapEnabledEntity(string id)
+        public double? Timestamp { get; set; }
+
+        public Dictionary<string, string> Properties { get; private set; }
+
+        public Entity(string id)
         {
             Id = id;
+            Properties = new Dictionary<string, string>();
+        }
+
+        public void AddProperty(string name, string value)
+        {
+            Properties.Add(name, value);
         }
 
         public int GetMappedId(Mapping mapper)

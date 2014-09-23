@@ -62,6 +62,9 @@ namespace WrapRec.Utilities
         public static string TestDomain1Test = @"D:\Data\Datasets\Amazon\Test\Domain1_test.csv";
         public static string TestDomain2 = @"D:\Data\Datasets\Amazon\Test\Domain2.csv";
 
+        // CrowdRec data
+        public static string MovieLensCrowdRecEntities = @"D:\Data\Datasets\MovieLens\CrowdRecFormat\entities.dat";
+        public static string MovieLensCrowdRecRelations = @"D:\Data\Datasets\MovieLens\CrowdRecFormat\relations.dat";
 
     }
 }

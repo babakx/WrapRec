@@ -78,6 +78,9 @@
     <Reference Include="MyMediaLite">
       <HintPath>..\Lib\MyMediaLite.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -105,6 +108,9 @@
     <Compile Include="Clusterer.cs" />
     <Compile Include="CrossDomainDataContainer.cs" />
     <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
+    <Compile Include="CrowdRec\CrowdRecDataContainer.cs" />
+    <Compile Include="CrowdRec\CrowdRecDataReader.cs" />
+    <Compile Include="CrowdRec\CrowdRecDemo.cs" />
     <Compile Include="DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
@@ -186,6 +192,7 @@
     <Compile Include="Recommenders\LibSvmClassifier.cs" />
     <Compile Include="Recommenders\MediaLiteItemRecommender.cs" />
     <Compile Include="Recommenders\MediaLiteRatingPredictor.cs" />
+    <Compile Include="Relation.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserItem.cs" />
     <Compile Include="UserRankedList.cs" />

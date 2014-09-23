@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WrapRec
 {
-    public class Item : MapEnabledEntity
+    public class Item : Entity
     {
         public ICollection<ItemRating> Ratings { get; private set; }
 

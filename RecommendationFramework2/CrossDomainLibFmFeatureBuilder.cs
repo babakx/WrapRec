@@ -19,14 +19,14 @@ namespace WrapRec
         // cache the user extended vector into a dictionary to optimize the feature translation
         private Dictionary<User, string> _userCrossDomainFeatureVector;
 
-        public CrossDomainLibFmFeatureBuilder(Domain targetDomain)
+        public CrossDomainLibFmFeatureBuilder(Domain targetDomain, int numAuxRating = 5)
             : base()
         {
             TargetDomain = targetDomain;
             _userCrossDomainFeatureVector = new Dictionary<User, string>();
 
             // default values for properties
-            NumAuxRatings = 5;
+            NumAuxRatings = numAuxRating;
         }
 
         public override string GetLibFmFeatureVector(ItemRating rating)
