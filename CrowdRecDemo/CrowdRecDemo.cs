@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec;
 using WrapRec.Recommenders;
 using WrapRec.Evaluation;
 
-namespace WrapRec.CrowdRec
+namespace CrowdRecDemo
 {
     public class CrowdRecDemo
     {

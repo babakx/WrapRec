@@ -14,7 +14,6 @@ using System.IO;
 using CenterSpace.NMath.Core;
 using CenterSpace.NMath.Stats;
 using WrapRec.Utilities;
-using WrapRec.CrowdRec;
 
 namespace WrapRec
 {
@@ -29,31 +28,10 @@ namespace WrapRec
             //(new Recsys2014Experiments()).Run();
             //(new Journal2014Experiments()).Run();
 
-            RunCrowdRecDemo(args);
-
             Console.WriteLine("Finished!.");
 
             return;
-
         }
 
-        static void RunCrowdRecDemo(string[] args)
-        {
-            string entitiesFile, relationsFile;
-
-            if (args.Length == 2)
-            {
-                entitiesFile = args[0];
-                relationsFile = args[1];
-            }
-            else
-            {
-                entitiesFile = Paths.MovieLensCrowdRecEntities;
-                relationsFile = Paths.MovieLensCrowdRecRelations;
-            }
-
-            var cr = new CrowdRecDemo(entitiesFile, relationsFile);
-            cr.RunDemo();
-        }
     }
 }

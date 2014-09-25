@@ -108,9 +108,6 @@
     <Compile Include="Clusterer.cs" />
     <Compile Include="CrossDomainDataContainer.cs" />
     <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
-    <Compile Include="CrowdRec\CrowdRecDataContainer.cs" />
-    <Compile Include="CrowdRec\CrowdRecDataReader.cs" />
-    <Compile Include="CrowdRec\CrowdRecDemo.cs" />
     <Compile Include="DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
