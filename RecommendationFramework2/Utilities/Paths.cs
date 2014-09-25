@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Utilities
+namespace WrapRec.Utilities
 {
     public class Paths
     {
@@ -31,7 +31,7 @@ namespace RF2.Utilities
         public static string EpinionRelations = @"D:\Data\Dropbox\TUDelft joint paper\data\Epinion\trust_data.txt";
         public static string EpinionRelationsImplicit = @"D:\Data\Dropbox\TUDelft joint paper\data\trust scores\";
 
-        //Amazon
+        // Amazon
         public static string AmazonBooksRatings = @"D:\Data\Datasets\Amazon\Selected\books_selected.csv";
         public static string AmazonMusicRatings = @"D:\Data\Datasets\Amazon\Selected\music_selected.csv";
         public static string AmazonDvdRatings = @"D:\Data\Datasets\Amazon\Selected\dvd_selected.csv";
@@ -54,6 +54,17 @@ namespace RF2.Utilities
 
         public static string AmazonMusicTrain75 = @"D:\Data\Datasets\Amazon\Selected\music_selected_75.csv";
         public static string AmazonMusicTest25 = @"D:\Data\Datasets\Amazon\Selected\music_selected_25.csv";
+
+        public static string AmazonProcessedPath = @"D:\Data\Datasets\Amazon\Processed";
+
+        // Test
+        public static string TestDomain1Train = @"D:\Data\Datasets\Amazon\Test\Domain1.csv";
+        public static string TestDomain1Test = @"D:\Data\Datasets\Amazon\Test\Domain1_test.csv";
+        public static string TestDomain2 = @"D:\Data\Datasets\Amazon\Test\Domain2.csv";
+
+        // CrowdRec data
+        public static string MovieLensCrowdRecEntities = @"D:\Data\Datasets\MovieLens\CrowdRecFormat\entities.dat";
+        public static string MovieLensCrowdRecRelations = @"D:\Data\Datasets\MovieLens\CrowdRecFormat\relations.dat";
 
     }
 }

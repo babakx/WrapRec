@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2
+namespace WrapRec
 {
     public abstract class DatasetReaderWithFilter<T> : IDatasetReader<T>
     {
@@ -29,7 +29,7 @@ namespace RF2
         }
         
 
-        public IEnumerable<T> ReadSamples()
+        public IEnumerable<T> ReadAll()
         {
             var result = ReadWithoutFiltering();
 

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RF2.Readers;
-using RF2.Evaluation;
-using RF2.Entities;
-using RF2.Recommenders;
-using RF2.Utilities;
+using WrapRec.Readers;
+using WrapRec.Evaluation;
+using WrapRec.Entities;
+using WrapRec.Recommenders;
+using WrapRec.Utilities;
 using MyMediaLite.RatingPrediction;
 using System.IO;
 
-namespace RF2.Experiments
+namespace WrapRec.Experiments
 {
     public class AmazonTester
     {

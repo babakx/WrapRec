@@ -1,11 +1,11 @@
-﻿using RF2.Readers;
+﻿using WrapRec.Readers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Data.DatasetImporters
+namespace WrapRec.Data.DatasetImporters
 {
     public class MovieLensImporter : IDatasetImporter
     {
@@ -19,7 +19,7 @@ namespace RF2.Data.DatasetImporters
         
         public void ImportData(RecSysContext recSysContext, Dataset datasetRecord)
         {
-            var itemRatings = (new MovieLensReader(_datasetPath)).ReadSamples();
+            var itemRatings = (new MovieLensReader(_datasetPath)).ReadAll();
             recSysContext.ImportItemRatings(itemRatings, datasetRecord);
         }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using LinqLib.Sequence;
 
-namespace RF2.Utilities
+namespace WrapRec.Utilities
 {
     public class FileHelper
     {

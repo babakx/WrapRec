@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace RF2.Entities
+namespace WrapRec.Entities
 {
     public class MovieLensItemRating : ItemRatingWithClusters
     {

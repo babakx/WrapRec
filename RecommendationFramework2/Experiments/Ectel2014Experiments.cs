@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RF2.Readers;
-using RF2.Evaluation;
-using RF2.Entities;
-using RF2.Recommenders;
+using WrapRec.Readers;
+using WrapRec.Evaluation;
+using WrapRec.Entities;
+using WrapRec.Recommenders;
 using MyMediaLite.RatingPrediction;
 using MyMediaLite.ItemRecommendation;
 using CsvHelper.Configuration;
 
-namespace RF2.Experiments
+namespace WrapRec.Experiments
 {
     public class Ectel2014Experiments
     {

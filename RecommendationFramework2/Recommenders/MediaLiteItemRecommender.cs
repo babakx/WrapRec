@@ -9,7 +9,7 @@ using MyMediaLite.IO;
 using MyMediaLite.ItemRecommendation;
 using MyMediaLite.DataType;
 
-namespace RF2.Recommenders
+namespace WrapRec.Recommenders
 {
     public class MediaLiteItemRecommender : IPredictor<ItemRanking>, IItemRecommender, IUserItemMapper
     {

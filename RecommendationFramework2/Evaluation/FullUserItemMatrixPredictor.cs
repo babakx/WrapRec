@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class FullUserItemMatrixPredictor : IEvaluator<ItemRating>
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class ItemRankingEvaluationContext : EvalutationContext<ItemRanking>
     {

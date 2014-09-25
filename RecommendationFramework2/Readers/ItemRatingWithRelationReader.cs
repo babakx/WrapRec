@@ -1,12 +1,12 @@
-﻿using RF2.Data;
-using RF2.Entities;
+﻿using WrapRec.Data;
+using WrapRec.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class ItemRatingWithRelationReader : DatasetReaderWithFilter<ItemRatingWithRelations>
     {
@@ -21,7 +21,7 @@ namespace RF2.Readers
         
         public override IEnumerable<ItemRatingWithRelations> ReadWithoutFiltering()
         {
-            return _itemRatingsReader.ReadSamples().Select(ir => new ItemRatingWithRelations(ir, _relations)).ToList();
+            return _itemRatingsReader.ReadAll().Select(ir => new ItemRatingWithRelations(ir, _relations)).ToList();
         }
     }
 }

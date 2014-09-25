@@ -1,11 +1,11 @@
-﻿using RF2.Data;
+﻿using WrapRec.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2
+namespace WrapRec
 {
     public class Dataset<T> : IDataset<T>
     {
@@ -32,7 +32,7 @@ namespace RF2
             if (testPortion + evalPortion > 1)
                 throw new Exception("Sum of test and evaluation portions should be less than 1.");
 
-            _allSamples = reader.ReadSamples().AsQueryable();
+            _allSamples = reader.ReadAll().AsQueryable();
 
             if (testPortion == 0 && evalPortion == 0)
             {
@@ -51,7 +51,7 @@ namespace RF2
 
         public Dataset(IDatasetReader<T> reader, Func<IEnumerable<T>, Tuple<IEnumerable<T>, IEnumerable<T>, IEnumerable<T>>> trainTestEvalSplitter) 
         {
-            _allSamples = reader.ReadSamples().AsQueryable();
+            _allSamples = reader.ReadAll().AsQueryable();
             
             var splits = trainTestEvalSplitter(_allSamples);
 
@@ -62,8 +62,8 @@ namespace RF2
 
         public Dataset(IDatasetReader<T> trainReader, IDatasetReader<T> testReader)
         {
-            _trainSamples = trainReader.ReadSamples().AsQueryable();
-            _testSamples = testReader.ReadSamples().AsQueryable();
+            _trainSamples = trainReader.ReadAll().AsQueryable();
+            _testSamples = testReader.ReadAll().AsQueryable();
             _evalSamples = Enumerable.Empty<T>().AsQueryable();
             _allSamples = _trainSamples.Concat(_testSamples);
         }
@@ -100,6 +100,32 @@ namespace RF2
             {
                 return _evalSamples;
             }
+        }
+    }
+
+    public class ItemRatingDataset : Dataset<ItemRating>
+    {
+        public ItemRatingDataset(DataContainer trainContainer, DataContainer testContainer)
+        {
+            _trainSamples = trainContainer.Ratings.AsQueryable();
+            _testSamples = testContainer.Ratings.AsQueryable();
+        }
+
+        public ItemRatingDataset(DataContainer container)
+        {
+            _trainSamples = container.Ratings.Where(r => r.IsTest == false && r.Domain.IsTarget == true).AsQueryable();
+            //_trainSamples = container.Ratings.Where(r => r.IsTest == false).AsQueryable();
+            _testSamples = container.Ratings.Where(r => r.IsTest == true).AsQueryable();
+        }
+
+        public ItemRatingDataset(DataContainer container, float testPortion)
+        {
+            _allSamples = container.Ratings.AsQueryable();
+
+            int trainCount = Convert.ToInt32(_allSamples.Count() * (1 - testPortion));
+
+            _trainSamples = _allSamples.Take(trainCount);
+            _testSamples = _allSamples.Skip(trainCount);
         }
     }
 }

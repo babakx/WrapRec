@@ -8,7 +8,7 @@ using LinqLib.Sequence;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class CsvReader<T> : DatasetReaderWithFilter<T>
     {

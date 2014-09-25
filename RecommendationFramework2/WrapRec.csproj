@@ -5,10 +5,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{149AE494-C1A9-491B-AC41-89AEB0A08B29}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RF2</RootNamespace>
-    <AssemblyName>RecommendationFramework2</AssemblyName>
+    <RootNamespace>WrapRec</RootNamespace>
+    <AssemblyName>WrapRec</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
@@ -68,11 +68,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Extreme.Numerics.Net40.dll</HintPath>
     </Reference>
+    <Reference Include="LibSvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\LibSvm.dll</HintPath>
+    </Reference>
     <Reference Include="LinqLib">
       <HintPath>..\Lib\LinqLib.dll</HintPath>
     </Reference>
     <Reference Include="MyMediaLite">
       <HintPath>..\Lib\MyMediaLite.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
@@ -99,10 +106,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clusterer.cs" />
-    <Compile Include="DataContext.cs" />
+    <Compile Include="CrossDomainDataContainer.cs" />
+    <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
+    <Compile Include="DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
     <Compile Include="DatasetReaderWithFilter.cs" />
+    <Compile Include="Data\DataContext.cs" />
     <Compile Include="Data\ISplitter.cs" />
     <Compile Include="Data\Relation.cs" />
     <Compile Include="Data\DataManager.cs" />
@@ -119,20 +129,23 @@
     <Compile Include="Entities\EpinionItemRating.cs" />
     <Compile Include="Entities\ItemRatingWithRelations.cs" />
     <Compile Include="Entities\ItemRatingWithClusters.cs" />
+    <Compile Include="Entities\JointXDItemRating.cs" />
     <Compile Include="Entities\MovieLensItem.cs" />
     <Compile Include="Entities\MovieLensItemRating.cs" />
     <Compile Include="Entities\MovieLensUser.cs" />
-    <Compile Include="Entities\XDEnabledItemRating.cs" />
+    <Compile Include="Entities\XdEnabledItemRating.cs" />
     <Compile Include="Entities\XDItem.cs" />
     <Compile Include="Entities\XDUser.cs" />
     <Compile Include="Evaluation\MAE.cs" />
     <Compile Include="Evaluation\MediaLiteItemRankingEvaluators.cs" />
     <Compile Include="Evaluation\PrecisionAndRecall.cs" />
     <Compile Include="Evaluation\ReciprocalRank.cs" />
+    <Compile Include="Experiments\JournalExperiments.cs" />
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
-    <Compile Include="ItemRatingDataset.cs" />
+    <Compile Include="LibFmFeatureBuilder.cs" />
+    <Compile Include="LibSvmFeatureBuilder.cs" />
     <Compile Include="MapEnabledEntity.cs" />
     <Compile Include="Evaluation\EvaluationPipeline.cs" />
     <Compile Include="Evaluation\EvalutationContext.cs" />
@@ -155,6 +168,7 @@
     <Compile Include="ItemRanking.cs" />
     <Compile Include="ITrainTester.cs" />
     <Compile Include="IUserItemMapper.cs" />
+    <Compile Include="MovieTweetingsDataContainer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ItemRating.cs" />
@@ -169,16 +183,21 @@
     <Compile Include="Readers\ItemRatingMap.cs" />
     <Compile Include="Readers\ItemRatingWithRelationReader.cs" />
     <Compile Include="Readers\MovieLensReader.cs" />
+    <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />
     <Compile Include="Recommenders\LibFmTrainTester.cs" />
+    <Compile Include="Recommenders\LibSvmClassifier.cs" />
     <Compile Include="Recommenders\MediaLiteItemRecommender.cs" />
     <Compile Include="Recommenders\MediaLiteRatingPredictor.cs" />
+    <Compile Include="Relation.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserItem.cs" />
     <Compile Include="UserRankedList.cs" />
     <Compile Include="EntityDataReader.cs" />
     <Compile Include="Utilities\FileHelper.cs" />
-    <Compile Include="Utilities\Paths.cs" />
+    <Compile Include="Utilities\Paths.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="XDomainClusterer.cs" />
   </ItemGroup>
   <ItemGroup>

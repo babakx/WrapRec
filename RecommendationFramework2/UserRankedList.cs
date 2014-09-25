@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2
+namespace WrapRec
 {
     public class UserRankedList : RankedList<Item>
     {

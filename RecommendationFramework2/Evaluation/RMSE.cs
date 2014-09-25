@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RF2.Data;
+using WrapRec.Data;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class RMSE : IEvaluator<ItemRating>
     {

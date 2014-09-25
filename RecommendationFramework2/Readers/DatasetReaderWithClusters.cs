@@ -1,4 +1,4 @@
-﻿using RF2.Entities;
+﻿using WrapRec.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public abstract class DatasetReaderWithClusters<T> : DatasetReaderWithFilter<T>
     {
@@ -14,6 +14,9 @@ namespace RF2.Readers
         protected Dictionary<string, string> ItemsCluster;
         protected Dictionary<string, string> AuxUsersCluster;
         protected Dictionary<string, string> AuxItemsCluster;
+        protected int ClusterNumbers { get; set; }
+        protected bool RandomClusters { get; set; }
+
         
         public DatasetReaderWithClusters(string path) 
             : base(path)
@@ -24,9 +27,12 @@ namespace RF2.Readers
             AuxItemsCluster = new Dictionary<string, string>();
         }
 
-        public DatasetReaderWithClusters(string path, string usersClustersPath, string itemsClusterPath, string auxDomainCode = "")
+        public DatasetReaderWithClusters(string path, string usersClustersPath, string itemsClusterPath, string auxDomainCode = "", bool randomClusters = false)
             : this(path)
         {
+            RandomClusters = randomClusters;
+            ClusterNumbers = Convert.ToInt32(UsersCluster.Values.Max()) + 1;
+                        
             var lines = File.ReadAllLines(usersClustersPath).ToList();
 
             foreach (string l in lines)

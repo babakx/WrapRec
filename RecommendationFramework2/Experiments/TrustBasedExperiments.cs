@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RF2.Data;
+using WrapRec.Data;
 using CsvHelper.Configuration;
-using RF2.Readers;
+using WrapRec.Readers;
 using System.IO;
-using RF2.Recommenders;
+using WrapRec.Recommenders;
 using MyMediaLite.RatingPrediction;
 using MyMediaLite.DataType;
-using RF2.Evaluation;
-using RF2.Data.Splitters;
-using RF2.Utilities;
+using WrapRec.Evaluation;
+using WrapRec.Data.Splitters;
+using WrapRec.Utilities;
 using MyMediaLite.ItemRecommendation;
-using RF2.Entities;
+using WrapRec.Entities;
 
-namespace RF2.Experiments
+namespace WrapRec.Experiments
 {
     public class TrustBasedExperiments
     {

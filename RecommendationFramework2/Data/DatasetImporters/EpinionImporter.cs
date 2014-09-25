@@ -1,5 +1,5 @@
 ﻿using CsvHelper.Configuration;
-using RF2.Readers;
+using WrapRec.Readers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Data.SqlClient;
 using Microsoft.Samples.EntityDataReader;
 
-namespace RF2.Data.DatasetImporters
+namespace WrapRec.Data.DatasetImporters
 {
     public class EpinionImporter : IDatasetImporter
     {
@@ -28,7 +28,7 @@ namespace RF2.Data.DatasetImporters
             conf.Delimiter = " ";
 
             var epinionReader = new CsvReader<ItemRating>(_datasetPath, conf, new ItemRatingMap());
-            recSysContext.ImportItemRatings(epinionReader.ReadSamples(), datasetRecord);
+            recSysContext.ImportItemRatings(epinionReader.ReadAll(), datasetRecord);
 
             // step 2: importing relations
             var relations = File.ReadAllLines(_relationsPath).ToCsvDictionary(' ')

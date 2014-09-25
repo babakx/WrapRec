@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using MyMediaLite;
 using MyMediaLite.Data;
 using MyMediaLite.RatingPrediction;
-using RF2.Data;
+using WrapRec.Data;
 using MyMediaLite.DataType;
 
-namespace RF2.Recommenders
+namespace WrapRec.Recommenders
 {
     public class MediaLiteRatingPredictor : IPredictor<ItemRating>
     {

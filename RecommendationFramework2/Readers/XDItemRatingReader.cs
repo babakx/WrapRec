@@ -4,14 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using RF2.Entities;
+using WrapRec.Entities;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
+    /*
     public class XDItemRatingReader : IDatasetReader<XDEnabledItemRating>
     {
         public Domain TargetDomain { get; set; }
         public Domain[] AuxDomains { get; set; }
+        public IDatasetReader<ItemRating> TargetReader { get; set; }
+        public IList<IDatasetReader<ItemRating>> AuxReaders { get; private set; }
 
         public XDItemRatingReader(Domain targetDomain, Domain[] auxDomains)
         {
@@ -28,16 +31,28 @@ namespace RF2.Readers
 
             // 
         }
-        
-        public IEnumerable<XDEnabledItemRating> ReadSamples()
-        {
-            // this is not the best optimize way to read the ratings because a copy of ItemRating will be created in Memory
-            var targetRatings = TargetDomain.RatingsReader.ReadSamples()
-                .Select(ir => new XDEnabledItemRating(ir, TargetDomain))
-                .ToList();
 
-            foreach (var domain in AuxDomains)
+
+        public XDItemRatingReader(IDatasetReader<ItemRating> targetReader, IList<IDatasetReader<ItemRating>> auxReaders)
+        {
+            TargetReader = targetReader;
+            AuxReaders = auxReaders;
+        }
+
+
+        
+        public IEnumerable<XDEnabledItemRating> ReadAll()
+        {
+            var targetRatings = TargetReader.ReadAll();
+
+            foreach (var reader in AuxReaders)
             {
+                // make a dictionary of rated items for each user in the aux domain
+                var userRatedItems = reader.ReadAll().GroupBy(r => r.User.Id)
+                    .ToDictionary(g => g.Key, g => g.Select(r => r.Item.Id).ToList());
+
+                
+                
                 var userRatings = GetUsersRatings(domain);
 
                 targetRatings.GroupBy(tr => tr.User);
@@ -63,4 +78,5 @@ namespace RF2.Readers
             return null;
         }
     }
+     * */
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class ItemRankingMap : CsvClassMap<ItemRanking>
     {

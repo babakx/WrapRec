@@ -7,7 +7,7 @@ using MyMediaLite.Eval.Measures;
 using LinqLib.Operators;
 using MML = MyMediaLite.Eval.Measures;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class PrecisionAndRecall : IEvaluator<ItemRanking>
     {

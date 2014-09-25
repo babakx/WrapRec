@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Samples.EntityDataReader;
 
-namespace RF2.Data
+namespace WrapRec.Data
 {
     public class RecSysContext : DbContext
     {

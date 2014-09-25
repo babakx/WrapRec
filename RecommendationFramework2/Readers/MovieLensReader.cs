@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using RF2.Entities;
+using WrapRec.Entities;
 using LinqLib.Sequence;
 
-namespace RF2.Readers
+namespace WrapRec.Readers
 {
     public class MovieLensReader : DatasetReaderWithClusters<MovieLensItemRating>
     {
@@ -26,7 +26,7 @@ namespace RF2.Readers
 
         private MovieLensItemRating ParseItemRating(string line)
         {
-            var parts = line.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = line.Split(new string[] { "::", " ", "\t" }, StringSplitOptions.RemoveEmptyEntries);
 
             var ir = new MovieLensItemRating();
             ir.User = new MovieLensUser(parts[0]);

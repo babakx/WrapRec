@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MyMediaLite.Eval.Measures;
 using LinqLib.Operators;
 
-namespace RF2.Evaluation
+namespace WrapRec.Evaluation
 {
     public class NDCG : IEvaluator<ItemRanking>
     {
