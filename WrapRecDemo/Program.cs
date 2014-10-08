@@ -26,8 +26,12 @@ namespace WrapRecDemo
 
     --data-format=csv|crowdrec|libfm      
 
- format of dataset file(s) csv: csv file with format (userId,itemId,rating), crowdrec: crowdrec datamodel format, libfm: libfm format (rating [featureId:value])
+ format of dataset file(s) csv: csv file with obligatory header row with format: UserId{sep}ItemId[{sep}Rating], crowdrec: crowdrec datamodel format, libfm: libfm format (rating [featureId:value])
     
+    --csv-sep=STR
+
+ specifies the seperator character or string in csv files (default: ',')
+
     --testportion=VAL                     
 
  devide dataset into train/test portion based on value (0 < VAL < 1)
@@ -56,6 +60,10 @@ namespace WrapRecDemo
 
  specifies item recommendation algorithm. ALG should be one of the followings, bpr: Bayesian Personalized Ranking, mp: Most Popular 
 
+    --libfm-path=FILE
+
+ path to libfm exe file if fm algorithm is used (default: libfm.exe)
+
     --rp-eval=[EVALS]|all                 
 
  specifies rating prediction evaluation metric, [EVALS] is a comma separated evaluation metrics and can be from {mae,rmse}, all: use all available evaluation metrics for rating prediction (default: all)
@@ -82,8 +90,7 @@ namespace WrapRecDemo
             }
             catch (Exception ex)
             {
-                Console.WriteLine("\nGeneral Error: \n");
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("\nInvalid arguments. Inner exception: {0}\n", ex.Message);
             }
         }
     }

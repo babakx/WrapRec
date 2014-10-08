@@ -27,13 +27,7 @@ namespace WrapRec.Recommenders
 
         public LibFmFeatureBuilder FeatureBuilder { get; set; }
 
-        public LibFmTrainTester(int i = 0)
-            : this(new LibFmFeatureBuilder())
-        {
-            _i = i;
-        }
-
-        public LibFmTrainTester(LibFmFeatureBuilder featureBuilder, string dataStorePath = "",
+        public LibFmTrainTester(int i = 0, LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
             string libFmPath = "libFm.exe",
             double learningRate = 0.05, 
             int numIterations = 30, 
@@ -41,10 +35,15 @@ namespace WrapRec.Recommenders
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
             string regularization = "0,0,0.1")
         {
+            _i = i;
+
             //_usersItemsMap = new Mapping();
             _dataStorePath = !String.IsNullOrEmpty(dataStorePath) && dataStorePath.Last() != '\\' ? dataStorePath + "\\" : dataStorePath;
 
-            FeatureBuilder = featureBuilder;
+            if (featureBuilder == null)
+                FeatureBuilder = new LibFmFeatureBuilder();
+            else
+                FeatureBuilder = featureBuilder;
             
             // default properties
             LibFmPath = libFmPath;

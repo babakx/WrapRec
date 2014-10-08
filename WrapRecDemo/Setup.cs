@@ -26,14 +26,34 @@ namespace WrapRecDemo
                 return new { Name = parts[0].Substring(2), Vale = parts[1] };
             }).ToDictionary(p => p.Name, p => p.Vale);
 
+            CheckParameters();
+
             var problem = Parameters["problem"].ToLower();
-            
+
             if (problem == "rp")
+            {
+                Console.WriteLine("\nProblem: Rating Prediction");
                 RunRatingPrediction();
+            }
             else if (problem == "ir")
+            {
+                Console.WriteLine("\nProblem: Item Recommendation");
                 RunItemRecommendation();
+            }
             else
                 Console.WriteLine("Parameter 'problem' should be specified and should be either 'rp' or 'ir'");
+        }
+
+        private void CheckParameters()
+        {
+            var parameters = new string[] { "problem", "dataset", "data-format", "csv-sep", "testportion", "trainfile", "testfile", "entitiesfile",
+                "relationsfile", "rp-algorithm", "ir-algorithm", "rp-eval", "ir-eval", "cross-domain", "libfm-path"};
+
+            Parameters.Keys.ToList().ForEach(k => 
+            {
+                if (!parameters.Contains(k))
+                    throw new WrapRecException(string.Format("\nInvalid parameter: '{0}'\n", k));
+            });
         }
 
         private Dataset<T> GetDataset<T>(string path1, string path2, CsvClassMap<T> map)
@@ -44,9 +64,16 @@ namespace WrapRecDemo
             switch (Parameters.GetValueOrDefault("data-format", ""))
             {
                 case ("csv"):
-                    reader1 = new CsvReader<T>(path1, map);
+                    string sep = ",";
+
+                    if (Parameters.GetValueOrDefault("csv-sep", "") != "")
+                        sep = Parameters["csv-sep"];
+
+                    var csvConfing = new CsvConfiguration() { Delimiter = sep };
+
+                    reader1 = new CsvReader<T>(path1, csvConfing, map);
                     if (path2 != "")
-                        reader2 = new CsvReader<T>(path2, map);
+                        reader2 = new CsvReader<T>(path2, csvConfing, map);
                     break;
                 case(""):
                     throw new WrapRecException("The parameter 'data-format' should be specified.");
@@ -58,7 +85,7 @@ namespace WrapRecDemo
                 if (Parameters.GetValueOrDefault("testportion", "") == "")
                     throw new WrapRecException("The parameter 'testportion' should be specified.");
 
-                dataset = new Dataset<T>(reader1, float.Parse(Parameters["testpotion"]));
+                dataset = new Dataset<T>(reader1, float.Parse(Parameters["testportion"]));
             }
             else
                 dataset = new Dataset<T>(reader1, reader2);
@@ -75,7 +102,8 @@ namespace WrapRecDemo
                 case("bmf"):
                     return new MediaLiteRatingPredictor(new BiasedMatrixFactorization());
                 case("fm"):
-                    return new LibFmTrainTester();
+                    var libfmPath = Parameters.GetValueOrDefault("libfm-path", "") != "" ? Parameters["libfm-path"] : "libfm.exe";
+                    return new LibFmTrainTester(libFmPath: libfmPath);
             }
 
             switch (Parameters.GetValueOrDefault("ir-algorithm", ""))
@@ -95,7 +123,7 @@ namespace WrapRecDemo
             // step 1: dataset
             Dataset<ItemRating> dataset;
 
-            if (Parameters.GetValueOrDefault("data-fromat", "") == "crowdrec")
+            if (Parameters.GetValueOrDefault("data-format", "") == "crowdrec")
             {
                 string efile = Parameters.GetValueOrDefault("entitiesfile", "");
                 string rfile = Parameters.GetValueOrDefault("relationsfile", "");
@@ -126,6 +154,8 @@ namespace WrapRecDemo
             // step 2: recommender
             IModel recommender = GetRecommender();
 
+            Console.WriteLine("\nRecommender: {0}\n", recommender.GetType().Name);
+
             // step3: evaluation
             var ep = new EvaluationPipeline<ItemRating>(new EvalutationContext<ItemRating>(recommender, dataset));
             ep.Evaluators.Add(new RMSE());
@@ -154,7 +184,7 @@ namespace WrapRecDemo
             IModel recommender = GetRecommender();
 
             // step3: evaluation
-            var ep = new EvaluationPipeline<ItemRanking>(new EvalutationContext<ItemRanking>(recommender, dataset));
+            var ep = new EvaluationPipeline<ItemRanking>(new ItemRankingEvaluationContext(recommender, dataset));
             ep.Evaluators.Add(new NDCG());
             ep.Evaluators.Add(new PrecisionAndRecall(10));
             ep.Evaluators.Add(new ReciprocalRank());

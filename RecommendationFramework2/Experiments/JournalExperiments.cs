@@ -149,7 +149,7 @@ namespace WrapRec.Experiments
                 var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, item);
 
                 // step 2: recommender
-                var recommender = new LibFmTrainTester(featureBuilder);
+                var recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
 
                 // step3: evaluation
                 var ctx = new EvalutationContext<ItemRating>(recommender, dataset);
@@ -201,7 +201,7 @@ namespace WrapRec.Experiments
             var featureBuilder = new CrossDomainLibFmFeatureBuilder(domain1);
 
             // step 2: recommender
-            var recommender = new LibFmTrainTester(featureBuilder);
+            var recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
 
             // step3: evaluation
             var ep = new EvaluationPipeline<ItemRating>(new EvalutationContext<ItemRating>(recommender, dataset));
