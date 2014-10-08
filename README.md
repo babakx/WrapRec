@@ -5,6 +5,8 @@ A toolkit to implement recommender system algorithms
 
 WrapRec is a toolkit, implemented in C#, for recommender system algorithms.
 
+Check the [Wiki page](https://github.com/babakx/WrapRec/wiki) for more documenations about WrapRec.
+
 
 ##Features
 
