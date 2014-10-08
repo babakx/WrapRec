@@ -113,8 +113,9 @@ namespace WrapRecDemo
                 case("mp"):
                     return new MediaLiteItemRecommender(new MostPopular());
                 case(""):
-                default:
                     throw new WrapRecException("Either of the two parameters 'rp-algorithm' or 'ir-algorithm' should be specified.");
+                default:
+                    throw new WrapRecException("Invalid value for paramteres 'rp-algorithm' or 'ir-algorithm'.");
             }
         }
         
