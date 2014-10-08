@@ -32,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsvHelper">
+      <HintPath>..\packages\CsvHelper.2.8.0\lib\net40-client\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="MyMediaLite">
+      <HintPath>..\..\..\..\..\Dropbox\Projects\DotNet\RecommendationFramework2\RecommendationFramework2\bin\Debug\MyMediaLite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrowdRecDemo\CrowdRecDemo.csproj">

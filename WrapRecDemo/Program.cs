@@ -54,23 +54,37 @@ namespace WrapRecDemo
 
     --ir-algorithm=ALG                    
 
- specifies item recommendation algorithm. ALG should be one of the followings, bpr: Bayesian Personalized Ranking, mp: Most Popular
+ specifies item recommendation algorithm. ALG should be one of the followings, bpr: Bayesian Personalized Ranking, mp: Most Popular 
 
     --rp-eval=[EVALS]|all                 
 
- specifies rating prediction evaluation metric, [EVALS] is a comma separated evaluation metrics and can be from {mae,rmse}, all: use all available evaluation metrics for rating prediction
+ specifies rating prediction evaluation metric, [EVALS] is a comma separated evaluation metrics and can be from {mae,rmse}, all: use all available evaluation metrics for rating prediction (default: all)
 
     --ir-eval=[EVALS]|all                 
 
- specifies item recommendation evaluation metric, [EVALS] is a comma separated evaluation metrics and can be from {ndcg,p@n,r@n,map} (n is an arithmatic number), all: use all available evaluation metrics for rating prediction (n = 10)
+ specifies item recommendation evaluation metric, [EVALS] is a comma separated evaluation metrics and can be from {ndcg,p@n,r@n,map} (n is an arithmatic number), all: use all available evaluation metrics for rating prediction (n = 10) (default: all)
 
     --cross-domain=FILE                   
 
  cross-domain recommendation using additional auxiliary data, FILE: path to auxiliary dataset with format specified by parameter --data-format
 ";
-
-            Console.Write(usage);
-            Console.Read();
+            try
+            {
+                if (args.Length == 0)
+                    Console.Write(usage);
+                else
+                    new Setup(args);
+            }
+            catch (WrapRec.WrapRecException ex)
+            {
+                Console.WriteLine("\nWrapRec Error: \n");
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nGeneral Error: \n");
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }
