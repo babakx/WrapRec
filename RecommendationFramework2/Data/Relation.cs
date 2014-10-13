@@ -14,6 +14,7 @@ namespace WrapRec.Data
         public float? ConnectionStrength { get; set; }
         public User User { get; set; }
         public User ConnectedUser { get; set; }
+        public int DatasetId { get; set; }
     }
 
     public enum ConnectionType

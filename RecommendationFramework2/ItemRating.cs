@@ -7,10 +7,10 @@ using MyMediaLite.Data;
 
 namespace WrapRec
 {
-    public class ItemRating<T> : UserItem
+    public class ItemRating : UserItem
     {
-        public T Rating { get; set; }
-        public T PredictedRating { get; set; }
+        public float Rating { get; set; }
+        public float PredictedRating { get; set; }
         public Domain Domain { get; set; }
 
         public bool IsTest { get; set; }
@@ -26,13 +26,13 @@ namespace WrapRec
             Domain = CrossDomainDataContainer.GetDefualtDomain();
         }
 
-        public ItemRating(string userId, string itemId, T rating)
+        public ItemRating(string userId, string itemId, float rating)
             : this(userId, itemId)
         {
             Rating = rating;
         }
 
-        public ItemRating(User user, Item item, T rating)
+        public ItemRating(User user, Item item, float rating)
             : base(user, item)
         {
             Rating = rating;
@@ -50,22 +50,4 @@ namespace WrapRec
         }
     }
 
-    public class ItemRating : ItemRating<float>
-    {
-        public ItemRating()
-        { }
-        
-        public ItemRating(string userId, string itemId)
-            : base(userId, itemId)
-        { }
-
-        public ItemRating(string userId, string itemId, float rating)
-            : base(userId, itemId, rating)
-        { }
-
-        public ItemRating(User user, Item item, float rating)
-            : base(user, item, rating)
-        { }
-
-    }
 }
