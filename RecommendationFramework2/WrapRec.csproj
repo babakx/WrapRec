@@ -157,6 +157,7 @@
     <Compile Include="ITrainTester.cs" />
     <Compile Include="IUserItemMapper.cs" />
     <Compile Include="MovieTweetingsDataContainer.cs" />
+    <Compile Include="PositiveFeedback.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ItemRating.cs" />

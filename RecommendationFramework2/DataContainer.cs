@@ -11,17 +11,17 @@ namespace WrapRec
         public Dictionary<string, User> Users { get; private set; }
         public Dictionary<string, Item> Items { get; private set; }
         public ICollection<ItemRating> Ratings { get; private set; }
-        public ICollection<UserItem> PositiveFeedbacks { get; private set; }
+        public ICollection<PositiveFeedback> PositiveFeedbacks { get; private set; }
 
         public DataContainer()
         {
             Users = new Dictionary<string, User>();
             Items = new Dictionary<string, Item>();
             Ratings = new HashSet<ItemRating>();
-            PositiveFeedbacks = new HashSet<UserItem>();
+            PositiveFeedbacks = new HashSet<PositiveFeedback>();
         }
 
-        public virtual ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
+        public virtual ItemRating AddRating(string userId, string itemId, float rating, bool isTest = false)
         {
             User u = AddUser(userId);
             Item i = AddItem(itemId);
@@ -36,16 +36,19 @@ namespace WrapRec
             return ir;
         }
 
-        public virtual UserItem AddPositiveFeedback(string userId, string itemId)
+        public virtual PositiveFeedback AddPositiveFeedback(string userId, string itemId, bool isTest = false)
         {
             User u = AddUser(userId);
             Item i = AddItem(itemId);
 
-            var ui = new UserItem(u, i);
+            var pf = new PositiveFeedback(u, i);
+            pf.IsTest = false;
 
-            PositiveFeedbacks.Add(ui);
+            PositiveFeedbacks.Add(pf);
+            u.PositiveFeedbacks.Add(pf);
+            i.PositiveFeedbacks.Add(pf);
 
-            return ui;
+            return pf;
         }
 
         public User AddUser(string userId)

@@ -10,6 +10,7 @@ namespace WrapRec
     {
         public User User { get; set; }
         public Item Item { get; set; }
+        public bool IsTest { get; set; }
 
         public UserItem() : base()
         { }

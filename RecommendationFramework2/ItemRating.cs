@@ -13,8 +13,6 @@ namespace WrapRec
         public float PredictedRating { get; set; }
         public Domain Domain { get; set; }
 
-        public bool IsTest { get; set; }
-
         public ItemRating()
         {
             Domain = CrossDomainDataContainer.GetDefualtDomain();
