@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WrapRec;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using WrapRec.Data;
 
 namespace CrowdRecDemo
 {

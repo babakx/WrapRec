@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyMediaLite.Data;
+using WrapRec.Data;
 
 namespace WrapRec
 {

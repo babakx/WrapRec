@@ -106,9 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clusterer.cs" />
-    <Compile Include="CrossDomainDataContainer.cs" />
+    <Compile Include="Data\CrossDomainDataContainer.cs" />
     <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
-    <Compile Include="DataContainer.cs" />
+    <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
     <Compile Include="DatasetReaderWithFilter.cs" />
@@ -156,7 +156,6 @@
     <Compile Include="ItemRanking.cs" />
     <Compile Include="ITrainTester.cs" />
     <Compile Include="IUserItemMapper.cs" />
-    <Compile Include="MovieTweetingsDataContainer.cs" />
     <Compile Include="PositiveFeedback.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
