@@ -25,6 +25,9 @@ namespace WrapRec
 
         public string GetRatings()
         {
+            if (Ratings.Count == 0)
+                return "";
+
             return Ratings.GroupBy(r => r.Domain)
                 .Select(d => d.Key.Id + " > " + d.Select(dr => string.Format("{0},{1}", dr.User.Id, dr.Rating))
                     .Aggregate((cur, next) => cur + " " + next))
