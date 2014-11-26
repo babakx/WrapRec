@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Data;
 
 namespace WrapRec.Evaluation
 {
@@ -12,12 +13,20 @@ namespace WrapRec.Evaluation
         
         public IModel Model { get; set; }
         public IDataset<T> Dataset { get; set; }
+        public ISplitter<T> Splitter { get; set; }
         public bool IsTested { get; set; }
-        
+
+        [Obsolete("Use EvalutationContext(IModel model, ISplitter<T> splitter) constructor instead.")]
         public EvalutationContext(IModel model, IDataset<T> dataset)
         {
             Model = model;
             Dataset = dataset;
+            _items = new Dictionary<string, object>();  
+        }
+
+        public EvalutationContext(IModel model, ISplitter<T> splitter)
+        {
+            Model = model;
             _items = new Dictionary<string, object>();
         }
 

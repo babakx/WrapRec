@@ -23,6 +23,19 @@ namespace WrapRec
             return feedback;
         }
 
+        public static PosOnlyFeedback<SparseBooleanMatrix> ToPosOnlyFeedback(this IEnumerable<PositiveFeedback> source, Mapping usersMap, Mapping itemsMap)
+        {
+            var feedback = new PosOnlyFeedback<SparseBooleanMatrix>();
+
+            // Convert items to MyMediaLite PositiveOnly format
+            foreach (var posFeedback in source)
+            {
+                feedback.Add(usersMap.ToInternalID(posFeedback.User.Id), itemsMap.ToInternalID(posFeedback.Item.Id));
+            }
+
+            return feedback;
+        }
+
         /// <summary>
         /// Convert a comma separated IEnumerable of lines to field value dictionary
         /// </summary>

@@ -112,6 +112,7 @@
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />
     <Compile Include="DatasetReaderWithFilter.cs" />
+    <Compile Include="Data\ISplitter.cs" />
     <Compile Include="Data\Relation.cs" />
     <Compile Include="Domain.cs" />
     <Compile Include="Entities\EpinionItemRating.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Entities\XDUser.cs" />
     <Compile Include="Evaluation\MAE.cs" />
     <Compile Include="Evaluation\MediaLiteItemRankingEvaluators.cs" />
+    <Compile Include="Evaluation\MediaLitePositiveFeedbackEvaluators.cs" />
     <Compile Include="Evaluation\PrecisionAndRecall.cs" />
     <Compile Include="Evaluation\ReciprocalRank.cs" />
     <Compile Include="Experiments\JournalExperiments.cs" />
@@ -172,6 +174,7 @@
     <Compile Include="Readers\MovieLensReader.cs" />
     <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />
+    <Compile Include="Recommenders\MediaLitePosFeedbakItemRecommender.cs" />
     <Compile Include="Recommenders\LibFmTrainTester.cs" />
     <Compile Include="Recommenders\LibSvmClassifier.cs" />
     <Compile Include="Recommenders\MediaLiteItemRecommender.cs" />

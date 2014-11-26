@@ -1,39 +1,36 @@
-﻿using System;
+﻿using MyMediaLite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MyMediaLite;
 using MyMediaLite.Eval;
 
 namespace WrapRec.Evaluation
 {
-    [Obsolete("Use MediaLitePositiveFeedback class instead")]
-    public class MediaLiteItemRankingEvaluators : IEvaluator<ItemRanking>
+    public class MediaLitePositiveFeedbackEvaluators : IEvaluator<PositiveFeedback>
     {
         IRecommender _recommender;
 
-        public MediaLiteItemRankingEvaluators(IRecommender recommender)
+        public MediaLitePositiveFeedbackEvaluators(IRecommender recommender)
         {
             _recommender = recommender;
         }
-        
-        public void Evaluate(EvalutationContext<ItemRanking> context)
-        {
-            if (!(context is ItemRankingEvaluationContext))
-                throw new Exception("Wrong evaluation context.");
 
-            var dataset = context.Dataset;
-            var model = (IPredictor<ItemRanking>)context.Model;
+        public void Evaluate(EvalutationContext<PositiveFeedback> context)
+        {
+            var model = (IPredictor<PositiveFeedback>)context.Model;
+            var trainSet = context.Splitter.Train;
+            var tesSet = context.Splitter.Test;
 
             // make sure the model is trained
             if (!model.IsTrained)
-                model.Train(dataset.TrainSamples);
+                model.Train(trainSet);
 
-            var mapper = (IUserItemMapper) context.Model;
+            var mapper = (IUserItemMapper)context.Model;
 
-            var testset = dataset.TestSamples.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
-            var trainset = dataset.TrainSamples.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
+            var testset = tesSet.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
+            var trainset = trainSet.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
 
             var results = _recommender.Evaluate(testset, trainset);
 
@@ -42,7 +39,7 @@ namespace WrapRec.Evaluation
                 context[item.Key] = item.Value;
                 Console.WriteLine(string.Format("{0}: {1:0.0000}", item.Key, item.Value));
             }
-            
+
             // calculate F1@5 and F1@10
             var precAt5 = (float)context["prec@5"];
             var precAt10 = (float)context["prec@5"];

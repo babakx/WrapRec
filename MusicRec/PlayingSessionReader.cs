@@ -36,6 +36,7 @@ namespace MusicRec
                 foreach (string track in tracks)
                 {
                     var parts = track.Split(',');
+                    mContainer.AddPositiveFeedback(tokens[0], parts[0]);
                     var item = mContainer.AddItem(parts[0]);
                     us.Items.Add(item);
                 }

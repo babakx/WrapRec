@@ -4,15 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyMediaLite.Data;
-using MyMediaLite.Eval;
-using MyMediaLite.IO;
 using MyMediaLite.ItemRecommendation;
-using MyMediaLite.DataType;
 
 namespace WrapRec.Recommenders
 {
-    [Obsolete("Use MediaLitePosFeedbakItemRecommender class instead.")]
-    public class MediaLiteItemRecommender : IPredictor<ItemRanking>, IItemRecommender, IUserItemMapper
+    public class MediaLitePosFeedbakItemRecommender : IPredictor<PositiveFeedback>, IUserItemMapper
     {
         ItemRecommender _itemRecommender;
         Mapping _usersMap;
@@ -21,11 +17,11 @@ namespace WrapRec.Recommenders
 
         public int NumRecommendations { get; set; }
 
-        public MediaLiteItemRecommender(ItemRecommender itemRecommender)
+        public MediaLitePosFeedbakItemRecommender(ItemRecommender itemRecommender)
             : this(itemRecommender, -1)
         { }
 
-        public MediaLiteItemRecommender(ItemRecommender itemRecommender, int numRecommendations)
+        public MediaLitePosFeedbakItemRecommender(ItemRecommender itemRecommender, int numRecommendations)
         {
             _itemRecommender = itemRecommender;
             _usersMap = new Mapping();
@@ -33,7 +29,7 @@ namespace WrapRec.Recommenders
             NumRecommendations = numRecommendations;
         }
         
-        public void Train(IEnumerable<ItemRanking> trainSet)
+        public void Train(IEnumerable<PositiveFeedback> trainSet)
         {
             Console.WriteLine("Training...");
 
@@ -63,19 +59,5 @@ namespace WrapRec.Recommenders
             get { return _usersMap; }
         }
 
-        public UserRankedList Recommend(User u)
-        {
-            var rankedList = new UserRankedList();
-            rankedList.User = u;
-
-            var recItems = _itemRecommender.Recommend(_usersMap.ToInternalID(u.Id), NumRecommendations);
-
-            foreach (var item in recItems)
-            {
-                rankedList.Items.Add(new Item(_itemsMap.ToOriginalID(item.Item1)), item.Item2);
-            }
-
-            return rankedList;
-        }
     }
 }
