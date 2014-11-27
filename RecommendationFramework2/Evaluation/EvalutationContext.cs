@@ -27,6 +27,7 @@ namespace WrapRec.Evaluation
         public EvalutationContext(IModel model, ISplitter<T> splitter)
         {
             Model = model;
+            Splitter = splitter;
             _items = new Dictionary<string, object>();
         }
 
@@ -38,7 +39,8 @@ namespace WrapRec.Evaluation
 
             if (Model is ITrainTester<T>)
             {
-                ((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
+                //((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
+                ((ITrainTester<T>)Model).TrainAndTest(Splitter.Train, Splitter.Test);
             } 
             else if (Model is IPredictor<T>)
             {

@@ -176,6 +176,7 @@
     <Compile Include="Readers\MovieLensReader.cs" />
     <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />
+    <Compile Include="Recommenders\PosFeedbackLibFmTrainTester.cs" />
     <Compile Include="Recommenders\MediaLitePosFeedbakItemRecommender.cs" />
     <Compile Include="Recommenders\LibFmTrainTester.cs" />
     <Compile Include="Recommenders\LibSvmClassifier.cs" />

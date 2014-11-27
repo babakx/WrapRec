@@ -32,6 +32,7 @@ namespace WrapRec.Evaluation
             var testset = tesSet.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
             var trainset = trainSet.ToPosOnlyFeedback(mapper.UsersMap, mapper.ItemsMap);
 
+            
             var results = _recommender.Evaluate(testset, trainset);
 
             foreach (var item in results)
