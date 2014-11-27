@@ -39,9 +39,9 @@ namespace WrapRec.Recommenders
             _isTrained = true;
         }
 
-        public void Predict(ItemRanking sample)
+        public void Predict(PositiveFeedback sample)
         {
-            sample.PredictedRank = _itemRecommender.Predict(_usersMap.ToInternalID(sample.User.Id), _itemsMap.ToInternalID(sample.Item.Id));
+            sample.PredictedScore = _itemRecommender.Predict(_usersMap.ToInternalID(sample.User.Id), _itemsMap.ToInternalID(sample.Item.Id));
         }
 
         public bool IsTrained

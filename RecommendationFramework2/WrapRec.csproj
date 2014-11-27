@@ -113,7 +113,9 @@
     <Compile Include="DatasetExtensions.cs" />
     <Compile Include="DatasetReaderWithFilter.cs" />
     <Compile Include="Data\ISplitter.cs" />
+    <Compile Include="Data\PositiveFeedbackSimpleSplitter.cs" />
     <Compile Include="Data\Relation.cs" />
+    <Compile Include="Data\RatingSimpleSplitter.cs" />
     <Compile Include="Domain.cs" />
     <Compile Include="Entities\EpinionItemRating.cs" />
     <Compile Include="Entities\ItemRatingWithRelations.cs" />

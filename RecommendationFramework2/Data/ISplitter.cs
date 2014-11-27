@@ -8,8 +8,8 @@ namespace WrapRec.Data
 {
     public interface ISplitter<T>
     {
-        IList<T> Train { get; }
+        IEnumerable<T> Train { get; }
 
-        IList<T> Test { get; }
+        IEnumerable<T> Test { get; }
     }
 }
