@@ -26,7 +26,11 @@ namespace WrapRec
 
         public override string ToString()
         {
-            return string.Format("{0} {1} Ratings", Id, Ratings.Count);
+            int numTestSamples = Ratings.Where(r => r.IsTest == true).Count();
+            int numUsers = Ratings.Select(r => r.User.Id).Distinct().Count();
+            int numItems = Ratings.Select(r => r.Item.Id).Distinct().Count();
+            return string.Format("{0} ({1}), {2} Users, {3} Items, {4} Ratings, {5} Test samples", 
+                Id, IsTarget ? "target" : "aux", numUsers, numItems, Ratings.Count, numTestSamples);
         }
 
         public void WriteHistogram(string path)

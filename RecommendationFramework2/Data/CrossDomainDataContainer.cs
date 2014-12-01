@@ -84,9 +84,22 @@ namespace WrapRec.Data
 
         public void PrintStatistics()
         {
-            Console.WriteLine("Data Container Statistics: \n{0} \nDomains:", ToString());
-            Domains.ToList().ForEach(d => Console.WriteLine(d.ToString()));
-            Console.WriteLine("Data statistics: \nNum Test Samples: {0}", Ratings.Where(r => r.IsTest == true).Count());
+            var targetUserIds = Domains.Values.Where(d => d.IsTarget == true).Single().Ratings.Select(r => r.User.Id).Distinct().ToList();
+
+            Console.WriteLine("Data Container Statistics: \n{0} \n\nDomains:", ToString());
+
+            foreach (var d in Domains.Values)
+            {
+                Console.WriteLine(d.ToString());
+                if (!d.IsTarget)
+                {
+                    var domainUserIds = d.Ratings.Select(r => r.User.Id).Distinct().ToList();
+                    int numIntersectUsers = domainUserIds.Intersect(targetUserIds).Count();
+                    Console.WriteLine("Num users in target domain: {0}\n", numIntersectUsers);
+                }
+            }
+            
+            Console.WriteLine("Data statistics: \nNum Test Samples: {0}\n", Ratings.Where(r => r.IsTest == true).Count());
         }
 
         public void WriteHistogram(string outputFolder)

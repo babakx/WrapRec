@@ -18,7 +18,7 @@ namespace WrapRec.Experiments
     public class Journal2014Experiments
     {
 
-        public void Run(int testNum = 2)
+        public void Run(int testNum = 3)
         {
             var startTime = DateTime.Now;
 
@@ -132,26 +132,35 @@ namespace WrapRec.Experiments
 
             trainReader.LoadData(container);
             testReader.LoadData(container);
-            //musicReader.LoadData(container);
+            musicReader.LoadData(container);
             //dvdReader.LoadData(container);
             //videoReader.LoadData(container);
 
-            //container.PrintStatistics();
+            container.PrintStatistics();
 
             var splitter = new CrossDomainSimpleSplitter(container);
-            var numAuxRatings = new int[3] { 1, 2, 5 };
+            var numAuxRatings = new int[5] { 0, 1, 2, 5, 10 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
             var durations = new List<string>();
 
-            foreach (var item in numAuxRatings)
+            foreach (var num in numAuxRatings)
             {
                 var startTime = DateTime.Now;
-                var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, item);
-
+                
                 // step 2: recommender
-                var recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
+                ITrainTester<ItemRating> recommender;
+
+                if (num == 0)
+                {
+                    recommender = new LibFmTrainTester();
+                }
+                else
+                {
+                    var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, num);
+                    recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
+                }
 
                 // step3: evaluation
                 var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
@@ -164,13 +173,13 @@ namespace WrapRec.Experiments
                 mae.Add(ctx["MAE"].ToString());
 
                 var duration = DateTime.Now.Subtract(startTime);
-                durations.Add(duration.Seconds.ToString());
+                durations.Add(duration.Milliseconds.ToString());
             }
 
-            Console.WriteLine("RMSE\tMAE\tDuration");
-            for (int i = 0; i < rmse.Count; i++)
+            Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
+            for (int i = 0; i < numAuxRatings.Count(); i++)
             {
-                Console.WriteLine("{0}\t{1}\t{2}", rmse[i], mae[i], durations[i]);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
             }
         }
 
