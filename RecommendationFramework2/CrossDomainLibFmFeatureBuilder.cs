@@ -60,7 +60,7 @@ namespace WrapRec
                         .Take(NumAuxRatings)
                         // ItemIds are concateneated with domain id to make sure that items in different domains are being distingushed
                         //.Select(dr => string.Format("{0}:1", Mapper.ToInternalID(dr.Item.Id + d.Key.Id)))
-                        .Select(dr => string.Format("{0}:{1:0.000}", Mapper.ToInternalID(dr.Item.Id + d.Key.Id), dr.Rating * 0.5 / ratingCount))
+                        .Select(dr => string.Format("{0}:{1:0.000}", Mapper.ToInternalID(dr.Item.Id + d.Key.Id), dr.Rating / ratingCount))
                         .Aggregate((cur, next) => cur + " " + next);
 
                     if (!String.IsNullOrEmpty(domainExtendedVector.TrimEnd(' ')))

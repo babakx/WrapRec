@@ -23,19 +23,19 @@ namespace WrapRec.Recommenders
         public string Dimensions { get; set; }
         public string Regularization { get; set; }
         public FmLearnigAlgorithm LearningAlgorithm { get; set; }
-        int _i = 0;
+        int _clusterNo = 0;
 
         public LibFmFeatureBuilder FeatureBuilder { get; set; }
 
-        public LibFmTrainTester(int i = 0, LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
+        public LibFmTrainTester(int clusterNo = 0, LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
             string libFmPath = "libFm.exe",
             double learningRate = 0.05, 
             int numIterations = 30, 
-            string dimensions = "1,1,10", 
+            string dimensions = "1,1,8", 
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
             string regularization = "0,0,0.1")
         {
-            _i = i;
+            _clusterNo = clusterNo;
 
             //_usersItemsMap = new Mapping();
             _dataStorePath = !String.IsNullOrEmpty(dataStorePath) && dataStorePath.Last() != '\\' ? dataStorePath + "\\" : dataStorePath;
@@ -58,7 +58,7 @@ namespace WrapRec.Recommenders
         {
             string trainPath = _dataStorePath + "train.libfm";
             string testPath = _dataStorePath + "test.libfm";
-            string testOutput = _dataStorePath + "test.out." + _i;
+            string testOutput = _dataStorePath + "test.out." + _clusterNo;
             
             // converting train and test data to libFm files becuase libfm.exe only get file names as input
             SaveLibFmFile(trainSet, trainPath);

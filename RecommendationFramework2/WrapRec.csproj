@@ -108,6 +108,7 @@
     <Compile Include="Clusterer.cs" />
     <Compile Include="Data\CrossDomainDataContainer.cs" />
     <Compile Include="CrossDomainLibFmFeatureBuilder.cs" />
+    <Compile Include="Data\CrossDomainSimpleSplitter.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetExtensions.cs" />

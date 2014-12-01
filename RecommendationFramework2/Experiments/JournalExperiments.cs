@@ -18,7 +18,7 @@ namespace WrapRec.Experiments
     public class Journal2014Experiments
     {
 
-        public void Run(int testNum = 3)
+        public void Run(int testNum = 2)
         {
             var startTime = DateTime.Now;
 
@@ -108,7 +108,7 @@ namespace WrapRec.Experiments
             ep.Run();
         }
 
-        public void TestAmazonCrossDomain(int x = 1)
+        public void TestAmazonCrossDomain()
         {
             // step 1: dataset            
             var config = new CsvConfiguration()
@@ -132,28 +132,29 @@ namespace WrapRec.Experiments
 
             trainReader.LoadData(container);
             testReader.LoadData(container);
-            musicReader.LoadData(container);
+            //musicReader.LoadData(container);
             //dvdReader.LoadData(container);
             //videoReader.LoadData(container);
 
             //container.PrintStatistics();
 
-            var dataset = new ItemRatingDataset(container);
-
-            var xx = new int[1] { 0};
+            var splitter = new CrossDomainSimpleSplitter(container);
+            var numAuxRatings = new int[3] { 1, 2, 5 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
+            var durations = new List<string>();
 
-            foreach (var item in xx)
+            foreach (var item in numAuxRatings)
             {
+                var startTime = DateTime.Now;
                 var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, item);
 
                 // step 2: recommender
                 var recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
 
                 // step3: evaluation
-                var ctx = new EvalutationContext<ItemRating>(recommender, dataset);
+                var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
                 var ep = new EvaluationPipeline<ItemRating>(ctx);
                 ep.Evaluators.Add(new RMSE());
                 ep.Evaluators.Add(new MAE());
@@ -161,14 +162,16 @@ namespace WrapRec.Experiments
 
                 rmse.Add(ctx["RMSE"].ToString());
                 mae.Add(ctx["MAE"].ToString());
+
+                var duration = DateTime.Now.Subtract(startTime);
+                durations.Add(duration.Seconds.ToString());
             }
 
-            Console.WriteLine("RMSE");
-            rmse.ForEach(Console.WriteLine);
-
-            Console.WriteLine("MAE");
-            mae.ForEach(Console.WriteLine);
-
+            Console.WriteLine("RMSE\tMAE\tDuration");
+            for (int i = 0; i < rmse.Count; i++)
+            {
+                Console.WriteLine("{0}\t{1}\t{2}", rmse[i], mae[i], durations[i]);
+            }
         }
 
         

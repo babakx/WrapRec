@@ -39,8 +39,10 @@ namespace WrapRec.Evaluation
 
             if (Model is ITrainTester<T>)
             {
-                //((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
-                ((ITrainTester<T>)Model).TrainAndTest(Splitter.Train, Splitter.Test);
+                if (Splitter != null)
+                    ((ITrainTester<T>)Model).TrainAndTest(Splitter.Train, Splitter.Test);
+                else
+                    ((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
             } 
             else if (Model is IPredictor<T>)
             {

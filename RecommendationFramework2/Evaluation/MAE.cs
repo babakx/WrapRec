@@ -14,7 +14,7 @@ namespace WrapRec.Evaluation
             // make sure that the test samples are predicted
             context.RunDefaultTrainAndTest();
 
-            var testset = context.Dataset.TestSamples;
+            var testset = context.Dataset != null ? context.Dataset.TestSamples : context.Splitter.Test;
 
             double sum = 0;
             foreach (var itemRating in testset)
