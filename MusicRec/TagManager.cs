@@ -23,6 +23,9 @@ namespace MusicRec
 
             var outputLines = File.ReadAllLines(TagFile).Select(l =>
             {
+                if (l.StartsWith("ERROR"))
+                    return "";
+
                 var tokens = l.Split('\t');
                 int tagCount = Convert.ToInt32(tokens[1]);
                 string output = "";

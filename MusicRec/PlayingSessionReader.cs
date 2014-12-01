@@ -37,6 +37,9 @@ namespace MusicRec
                 {
                     var parts = track.Split(',');
                     mContainer.AddPositiveFeedback(tokens[0], parts[0]);
+                    
+                    mContainer.AddRating(tokens[0], parts[0], (float) Math.Round((float.Parse(parts[1]) / 360) * 5));
+                    
                     var item = mContainer.AddItem(parts[0]);
                     us.Items.Add(item);
                 }
