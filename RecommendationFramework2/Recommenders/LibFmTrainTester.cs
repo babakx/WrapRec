@@ -33,8 +33,8 @@ namespace WrapRec.Recommenders
 
         public LibFmTrainTester(string experimentId = "", LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
             string libFmPath = "libFm.exe",
-            double learningRate = 0.1, 
-            int numIterations = 100, 
+            double learningRate = 0.05, 
+            int numIterations = 50, 
             string dimensions = "1,1,8", 
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
             string regularization = "0,0,0.1",
