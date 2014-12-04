@@ -12,13 +12,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WrapRec.Data;
+using System.IO;
 
 namespace WrapRec.Experiments
 {
     public class Journal2014Experiments
     {
 
-        public void Run(int testNum = 3)
+        string _musicUsersPath = @"D:\Data\Datasets\Amazon\Old\ECIR 2014 Dataset\music_selected.users";
+        string _ecirTrain = @"D:\Data\Datasets\Amazon\Old\books_selected-ex3-train0.75.libfm";
+        string _ecirTest = @"D:\Data\Datasets\Amazon\Old\books_selected-ex3-test0.75.libfm";
+
+        public void Run(int testNum = 7)
         {
             var startTime = DateTime.Now;
 
@@ -38,6 +43,12 @@ namespace WrapRec.Experiments
                     break;
                 case(5):
                     ReportStatistics();
+                    break;
+                case(6):
+                    TestAmazonCrossDomainMusic();
+                    break;
+                case(7):
+                    CreateDatasetsFromOriginalDataset();
                     break;
                 default:
                     break;
@@ -130,16 +141,22 @@ namespace WrapRec.Experiments
             var dvdReader = new CsvReader(Paths.AmazonDvdRatings, config, dvdDomain);
             var videoReader = new CsvReader(Paths.AmazonVideoRatings, config, videoDomain);
 
+            //var tempReader = new LibFmReader(_ecirTrain, _ecirTest) { MainDomain = bookDomain, AuxDomain = musicDomain, UserDataPath = _musicUsersPath };
+
             trainReader.LoadData(container);
             testReader.LoadData(container);
             musicReader.LoadData(container);
             //dvdReader.LoadData(container);
             //videoReader.LoadData(container);
+            //tempReader.LoadData(container);
 
             container.PrintStatistics();
+            //musicDomain.CacheUserData();
 
             var splitter = new CrossDomainSimpleSplitter(container);
-            var numAuxRatings = new int[5] { 0, 1, 2, 5, 10 };
+            //var splitter = new RatingSimpleSplitter(container);
+
+            var numAuxRatings = new int[4] { 0, 1, 2, 5 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
@@ -151,15 +168,17 @@ namespace WrapRec.Experiments
                 
                 // step 2: recommender
                 ITrainTester<ItemRating> recommender;
+                CrossDomainLibFmFeatureBuilder featureBuilder = null;
 
                 if (num == 0)
                 {
-                    recommender = new LibFmTrainTester();
+                    recommender = new LibFmTrainTester(experimentId: num.ToString());
                 }
                 else
                 {
-                    var featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, num);
-                    recommender = new LibFmTrainTester(featureBuilder: featureBuilder);
+                    featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, num);
+                    //featureBuilder.LoadCachedUserData(_musicUsersPath);
+                    recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
                 }
 
                 // step3: evaluation
@@ -169,11 +188,13 @@ namespace WrapRec.Experiments
                 ep.Evaluators.Add(new MAE());
                 ep.Run();
 
+                //File.WriteAllLines("maps.txt", featureBuilder.Mapper.OriginalIDs.Zip(featureBuilder.Mapper.InternalIDs, (f, s) => f + "\t" + s));
+                
                 rmse.Add(ctx["RMSE"].ToString());
                 mae.Add(ctx["MAE"].ToString());
 
                 var duration = DateTime.Now.Subtract(startTime);
-                durations.Add(duration.Milliseconds.ToString());
+                durations.Add(duration.TotalSeconds.ToString());
             }
 
             Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
@@ -183,7 +204,140 @@ namespace WrapRec.Experiments
             }
         }
 
+        public void TestAmazonCrossDomainMusic()
+        {
+            // step 1: dataset            
+            var config = new CsvConfiguration()
+            {
+                Delimiter = ",",
+                HasHeaderRecord = true
+            };
+
+            var container = new CrossDomainDataContainer();
+
+            var bookDomain = new Domain("book");
+            var musicDomain = new Domain("music", true);
+            var dvdDomain = new Domain("dvd");
+            var videoDomain = new Domain("video");
+
+            var trainReader = new CsvReader(Paths.AmazonMusicTrain75, config, musicDomain);
+            var testReader = new CsvReader(Paths.AmazonMusicTest25, config, musicDomain, true);
+            var bookReader = new CsvReader(Paths.AmazonBooksRatings, config, bookDomain);
+            var dvdReader = new CsvReader(Paths.AmazonDvdRatings, config, dvdDomain);
+            var videoReader = new CsvReader(Paths.AmazonVideoRatings, config, videoDomain);
+
+            //var tempReader = new LibFmReader(_ecirTrain, _ecirTest) { MainDomain = bookDomain, AuxDomain = musicDomain, UserDataPath = _musicUsersPath };
+
+            trainReader.LoadData(container);
+            testReader.LoadData(container);
+            bookReader.LoadData(container);
+            //dvdReader.LoadData(container);
+            //videoReader.LoadData(container);
+            //tempReader.LoadData(container);
+
+            container.PrintStatistics();
+            //musicDomain.CacheUserData();
+
+            var splitter = new CrossDomainSimpleSplitter(container);
+            //var splitter = new RatingSimpleSplitter(container);
+
+            var numAuxRatings = new int[4] { 0, 1, 2, 5 };
+
+            var rmse = new List<string>();
+            var mae = new List<string>();
+            var durations = new List<string>();
+
+            foreach (var num in numAuxRatings)
+            {
+                var startTime = DateTime.Now;
+
+                // step 2: recommender
+                ITrainTester<ItemRating> recommender;
+                CrossDomainLibFmFeatureBuilder featureBuilder = null;
+
+                if (num == 0)
+                {
+                    recommender = new LibFmTrainTester(experimentId: num.ToString());
+                }
+                else
+                {
+                    featureBuilder = new CrossDomainLibFmFeatureBuilder(musicDomain, num);
+                    //featureBuilder.LoadCachedUserData(_musicUsersPath);
+                    recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
+                }
+
+                // step3: evaluation
+                var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
+                var ep = new EvaluationPipeline<ItemRating>(ctx);
+                ep.Evaluators.Add(new RMSE());
+                ep.Evaluators.Add(new MAE());
+                ep.Run();
+
+                //File.WriteAllLines("maps.txt", featureBuilder.Mapper.OriginalIDs.Zip(featureBuilder.Mapper.InternalIDs, (f, s) => f + "\t" + s));
+
+                rmse.Add(ctx["RMSE"].ToString());
+                mae.Add(ctx["MAE"].ToString());
+
+                var duration = DateTime.Now.Subtract(startTime);
+                durations.Add(duration.TotalSeconds.ToString());
+            }
+
+            Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
+            for (int i = 0; i < numAuxRatings.Count(); i++)
+            {
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
+            }
+        }
+
+        public void CreateDatasetsFromOriginalDataset()
+        {
+            // step 1: dataset            
+            var config = new CsvConfiguration()
+            {
+                Delimiter = ",",
+                HasHeaderRecord = true
+            };
+
+            var container = new CrossDomainDataContainer();
+
+            var bookDomain = new Domain("book");
+            var musicDomain = new Domain("music");
+            var dvdDomain = new Domain("dvd");
+            var videoDomain = new Domain("video");
+
+            var bookReader = new CsvReader(Paths.AmazonAllBookRatings, config, bookDomain);
+            var musicReader = new CsvReader(Paths.AmazonAllMusicRatings, config, musicDomain);
+            var dvdReader = new CsvReader(Paths.AmazonAllDvdRatings, config, dvdDomain);
+            var videoReader = new CsvReader(Paths.AmazonAllVideoRatings, config, videoDomain);
+
+            bookReader.LoadData(container);
+            //musicReader.LoadData(container);
+            //dvdReader.LoadData(container);
+            //videoReader.LoadData(container);
+
+            var output = container.Users.Values.OrderByDescending(u => u.Ratings.Count).Take(2000)
+                .SelectMany(u => u.Ratings.GroupBy(r => r.Item.Id).Select(g => g.Take(1).Single()))
+                .Select(r => r.ToString());
+
+            Console.WriteLine("Writing...");
+            var header = new string[] { "UserId,ItemId,Rating" };
+            File.WriteAllLines("books_dense.csv", header.Concat(output));
+
+            //container.PrintStatistics();
+        }
+
         
+
+        public void TestContainer(CrossDomainDataContainer container)
+        {
+            var us = container.Users.Values.Where(u => u.Id == "2305").Single();
+            
+            Console.WriteLine(us.Ratings.Where(r => r.Domain.Id == "book").Count());                        // 33
+            Console.WriteLine(us.Ratings.Where(r => r.Domain.Id == "music").Count());                       // 3
+            Console.WriteLine(us.Ratings.Where(r => r.IsTest == false).Count());                            // 29
+            Console.WriteLine(us.Ratings.Where(r => r.IsTest == false && r.Domain.Id == "book").Count());   // 26
+            Console.WriteLine(us.Ratings.Where(r => r.IsTest == true && r.Domain.Id == "book").Count());    // 7
+        }
 
 
         public void TestCrossDomain()

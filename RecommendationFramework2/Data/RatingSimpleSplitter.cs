@@ -13,6 +13,12 @@ namespace WrapRec.Data
 
         public float TestPortion { get; set; }
 
+        public RatingSimpleSplitter(DataContainer container)
+        {
+            Train = container.Ratings.Where(r => r.IsTest == false);
+            Test = container.Ratings.Where(r => r.IsTest == true);
+        }
+
         public RatingSimpleSplitter(DataContainer container, float testPortion)
         {
             Container = container;

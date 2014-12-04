@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MyMediaLite.Data;
 using System.IO;
 using System.Diagnostics;
+using LinqLib.Sequence;
 
 namespace WrapRec.Recommenders
 {
@@ -23,19 +24,24 @@ namespace WrapRec.Recommenders
         public string Dimensions { get; set; }
         public string Regularization { get; set; }
         public FmLearnigAlgorithm LearningAlgorithm { get; set; }
-        int _clusterNo = 0;
+        public string TrainFile { get; set; }
+        public string TestFile { get; set; }
+
+        string _experimentId;
 
         public LibFmFeatureBuilder FeatureBuilder { get; set; }
 
-        public LibFmTrainTester(int clusterNo = 0, LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
+        public LibFmTrainTester(string experimentId = "", LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
             string libFmPath = "libFm.exe",
-            double learningRate = 0.05, 
-            int numIterations = 50, 
+            double learningRate = 0.1, 
+            int numIterations = 100, 
             string dimensions = "1,1,8", 
             FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
-            string regularization = "0,0,0.1")
+            string regularization = "0,0,0.1",
+            string trainFile = "",
+            string testFile = "")
         {
-            _clusterNo = clusterNo;
+            _experimentId = experimentId;
 
             //_usersItemsMap = new Mapping();
             _dataStorePath = !String.IsNullOrEmpty(dataStorePath) && dataStorePath.Last() != '\\' ? dataStorePath + "\\" : dataStorePath;
@@ -52,17 +58,25 @@ namespace WrapRec.Recommenders
             Dimensions = dimensions;
             LearningAlgorithm = alg;
             Regularization = regularization;
+            TrainFile = trainFile;
+            TestFile = testFile;
         }
 
         public void TrainAndTest(IEnumerable<ItemRating> trainSet, IEnumerable<ItemRating> testSet)
         {
-            string trainPath = _dataStorePath + "train.libfm";
-            string testPath = _dataStorePath + "test.libfm";
-            string testOutput = _dataStorePath + "test.out." + _clusterNo;
-            
+            string expIdExtension = string.IsNullOrEmpty(_experimentId) ? "" : "." + _experimentId;
+
+            if (TrainFile == "")
+            {
+                TrainFile = _dataStorePath + "train.libfm" + expIdExtension;
+                TestFile = _dataStorePath + "test.libfm" + expIdExtension;
+            }
+
+            string testOutput = _dataStorePath + "test.out" + expIdExtension;
+
             // converting train and test data to libFm files becuase libfm.exe only get file names as input
-            SaveLibFmFile(trainSet, trainPath);
-            SaveLibFmFile(testSet, testPath);
+            SaveLibFmFile(trainSet, TrainFile);
+            SaveLibFmFile(testSet, TestFile);
 
             // initialize the process
             var libFm = new Process
@@ -70,7 +84,7 @@ namespace WrapRec.Recommenders
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = LibFmPath,
-                    Arguments = BuildArguments(trainPath, testPath, testOutput),
+                    Arguments = BuildArguments(TrainFile, TestFile, testOutput),
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -88,7 +102,7 @@ namespace WrapRec.Recommenders
 
                 if (data != null && (data.StartsWith("Loading") || data.StartsWith("#")))
                 {
-                    //Console.WriteLine(dataLine.Data);
+                    Console.WriteLine(dataLine.Data);
 
                     if (data.StartsWith("#Iter"))
                     {

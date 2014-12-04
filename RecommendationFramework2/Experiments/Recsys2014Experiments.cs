@@ -216,7 +216,7 @@ namespace WrapRec.Experiments
 
                 var dataset = new Dataset<ItemRatingWithClusters>(trainReader, testReader);
 
-                var recommender = new LibFmTrainTester(i);
+                var recommender = new LibFmTrainTester(i.ToString());
 
                 var context = new EvalutationContext<ItemRating>(recommender, dataset);
 

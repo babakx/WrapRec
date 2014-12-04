@@ -55,6 +55,11 @@ namespace WrapRec.Utilities
         public static string AmazonMusicTrain75 = @"D:\Data\Datasets\Amazon\Selected\music_selected_75.csv";
         public static string AmazonMusicTest25 = @"D:\Data\Datasets\Amazon\Selected\music_selected_25.csv";
 
+        public static string AmazonAllBookRatings = @"D:\Data\Datasets\Amazon\Processed\AllBooksRatings.csv";
+        public static string AmazonAllMusicRatings = @"D:\Data\Datasets\Amazon\Processed\AllMusicsRatings.csv";
+        public static string AmazonAllDvdRatings = @"D:\Data\Datasets\Amazon\Processed\AllDvdRatings.csv";
+        public static string AmazonAllVideoRatings = @"D:\Data\Datasets\Amazon\Processed\AllVideoRatings.csv";
+
         public static string AmazonProcessedPath = @"D:\Data\Datasets\Amazon\Processed";
 
         // Test

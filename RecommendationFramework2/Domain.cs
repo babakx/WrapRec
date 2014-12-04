@@ -13,15 +13,30 @@ namespace WrapRec
         public string Id { get; set; }
         public float Weight { get; set; }
         public ICollection<ItemRating> Ratings { get; private set; }
+        public string CachedDataPath { get; set; }
 
         public bool IsTarget { get; set; }
 
-        public Domain(string id, bool isTarget = false, float weight = 1)
+        public Domain(string id, bool isTarget = false, float weight = 1, string cachedDataPath = "")
         {
             Id = id;
             Weight = weight;
             IsTarget = isTarget;
+            CachedDataPath = cachedDataPath;
             Ratings = new HashSet<ItemRating>();
+        }
+
+        public void CacheUserData()
+        {
+            var output = Ratings.GroupBy(r => r.User.Id).Select(g => new
+            {
+                UserId = g.Key,
+                RatingCount = g.Count(),
+                Ratings = g.Select(ur => string.Format("{0}:{1}", ur.Item.Id, ur.Rating))
+                    .Aggregate((cur, next) => cur + " " + next)
+            }).Select(u => string.Format("{0} {1} {2}", u.UserId, u.RatingCount, u.Ratings));
+
+            File.WriteAllLines(CachedDataPath, output);
         }
 
         public override string ToString()
