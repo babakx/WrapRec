@@ -135,6 +135,7 @@
     <Compile Include="DatasetReaderWithFilter.cs" />
     <Compile Include="Data\ISplitter.cs" />
     <Compile Include="Data\LibFmProcessor.cs" />
+    <Compile Include="Data\MovieLensCrossDomainContainer.cs" />
     <Compile Include="Data\PositiveFeedbackSimpleSplitter.cs" />
     <Compile Include="Data\RatingComparer.cs" />
     <Compile Include="Data\Relation.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Evaluation\MediaLitePositiveFeedbackEvaluators.cs" />
     <Compile Include="Evaluation\PrecisionAndRecall.cs" />
     <Compile Include="Evaluation\ReciprocalRank.cs" />
+    <Compile Include="Experiments\FreeLunchExperiments.cs" />
     <Compile Include="Experiments\JournalExperiments.cs" />
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
@@ -199,6 +201,7 @@
     <Compile Include="Readers\MovieLensReader.cs" />
     <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\NewReaders\LibFmReader.cs" />
+    <Compile Include="Readers\NewReaders\MovieLensCrossDomainReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />
     <Compile Include="Recommenders\PosFeedbackLibFmTrainTester.cs" />
     <Compile Include="Recommenders\MediaLitePosFeedbakItemRecommender.cs" />
