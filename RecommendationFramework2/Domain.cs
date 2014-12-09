@@ -39,6 +39,18 @@ namespace WrapRec
             File.WriteAllLines(CachedDataPath, output);
         }
 
+        public void ActivateData(float portion)
+        {
+            int count = (int)Math.Round(portion * Ratings.Count);
+
+            foreach (var r in Ratings.Where(r => r.IsActive == false).Take(count))
+            {
+                r.IsActive = true;
+            }
+
+            Console.WriteLine("\nNo. of activated ratings: {0}\n", Ratings.Where(r => r.IsActive == true).Count());
+        }
+
         public override string ToString()
         {
             int numTestSamples = Ratings.Where(r => r.IsTest == true).Count();

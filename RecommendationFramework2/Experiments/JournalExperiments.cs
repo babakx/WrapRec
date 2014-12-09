@@ -54,13 +54,16 @@ namespace WrapRec.Experiments
                 case(8):
                     TestNewDataset();
                     break;
+                case(9):
+                    TestAuxDataSize();
+                    break;
                 default:
                     break;
             }
 
             var duration = DateTime.Now.Subtract(startTime);
 
-            Console.WriteLine("Execution time: {0} sec", duration.Seconds);
+            Console.WriteLine("Execution time: {0} sec", (int) duration.TotalSeconds);
         }
 
         public void TestAmazonDatasetSingle()
@@ -245,7 +248,7 @@ namespace WrapRec.Experiments
             var splitter = new CrossDomainSimpleSplitter(container);
             //var splitter = new RatingSimpleSplitter(container);
 
-            var numAuxRatings = new int[4] { 0, 1, 2, 5 };
+            var numAuxRatings = new List<int> { 0, 1, 2, 3, 5, 7, 10, 15, 20 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
@@ -316,24 +319,29 @@ namespace WrapRec.Experiments
 
             bookReader.LoadData(container);
             musicReader.LoadData(container);
-            //dvdReader.LoadData(container);
-            //videoReader.LoadData(container);
+            dvdReader.LoadData(container);
+            videoReader.LoadData(container);
 
             var output = container.Users.Values.Where(u => 
             { 
                 var counts = u.Ratings.GroupBy(r => r.Domain).Select(g => g.Count());
-                return counts.All(c => c >= 5 && c <= 20) && (counts.Count() > 1);
+                return counts.All(c => c >= 1 && c <= 20) && (counts.Count() > 3);
             })
             //.Select(u => new { UserId = u.Id, Counts = u.Ratings.GroupBy(r => r.Domain.Id).Select(g => g.Count().ToString()).Aggregate((a,b) => a + " " + b) })
             //.Select(a => a.UserId + "," + a.Counts);
 
-            .SelectMany(u => u.Ratings.Where(r => r.Domain == bookDomain))
+            .SelectMany(u => u.Ratings.Where(r => r.Domain == musicDomain))
             //.SelectMany(u => u.Ratings.GroupBy(r => r.Item.Id).Select(g => g.Take(1).Single()))
             .Select(r => r.ToString());
 
             Console.WriteLine("Writing...");
             var header = new string[] { "UserId,ItemId,Rating" };
-            File.WriteAllLines("books_selected1.csv", header.Concat(output));
+
+            // selected1: only music between 5 to 20
+            // selected2: only music between 1 to 20
+            // selected3: only music between 2 to 20
+            // selected4: all domains with ratings between 1 to 20
+            File.WriteAllLines("music_selected4.csv", header.Concat(output));
 
             //container.PrintStatistics();
         }
@@ -354,24 +362,30 @@ namespace WrapRec.Experiments
             var dvdDomain = new Domain("dvd");
             var videoDomain = new Domain("video");
 
-            var bookReader = new CsvReader("books_selected1.csv", config, bookDomain);
+            var bookReader = new CsvReader("books_selected4.csv", config, bookDomain);
+            //var trainReader = new CsvReader("books_selected1_train.csv", config, bookDomain);
+            //var testReader = new CsvReader("books_selected1_test.csv", config, bookDomain, true);
             var musicReader = new CsvReader(Paths.AmazonAllMusicRatings, config, musicDomain);
             var dvdReader = new CsvReader(Paths.AmazonAllDvdRatings, config, dvdDomain);
             var videoReader = new CsvReader(Paths.AmazonAllVideoRatings, config, videoDomain);
 
             bookReader.LoadData(container);
+            //trainReader.LoadData(container);
+            //testReader.LoadData(container);
             musicReader.LoadData(container);
             //dvdReader.LoadData(container);
             //videoReader.LoadData(container);
-            //tempReader.LoadData(container);
-
+            
             container.PrintStatistics();
             //musicDomain.CacheUserData();
 
             var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
+            //splitter.SaveSplitsAsCsv("books_selected1_train.csv", "books_selected1_test.csv");
+
+            //return;
             //var splitter = new RatingSimpleSplitter(container, 0.25f);
 
-            var numAuxRatings = new int[4] { 0, 1, 2, 5 };
+            var numAuxRatings = new List<int> { 0, 1, 2, 3, 5, 7, 10 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
@@ -382,7 +396,7 @@ namespace WrapRec.Experiments
                 var startTime = DateTime.Now;
 
                 // step 2: recommender
-                ITrainTester<ItemRating> recommender;
+                LibFmTrainTester recommender;
                 CrossDomainLibFmFeatureBuilder featureBuilder = null;
 
                 if (num == 0)
@@ -404,11 +418,11 @@ namespace WrapRec.Experiments
 
                 //File.WriteAllLines("maps.txt", featureBuilder.Mapper.OriginalIDs.Zip(featureBuilder.Mapper.InternalIDs, (f, s) => f + "\t" + s));
 
-                rmse.Add(ctx["RMSE"].ToString());
+                rmse.Add(recommender.RMSE.ToString());
                 mae.Add(ctx["MAE"].ToString());
 
                 var duration = DateTime.Now.Subtract(startTime);
-                durations.Add(duration.TotalSeconds.ToString());
+                durations.Add(((int)duration.TotalMilliseconds).ToString());
             }
 
             Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
@@ -417,6 +431,82 @@ namespace WrapRec.Experiments
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
             }
         }
+
+        public void TestAuxDataSize()
+        {
+            // step 1: dataset            
+            var config = new CsvConfiguration()
+            {
+                Delimiter = ",",
+                HasHeaderRecord = true
+            };
+
+            var container = new CrossDomainDataContainer();
+
+            var bookDomain = new Domain("book", true);
+            var musicDomain = new Domain("music");
+            var dvdDomain = new Domain("dvd");
+            var videoDomain = new Domain("video");
+
+            var bookReader = new CsvReader("books_selected4.csv", config, bookDomain);
+            //var trainReader = new CsvReader("books_selected1_train.csv", config, bookDomain);
+            //var testReader = new CsvReader("books_selected1_test.csv", config, bookDomain, true);
+            var musicReader = new CsvReader(Paths.AmazonAllMusicRatings, config, musicDomain);
+            var dvdReader = new CsvReader(Paths.AmazonAllDvdRatings, config, dvdDomain);
+            var videoReader = new CsvReader(Paths.AmazonAllVideoRatings, config, videoDomain);
+
+            bookReader.LoadData(container);
+            //trainReader.LoadData(container);
+            //testReader.LoadData(container);
+            musicReader.LoadData(container);
+            //dvdReader.LoadData(container);
+            //videoReader.LoadData(container);
+
+            container.PrintStatistics();
+
+            var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
+            //splitter.SaveSplitsAsCsv("books_selected1_train.csv", "books_selected1_test.csv");
+
+
+            var rmse = new List<string>();
+            var mae = new List<string>();
+            var durations = new List<string>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var startTime = DateTime.Now;
+
+                musicDomain.ActivateData(0.1f);
+
+                // step 2: recommender
+                LibFmTrainTester recommender;
+                CrossDomainLibFmFeatureBuilder featureBuilder = null;
+
+                featureBuilder = new CrossDomainLibFmFeatureBuilder(bookDomain, 10);
+                recommender = new LibFmTrainTester(experimentId: i.ToString(), featureBuilder: featureBuilder);
+
+
+                // step3: evaluation
+                var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
+                var ep = new EvaluationPipeline<ItemRating>(ctx);
+                ep.Evaluators.Add(new RMSE());
+                ep.Evaluators.Add(new MAE());
+                ep.Run();
+
+                rmse.Add(recommender.RMSE.ToString());
+                mae.Add(ctx["MAE"].ToString());
+
+                var duration = DateTime.Now.Subtract(startTime);
+                durations.Add(((int)duration.TotalMilliseconds).ToString());
+            }
+
+            Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}", i, rmse[i], mae[i], durations[i]);
+            }
+        }
+
 
         public void TestContainer(CrossDomainDataContainer container)
         {

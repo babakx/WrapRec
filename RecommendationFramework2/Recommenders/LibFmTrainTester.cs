@@ -27,6 +27,8 @@ namespace WrapRec.Recommenders
         public string TrainFile { get; set; }
         public string TestFile { get; set; }
 
+        public double RMSE { get; private set; }
+
         string _experimentId;
 
         public LibFmFeatureBuilder FeatureBuilder { get; set; }
@@ -36,8 +38,8 @@ namespace WrapRec.Recommenders
             double learningRate = 0.05, 
             int numIterations = 50, 
             string dimensions = "1,1,8", 
-            FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC,
-            string regularization = "0,0,0.1",
+            FmLearnigAlgorithm alg = FmLearnigAlgorithm.SGD,
+            string regularization = "0.1,0.1,0.1",
             string trainFile = "",
             string testFile = "")
         {
@@ -127,6 +129,7 @@ namespace WrapRec.Recommenders
             libFm.WaitForExit();
 
             Console.WriteLine("Lowest RMSE on test set reported by LibFm is: {0:0.0000} at iteration {1}", lowestRMSE, lowestIteration);
+            RMSE = lowestRMSE;
             UpdateTestSet(testSet, testOutput);
 
             // write actual ratings in the test set
