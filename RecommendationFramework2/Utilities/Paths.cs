@@ -10,6 +10,7 @@ namespace WrapRec.Utilities
     {
         // MovieLens
         public static string MovieLens1M = @"D:\Data\Datasets\MovieLens\ml-1m\ratings.dat";
+        public static string MovieLens1MMovies = @"D:\Data\Datasets\MovieLens\ml-1m\movies.dat";
         public static string MovieLens1MTrain75 = @"D:\Data\Datasets\MovieLens\ml-1m\ratings75.dat";
         public static string MovieLens1MTest25 = @"D:\Data\Datasets\MovieLens\ml-1m\ratings25.dat";
         public static string MovieLens1MUsersCluster = @"D:\Data\Datasets\MovieLens\ml-1m\Clusters\UsersCluster";

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Utilities;
 
 namespace WrapRec.Data
 {
@@ -100,6 +101,10 @@ namespace WrapRec.Data
             }
             
             Console.WriteLine("Data statistics: \nNum Test Samples: {0}\n", Ratings.Where(r => r.IsTest == true).Count());
+
+            //var t = Ratings.Select(ir => long.Parse(ir.GetProperty("timestamp")));
+            //Console.WriteLine("Min date: {0}, Max date: {1}", t.Min().FromUnixEpoch(), t.Max().FromUnixEpoch());
+
         }
 
         public void WriteHistogram(string outputFolder)

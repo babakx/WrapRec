@@ -36,16 +36,19 @@ namespace WrapRec.Readers.NewReaders
                 item.Properties["genres"] = parts[2];
             }
 
-            Console.WriteLine("Creating domains...");
-            mlContainer.CreateItemClusters();
+            //Console.WriteLine("Creating domains...");
+            //mlContainer.CreateItemClusters();
 
             Console.WriteLine("Reading ratings...");
-            foreach (string l in File.ReadAllLines(RatingsPath))
+            foreach (string l in File.ReadAllLines(RatingsPath).Skip(1))
             {
                 var parts = l.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
 
-                mlContainer.AddRating(parts[0], parts[1], float.Parse(parts[2]), false);
+                var ir = mlContainer.AddRating(parts[0], parts[1], float.Parse(parts[2]), false);
+                ir.Properties["timestamp"] = parts[3];
             }
+
+            mlContainer.CreateDomainsBasedOnDate();
 
         }
     }

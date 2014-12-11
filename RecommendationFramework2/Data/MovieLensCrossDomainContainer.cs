@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyMediaLite.Data;
+using System.IO;
 
 namespace WrapRec.Data
 {
@@ -19,6 +20,7 @@ namespace WrapRec.Data
         {
             _mapper = new Mapping();
             NumDomains = numDomains;
+            _itemsCluster = new Dictionary<string, int>();
 
             for (int i = 0; i < numDomains; i++)
             { 
@@ -53,6 +55,27 @@ namespace WrapRec.Data
             _itemsCluster = Clusterer.Cluster(itemIds, genreFeatures, NumDomains);
         }
 
+        public void CreateDomainsBasedOnDate()
+        {
+            int count = Ratings.Count;
+            var ratings = Ratings.OrderBy(r => long.Parse(r.GetProperty("timestamp")));
+            int ratingPerDomain = count / NumDomains;
+
+            for (int i = 0; i < NumDomains; i++)
+            {
+                foreach (var r in ratings.Skip(i * ratingPerDomain).Take(ratingPerDomain))
+                {
+                    r.Domain = Domains["ml" + i];
+                }
+            }
+
+            foreach (var r in ratings.Skip(NumDomains * ratingPerDomain))
+            {
+                r.Domain = Domains["ml" + (NumDomains - 1)];
+            }
+
+        }
+
         public override ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
         {
             ActiveDomain = GetItemDomain(itemId);
@@ -61,7 +84,19 @@ namespace WrapRec.Data
 
         public Domain GetItemDomain(string itemId)
         {
-            return Domains["ml" + _itemsCluster[itemId]];
+            // default cluster is 0
+            int clusterId = 0;
+            _itemsCluster.TryGetValue(itemId, out clusterId);
+
+            return Domains["ml" + clusterId];
+        }
+
+        public void WriteClusters(string path)
+        {
+            var output = Items.Values.Select(i => 
+                string.Format("{0},{1},{2}", i.Id, i.GetProperty("genres"), GetItemDomain(i.Id).Id.Substring(2)));
+
+            File.WriteAllLines(path, output);
         }
     }
 }

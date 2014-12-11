@@ -35,5 +35,13 @@ namespace WrapRec
 
             return _mappedId;
         }
+
+        public string GetProperty(string name)
+        {
+            string value = "";
+            Properties.TryGetValue(name, out value);
+
+            return value;
+        }
     }
 }

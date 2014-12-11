@@ -12,7 +12,27 @@ namespace WrapRec
     {
         public float Rating { get; set; }
         public float PredictedRating { get; set; }
-        public Domain Domain { get; set; }
+        
+        private Domain _domain;
+
+        public Domain Domain 
+        {
+            get
+            {
+                return _domain;
+            }
+            set
+            {
+                if (_domain != null)
+                {
+                    // remove this rating from the old domain
+                    _domain.Ratings.Remove(this);
+                }
+                // add this rating to the new domain
+                value.Ratings.Add(this);
+                _domain = value;
+            }
+        }
 
         public ItemRating()
         {

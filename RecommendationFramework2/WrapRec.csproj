@@ -104,11 +104,11 @@
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NMath, Version=5.3.0.12, Culture=neutral, PublicKeyToken=873235918a322639, processorArchitecture=MSIL">
+    <Reference Include="NMath, Version=6.0.0.12, Culture=neutral, PublicKeyToken=873235918a322639, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\NMath.dll</HintPath>
     </Reference>
-    <Reference Include="NMathStats, Version=3.6.0.12, Culture=neutral, PublicKeyToken=873235918a322639, processorArchitecture=MSIL">
+    <Reference Include="NMathStats, Version=4.0.0.12, Culture=neutral, PublicKeyToken=873235918a322639, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\NMathStats.dll</HintPath>
     </Reference>

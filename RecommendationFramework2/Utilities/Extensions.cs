@@ -18,6 +18,11 @@ namespace WrapRec.Utilities
         {
             return (datetime - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime()).TotalSeconds;
         }
+        public static DateTime FromUnixEpoch(this long unixTime)
+        {
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return epoch.AddSeconds(unixTime);
+        }
 
         public static string GetDirectoryPath(this string path)
         {

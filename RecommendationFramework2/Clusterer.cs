@@ -101,7 +101,7 @@ namespace WrapRec
         {
             Console.WriteLine("Clustering...");
 
-            features = Normalized(features);
+            //features = Normalized(features);
 
             Console.WriteLine("Features normalized.");
 

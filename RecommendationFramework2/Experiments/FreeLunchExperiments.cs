@@ -34,25 +34,25 @@ namespace WrapRec.Experiments
 
         public void TestMovieLens()
         {
-            // step 1: dataset            
-            var config = new CsvConfiguration()
-            {
-                Delimiter = "::",
-                HasHeaderRecord = true
-            };
+            int numDomains = 4;
 
-            var movieDomain = new Domain("movie", true);
-            var movieLensReader = new CsvReader(Paths.MovieLens1M, config, movieDomain);
-
-            var container = new CrossDomainDataContainer();
+            // load data
+            var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
+            var container = new MovieLensCrossDomainContainer(numDomains);
             movieLensReader.LoadData(container);
 
+            // set taget domain
+            var targetDomain = container.Domains["ml0"];
+            targetDomain.IsTarget = true;
+
             container.PrintStatistics();
-            container.WriteHistogram(Paths.MovieLens1M.GetDirectoryPath());
+
+            //container.WriteClusters(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust");
+            //return;
 
             var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
 
-            var numAuxRatings = new List<int> { 0 };
+            var numAuxRatings = new List<int> { 0, 1, 2, 5 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
@@ -62,7 +62,7 @@ namespace WrapRec.Experiments
             {
                 var startTime = DateTime.Now;
 
-                // step 2: recommender
+                // recommender
                 LibFmTrainTester recommender;
                 CrossDomainLibFmFeatureBuilder featureBuilder = null;
 
@@ -72,11 +72,11 @@ namespace WrapRec.Experiments
                 }
                 else
                 {
-                    featureBuilder = new CrossDomainLibFmFeatureBuilder(movieDomain, num);
+                    featureBuilder = new CrossDomainLibFmFeatureBuilder(targetDomain, num);
                     recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
                 }
 
-                // step3: evaluation
+                // evaluation
                 var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
                 var ep = new EvaluationPipeline<ItemRating>(ctx);
                 ep.Evaluators.Add(new RMSE());
@@ -88,7 +88,12 @@ namespace WrapRec.Experiments
 
                 var duration = DateTime.Now.Subtract(startTime);
                 durations.Add(((int)duration.TotalMilliseconds).ToString());
+            }
 
+            Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
+            for (int i = 0; i < numAuxRatings.Count(); i++)
+            {
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
             }
         }
     }
