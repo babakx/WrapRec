@@ -43,7 +43,7 @@ namespace WrapRec.Readers.NewReaders
         {
             if (Domain != null)
             {
-                ((CrossDomainDataContainer)container).ActiveDomain = Domain;
+                ((CrossDomainDataContainer)container).CurrentDomain = Domain;
             }
             
             while (_reader.Read())

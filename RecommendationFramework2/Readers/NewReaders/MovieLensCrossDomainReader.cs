@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using WrapRec.Data;
+using WrapRec.Utilities;
 
 namespace WrapRec.Readers.NewReaders
 {
@@ -36,8 +37,8 @@ namespace WrapRec.Readers.NewReaders
                 item.Properties["genres"] = parts[2];
             }
 
-            //Console.WriteLine("Creating domains...");
-            //mlContainer.CreateItemClusters();
+            Console.WriteLine("Creating domains...");
+            //mlContainer.CreateItemClusters(MoviesPath.GetDirectoryPath() + "\\GenreClusters.csv");
 
             Console.WriteLine("Reading ratings...");
             foreach (string l in File.ReadAllLines(RatingsPath).Skip(1))
@@ -48,8 +49,8 @@ namespace WrapRec.Readers.NewReaders
                 ir.Properties["timestamp"] = parts[3];
             }
 
-            mlContainer.CreateDomainsBasedOnDate();
-
+            //mlContainer.CreateDomainsBasedOnDate();
+            //mlContainer.CreateDomainsWithEvenlyDistributedUsers();
         }
     }
 }

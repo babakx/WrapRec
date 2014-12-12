@@ -17,11 +17,14 @@ namespace WrapRec
 
         public bool IsTarget { get; set; }
 
+        public bool IsActive { get; set; }
+
         public Domain(string id, bool isTarget = false, float weight = 1, string cachedDataPath = "")
         {
             Id = id;
             Weight = weight;
             IsTarget = isTarget;
+            IsActive = true;
             CachedDataPath = cachedDataPath;
             Ratings = new HashSet<ItemRating>();
         }

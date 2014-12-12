@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MyMediaLite.Data;
 using System.IO;
+using LinqLib.Sequence;
 
 namespace WrapRec.Data
 {
@@ -55,6 +56,46 @@ namespace WrapRec.Data
             _itemsCluster = Clusterer.Cluster(itemIds, genreFeatures, NumDomains);
         }
 
+        public void CreateItemClusters(string clusterPath)
+        {
+            int[] numClusters = new int[] { 2, 3, 4, 5, 6, 8, 10};
+            int colNo = numClusters.IndexOf(NumDomains) + 1;
+
+            var genreSeqClusters = File.ReadAllLines(clusterPath).Skip(1).Select(l =>
+            {
+                var parts = l.Split('\t');
+                return new { Seq = parts[0], ClusterNo = int.Parse(parts[colNo]) - 1 };
+            }).ToDictionary(s => s.Seq, s => s.ClusterNo);
+
+            _itemsCluster = Items.Values.ToDictionary(i => i.Id, i => genreSeqClusters[i.GetProperty("genres")]);
+        }
+
+        public void CreateClusterFiles(string rawVectorsFile, string matlabInputFile)
+        {
+            int numFeatures = 18;
+            var genreSeqs = Items.Values.Select(i => i.GetProperty("genres")).Where(g => !string.IsNullOrEmpty(g)).Distinct().ToList();
+            int[,] genreFeatures = new int[genreSeqs.Count, numFeatures];
+
+            _mapper.ToInternalID("kill index 0");
+
+            var featureVectors = genreSeqs.Select(s => 
+            {
+                var vector = Enumerable.Range(0, numFeatures).Select(i => "0").ToList();
+
+                var genres = s.Split('|');
+
+                foreach (string g in genres)
+                {
+                    vector[_mapper.ToInternalID(g) - 1] = "1";
+                }
+
+                return vector.Aggregate((a, b) => a + " " + b);
+            });
+
+            File.WriteAllLines(rawVectorsFile, genreSeqs);
+            File.WriteAllLines(matlabInputFile, featureVectors);
+        }
+
         public void CreateDomainsBasedOnDate()
         {
             int count = Ratings.Count;
@@ -76,9 +117,38 @@ namespace WrapRec.Data
 
         }
 
+        public void CreateDomainsWithEvenlyDistributedUsers()
+        {
+            int count = Ratings.Count;
+            int numDomain1 = 1;
+
+            foreach (var g in Ratings.GroupBy(r => r.User.Id).Shuffle())
+            {
+                int ratingPerDomain = g.Count() / NumDomains;
+
+                //foreach (var r in g.Take(numDomain1))
+                //{
+                //    r.Domain = Domains["mlt"];
+                //}
+
+                for (int i = 0; i < NumDomains; i++)
+                {
+                    foreach (var r in g.Skip(i * ratingPerDomain + numDomain1).Take(ratingPerDomain))
+                    {
+                        r.Domain = Domains["ml" + i];
+                    }
+                }
+
+                foreach (var r in g.Skip(NumDomains * ratingPerDomain))
+                {
+                    r.Domain = Domains["ml" + (NumDomains - 1)];
+                }
+            }
+        }
+
         public override ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
         {
-            ActiveDomain = GetItemDomain(itemId);
+            CurrentDomain = GetItemDomain(itemId);
             return base.AddRating(userId, itemId, rating, isTest);
         }
 

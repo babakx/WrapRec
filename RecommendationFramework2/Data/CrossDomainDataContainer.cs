@@ -11,29 +11,29 @@ namespace WrapRec.Data
     {
         public Dictionary<string, Domain> Domains { get; private set; }
 
-        private Domain _activeDomain;
+        private Domain _currentDomain;
 
         private static Domain _defaultDomain;
 
         /// <summary>
         /// This is to specify the domain to which the data is being loaded
         /// </summary>
-        public Domain ActiveDomain 
+        public Domain CurrentDomain 
         {
             get
             {
-                return _activeDomain;
+                return _currentDomain;
             }
             set
             {
                 if (!Domains.ContainsKey(value.Id))
                 {
                     AddDomain(value);
-                    _activeDomain = value;
+                    _currentDomain = value;
                 }
                 else
                 {
-                    _activeDomain = Domains[value.Id];
+                    _currentDomain = Domains[value.Id];
                 }
             }
         }
@@ -64,18 +64,49 @@ namespace WrapRec.Data
 
         public override ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
         {
-            if (ActiveDomain == null)
+            if (CurrentDomain == null)
             {
                 throw new Exception(string.Format("Active dmain is not defined in the CrossDomainDataContainer"));
             }
 
             // ItemId is added with domainId to make sure that items in different domains have different ids
-            var ir = base.AddRating(userId, itemId + ActiveDomain.Id, rating, isTest);
+            var ir = base.AddRating(userId, itemId + CurrentDomain.Id, rating, isTest);
 
-            ir.Domain = ActiveDomain;
-            ActiveDomain.Ratings.Add(ir);
+            ir.Domain = CurrentDomain;
+            CurrentDomain.Ratings.Add(ir);
 
             return ir;
+        }
+
+        public Domain SpecifyTargetDomain(string domainId)
+        {
+            Domain target = null;
+
+            foreach (var d in Domains.Values)
+            {
+                if (d.Id == domainId)
+                {
+                    d.IsTarget = true;
+                    target = d;
+                }
+                else
+                    d.IsTarget = false;
+            }
+
+            return target;
+        }
+
+        public Domain GetTargetDomain()
+        {
+            return Domains.Values.Where(d => d.IsTarget == true).SingleOrDefault();
+        }
+
+        public void DeactiveDomains(params string[] domainIds)
+        {
+            foreach (var d in Domains.Values.Where(d => domainIds.Contains(d.Id)))
+            {
+                d.IsActive = false;
+            }
         }
 
         public override string ToString()

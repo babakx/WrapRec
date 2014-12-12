@@ -45,10 +45,10 @@ namespace WrapRec.Readers.NewReaders
                 string userId = parts[1].Split(':')[0];
                 string itemId = parts[2].Split(':')[0];
 
-                cdContainer.ActiveDomain = MainDomain;
+                cdContainer.CurrentDomain = MainDomain;
                 cdContainer.AddRating(userId, itemId, rating, false);
 
-                cdContainer.ActiveDomain = AuxDomain;
+                cdContainer.CurrentDomain = AuxDomain;
 
                 for (int i = 3; i < parts.Length; i++)
                 { 
@@ -64,10 +64,10 @@ namespace WrapRec.Readers.NewReaders
                 string userId = parts[1].Split(':')[0];
                 string itemId = parts[2].Split(':')[0];
 
-                cdContainer.ActiveDomain = MainDomain;
+                cdContainer.CurrentDomain = MainDomain;
                 cdContainer.AddRating(userId, itemId, rating, true);
 
-                cdContainer.ActiveDomain = AuxDomain;
+                cdContainer.CurrentDomain = AuxDomain;
 
                 for (int i = 3; i < parts.Length; i++)
                 {

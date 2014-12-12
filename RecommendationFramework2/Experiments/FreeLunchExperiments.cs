@@ -14,7 +14,7 @@ namespace WrapRec.Experiments
 {
     public class FreeLunchExperiments
     {
-        public void Run(int testNum = 1)
+        public void Run(int testNum = 2)
         {
             var startTime = DateTime.Now;
 
@@ -22,6 +22,12 @@ namespace WrapRec.Experiments
             {
                 case (1):
                     TestMovieLens();
+                    break;
+                case(2):
+                    TestMovieLensAllDomains(1);
+                    break;
+                case(3):
+                    TestAllDomainsAllNumberOfDomains();
                     break;
                 default:
                     break;
@@ -34,16 +40,19 @@ namespace WrapRec.Experiments
 
         public void TestMovieLens()
         {
-            int numDomains = 4;
+            int numDomains = 6;
 
             // load data
             var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
             var container = new MovieLensCrossDomainContainer(numDomains);
             movieLensReader.LoadData(container);
 
-            // set taget domain
-            var targetDomain = container.Domains["ml0"];
-            targetDomain.IsTarget = true;
+            //container.CreateClusterFiles(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.raw", Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.feat");
+            //return;
+
+            // set taget and active domains
+            var targetDomain = container.SpecifyTargetDomain("ml0");
+            //container.DeactiveDomains("ml2", "ml3");
 
             container.PrintStatistics();
 
@@ -52,7 +61,7 @@ namespace WrapRec.Experiments
 
             var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
 
-            var numAuxRatings = new List<int> { 0, 1, 2, 5 };
+            var numAuxRatings = new List<int> { 0, 1, 2, 3 };
 
             var rmse = new List<string>();
             var mae = new List<string>();
@@ -96,5 +105,124 @@ namespace WrapRec.Experiments
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
             }
         }
+
+        public void TestAllDomainsAllNumberOfDomains()
+        {
+            int[] numDomains = new int[] { 2, 3, 4, 6, 8, 10};
+
+            foreach (int num in numDomains)
+            {
+                TestMovieLensAllDomains(num);
+            }
+        }
+
+        public void TestMovieLensAllDomains(int numDomains = 1)
+        {
+            var numAuxRatings = new List<int> { 0 };
+
+            var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
+            var container = new MovieLensCrossDomainContainer(numDomains);
+            movieLensReader.LoadData(container);
+
+            double[,] rmseMatrix = new double[numAuxRatings.Count, numDomains];
+            int[,] durationsMatrix = new int[numAuxRatings.Count, numDomains];
+            int[] numUsers = new int[numDomains];
+            int[] numItems = new int[numDomains];
+            int[] numRatings = new int[numDomains];
+
+            int domainIndex = 0;
+
+            foreach (Domain d in container.Domains.Values)
+            {
+                var targetDomain = container.SpecifyTargetDomain(d.Id);
+                Console.WriteLine("Target domain: {0}", d.ToString());
+
+                var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
+
+                int numAuxIndex = 0;
+
+                foreach (var num in numAuxRatings)
+                {
+                    var startTime = DateTime.Now;
+
+                    LibFmTrainTester recommender;
+                    CrossDomainLibFmFeatureBuilder featureBuilder = null;
+
+                    if (num == 0)
+                    {
+                        recommender = new LibFmTrainTester(experimentId: num.ToString());
+                    }
+                    else
+                    {
+                        featureBuilder = new CrossDomainLibFmFeatureBuilder(targetDomain, num);
+                        recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
+                    }
+
+                    var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
+                    var ep = new EvaluationPipeline<ItemRating>(ctx);
+                    ep.Evaluators.Add(new RMSE());
+                    ep.Run();
+
+                    var duration = DateTime.Now.Subtract(startTime);
+
+                    rmseMatrix[numAuxIndex, domainIndex] = recommender.RMSE;
+                    durationsMatrix[numAuxIndex, domainIndex] = (int)duration.TotalMilliseconds;
+
+                    numAuxIndex++;
+                }
+
+                numUsers[domainIndex] = d.Ratings.Select(r => r.User.Id).Distinct().Count();
+                numItems[domainIndex] = d.Ratings.Select(r => r.Item.Id).Distinct().Count();
+                numRatings[domainIndex] = d.Ratings.Count;
+
+                domainIndex++;
+            }
+
+            
+            // Write RMSEs
+            Console.WriteLine("\nRMSEs:\n");
+
+            string header = Enumerable.Range(1, numDomains).Select(i => "D" + i).Aggregate((a, b) => a + "\t" + b);
+            Console.WriteLine("Num aux. ratings\t" + header);
+
+            for (int i = 0; i < numAuxRatings.Count; i++)
+            {
+                Console.Write(numAuxRatings[i]);
+                for (int j = 0; j < numDomains; j++)
+                {
+                    Console.Write("\t" + rmseMatrix[i, j]);
+                }
+                Console.WriteLine();
+            }
+
+            // Write domain statistics
+            string users = numUsers.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+            string items = numItems.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+            string ratings = numRatings.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+
+            Console.WriteLine();
+            Console.WriteLine("Num Users\t" + users);
+            Console.WriteLine("Num Items\t" + items);
+            Console.WriteLine("Num Ratings\t" + ratings);
+
+            // Write times
+            Console.WriteLine("\nTimes:\n");
+
+            header = Enumerable.Range(1, numDomains).Select(i => "T" + i).Aggregate((a, b) => a + "\t" + b);
+            Console.WriteLine("Num aux. ratings\t" + header);
+
+            for (int i = 0; i < numAuxRatings.Count; i++)
+            {
+                Console.Write(numAuxRatings[i]);
+                for (int j = 0; j < numDomains; j++)
+                {
+                    Console.Write("\t" + durationsMatrix[i, j]);
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("\n");
+        }
+
     }
 }

@@ -19,8 +19,8 @@ namespace MusicRec
         
         static void Main(string[] args)
         {
-            ProcessTags();
-            //TrainTestFm();
+            //ProcessTags();
+            TrainTestFm();
             Console.WriteLine("Finished!");
             Console.Read();
         }

@@ -72,7 +72,7 @@ namespace WrapRec
         {
             string extendedVector = "";
 
-            Func<ItemRating, bool> checkActivation = r => true;//r.IsActive == true;
+            Func<ItemRating, bool> checkActivation = r => r.Domain.IsActive == true; //r.IsActive == true;
 
             var domainRatings = user.Ratings.Where(checkActivation).GroupBy(r => r.Domain.Id);
             var avgUserRating = user.Ratings.Average(r => r.Rating);
@@ -88,7 +88,7 @@ namespace WrapRec
                         .Take(NumAuxRatings)
                         // ItemIds are concateneated with domain id to make sure that items in different domains are being distingushed
                         //.Select(dr => string.Format("{0}:1", Mapper.ToInternalID(dr.Item.Id + d.Key.Id)))
-                        .Select(dr => string.Format("{0}:{1:0.0000}", Mapper.ToInternalID(dr.Item.Id), (double) (dr.Rating - avgUserRating) / 4 + 1)) // dr.rating / ratingCount))
+                        .Select(dr => string.Format("{0}:{1:0.0000}", Mapper.ToInternalID(dr.Item.Id), (double) (dr.Rating - avgUserRating) / 4 + 1)) // dr.Rating / ratingCount))
                         .Aggregate((cur, next) => cur + " " + next);
 
                     if (!String.IsNullOrEmpty(domainExtendedVector.TrimEnd(' ')))

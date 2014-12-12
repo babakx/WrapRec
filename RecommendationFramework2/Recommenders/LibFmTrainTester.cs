@@ -104,7 +104,7 @@ namespace WrapRec.Recommenders
 
                 if (data != null && (data.StartsWith("Loading") || data.StartsWith("#")))
                 {
-                    Console.WriteLine(dataLine.Data);
+                    //Console.WriteLine(dataLine.Data);
 
                     if (data.StartsWith("#Iter"))
                     {
