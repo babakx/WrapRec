@@ -14,7 +14,7 @@ namespace WrapRec.Experiments
 {
     public class FreeLunchExperiments
     {
-        public void Run(int testNum = 2)
+        public void Run(int testNum = 4)
         {
             var startTime = DateTime.Now;
 
@@ -24,10 +24,13 @@ namespace WrapRec.Experiments
                     TestMovieLens();
                     break;
                 case(2):
-                    TestMovieLensAllDomains(1);
+                    TestMovieLensAllDomains();
                     break;
                 case(3):
                     TestAllDomainsAllNumberOfDomains();
+                    break;
+                case(4):
+                    PrepareEpinionDataset();
                     break;
                 default:
                     break;
@@ -108,7 +111,7 @@ namespace WrapRec.Experiments
 
         public void TestAllDomainsAllNumberOfDomains()
         {
-            int[] numDomains = new int[] { 2, 3, 4, 6, 8, 10};
+            int[] numDomains = new int[] { 2, 4, 6};
 
             foreach (int num in numDomains)
             {
@@ -116,9 +119,9 @@ namespace WrapRec.Experiments
             }
         }
 
-        public void TestMovieLensAllDomains(int numDomains = 1)
+        public void TestMovieLensAllDomains(int numDomains = 4)
         {
-            var numAuxRatings = new List<int> { 0 };
+            var numAuxRatings = new List<int> { 0, 1, 2, 3 , 4};
 
             var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
             var container = new MovieLensCrossDomainContainer(numDomains);
@@ -224,5 +227,15 @@ namespace WrapRec.Experiments
             Console.WriteLine("\n");
         }
 
+        public void PrepareEpinionDataset()
+        {
+            var ep = new EpinionsSqlFileParser(Paths.EpinionRoot + "epinions_anonym.sql");
+            //ep.ParseCategories(Paths.EpinionRoot + "Epinions RED\\Categories.csv");
+            //ep.ParseProducts(Paths.EpinionRoot + "Epinions RED\\Products.csv");
+            //ep.ParseExpertise(Paths.EpinionRoot + "Epinions RED\\Experties.csv");
+            //ep.ParseReviews(Paths.EpinionRoot + "Epinions RED\\Reviews.csv");
+            //ep.ParseSimilarity(Paths.EpinionRoot + "Epinions RED\\Similarities.csv");
+            ep.ParseTrust(Paths.EpinionRoot + "Epinions RED\\Trusts.csv");
+        }
     }
 }

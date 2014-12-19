@@ -214,6 +214,7 @@
     <Compile Include="UserItem.cs" />
     <Compile Include="UserRankedList.cs" />
     <Compile Include="EntityDataReader.cs" />
+    <Compile Include="Utilities\EpinionsSqlFileParser.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\FileHelper.cs" />
     <Compile Include="Utilities\Paths.cs">

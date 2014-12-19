@@ -54,7 +54,7 @@ namespace MusicRec
 
             reader.LoadData(container);
 
-            var splitter = new RatingSimpleSplitter(container, 0.3f);
+            var splitter = new RatingSimpleSplitter(container, 0.25f);
             //var itemRecommender = new MostPopular();
             //var model = new MediaLitePosFeedbakItemRecommender(itemRecommender);
             var fm = new LibFmTrainTester();

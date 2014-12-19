@@ -33,14 +33,14 @@ namespace MusicRec
                 var us = new UserSession() { User = mContainer.AddUser(tokens[0]) };
                 var tracks = tokens.Skip(2).Aggregate((a, b) => a + "," + b).Split('|');
 
-                foreach (string track in tracks)
+                foreach (string track in tracks.Take(tracks.Length - 1))
                 {
-                    var parts = track.Split(',');
-                    mContainer.AddPositiveFeedback(tokens[0], parts[0]);
+                    var parts = track.Split(',').Reverse().ToList();
+                    //mContainer.AddPositiveFeedback(tokens[0], parts[0]);
                     
-                    mContainer.AddRating(tokens[0], parts[0], (float) Math.Round((float.Parse(parts[1]) / 360) * 5));
+                    mContainer.AddRating(tokens[0], parts[2], float.Parse(parts[1]) / 120);
                     
-                    var item = mContainer.AddItem(parts[0]);
+                    var item = mContainer.AddItem(parts[2]);
                     us.Items.Add(item);
                 }
 

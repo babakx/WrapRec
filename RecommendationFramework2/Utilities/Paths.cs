@@ -19,6 +19,7 @@ namespace WrapRec.Utilities
         public static string MovieLens1MItemsRatingsCount = @"D:\Data\Datasets\MovieLens\ml-1m\ItemsRatingsCount.csv";
 
         // Epinion
+        public static string EpinionRoot = @"D:\Data\Datasets\Epinion\";
         public static string EpinionRatings = @"D:\Data\Datasets\Epinion\ratings_data.txt";
         public static string EpinionTrain75 = @"D:\Data\Datasets\Epinion\ratings_data_75.txt";
         public static string EpinionTest25 = @"D:\Data\Datasets\Epinion\ratings_data_25.txt";
