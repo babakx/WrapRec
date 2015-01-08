@@ -14,7 +14,7 @@ namespace WrapRec.Experiments
 {
     public class FreeLunchExperiments
     {
-        public void Run(int testNum = 4)
+        public void Run(int testNum = 6)
         {
             var startTime = DateTime.Now;
 
@@ -31,6 +31,12 @@ namespace WrapRec.Experiments
                     break;
                 case(4):
                     PrepareEpinionDataset();
+                    break;
+                case(5):
+                    ExploreEpinionDataset();
+                    break;
+                case(6):
+                    TestEpinionAllDomains();
                     break;
                 default:
                     break;
@@ -236,6 +242,128 @@ namespace WrapRec.Experiments
             //ep.ParseReviews(Paths.EpinionRoot + "Epinions RED\\Reviews.csv");
             //ep.ParseSimilarity(Paths.EpinionRoot + "Epinions RED\\Similarities.csv");
             ep.ParseTrust(Paths.EpinionRoot + "Epinions RED\\Trusts.csv");
+        }
+
+        public void ExploreEpinionDataset()
+        {
+            var epinionReader = new EpinionsCrossDomainReader(Paths.EpinionRoot + "Epinions RED");
+            var container = new EpinionsCrossDomainDataContainer(2);
+            epinionReader.LoadData(container);
+            container.SpecifyTargetDomain("ep0");
+
+            //container.PrintCategoryStatistics();
+            container.PrintStatistics();
+        }
+
+
+        public void TestEpinionAllDomains(int numDomains = 2)
+        {
+            var numAuxRatings = new List<int> { 0, 1, 2, 3, 4 };
+
+            var epinionsReader = new EpinionsCrossDomainReader(Paths.EpinionRoot + "Epinions RED");
+            var container = new EpinionsCrossDomainDataContainer(numDomains + 1);
+            epinionsReader.LoadData(container);
+
+            container.Domains.Remove("ep0");
+
+            double[,] rmseMatrix = new double[numAuxRatings.Count, numDomains];
+            int[,] durationsMatrix = new int[numAuxRatings.Count, numDomains];
+            int[] numUsers = new int[numDomains];
+            int[] numItems = new int[numDomains];
+            int[] numRatings = new int[numDomains];
+
+            int domainIndex = 0;
+
+            foreach (Domain d in container.Domains.Values)
+            {
+                var targetDomain = container.SpecifyTargetDomain(d.Id);
+                Console.WriteLine("Target domain: {0}", d.ToString());
+
+                var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
+
+                int numAuxIndex = 0;
+
+                foreach (var num in numAuxRatings)
+                {
+                    var startTime = DateTime.Now;
+
+                    LibFmTrainTester recommender;
+                    CrossDomainLibFmFeatureBuilder featureBuilder = null;
+
+                    if (num == 0)
+                    {
+                        recommender = new LibFmTrainTester(experimentId: num.ToString());
+                    }
+                    else
+                    {
+                        featureBuilder = new CrossDomainLibFmFeatureBuilder(targetDomain, num);
+                        recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
+                    }
+
+                    var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
+                    var ep = new EvaluationPipeline<ItemRating>(ctx);
+                    ep.Evaluators.Add(new RMSE());
+                    ep.Run();
+
+                    var duration = DateTime.Now.Subtract(startTime);
+
+                    rmseMatrix[numAuxIndex, domainIndex] = recommender.RMSE;
+                    durationsMatrix[numAuxIndex, domainIndex] = (int)duration.TotalMilliseconds;
+
+                    numAuxIndex++;
+                }
+
+                numUsers[domainIndex] = d.Ratings.Select(r => r.User.Id).Distinct().Count();
+                numItems[domainIndex] = d.Ratings.Select(r => r.Item.Id).Distinct().Count();
+                numRatings[domainIndex] = d.Ratings.Count;
+
+                domainIndex++;
+            }
+
+
+            // Write RMSEs
+            Console.WriteLine("\nRMSEs:\n");
+
+            string header = Enumerable.Range(1, numDomains).Select(i => "D" + i).Aggregate((a, b) => a + "\t" + b);
+            Console.WriteLine("Num aux. ratings\t" + header);
+
+            for (int i = 0; i < numAuxRatings.Count; i++)
+            {
+                Console.Write(numAuxRatings[i]);
+                for (int j = 0; j < numDomains; j++)
+                {
+                    Console.Write("\t" + rmseMatrix[i, j]);
+                }
+                Console.WriteLine();
+            }
+
+            // Write domain statistics
+            string users = numUsers.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+            string items = numItems.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+            string ratings = numRatings.Select(c => c.ToString()).Aggregate((a, b) => a + "\t" + b);
+
+            Console.WriteLine();
+            Console.WriteLine("Num Users\t" + users);
+            Console.WriteLine("Num Items\t" + items);
+            Console.WriteLine("Num Ratings\t" + ratings);
+
+            // Write times
+            Console.WriteLine("\nTimes:\n");
+
+            header = Enumerable.Range(1, numDomains).Select(i => "T" + i).Aggregate((a, b) => a + "\t" + b);
+            Console.WriteLine("Num aux. ratings\t" + header);
+
+            for (int i = 0; i < numAuxRatings.Count; i++)
+            {
+                Console.Write(numAuxRatings[i]);
+                for (int j = 0; j < numDomains; j++)
+                {
+                    Console.Write("\t" + durationsMatrix[i, j]);
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("\n");
         }
     }
 }

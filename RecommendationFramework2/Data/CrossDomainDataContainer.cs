@@ -70,7 +70,8 @@ namespace WrapRec.Data
             }
 
             // ItemId is added with domainId to make sure that items in different domains have different ids
-            var ir = base.AddRating(userId, itemId + CurrentDomain.Id, rating, isTest);
+            //var ir = base.AddRating(userId, itemId + CurrentDomain.Id, rating, isTest);
+            var ir = base.AddRating(userId, itemId, rating, isTest);
 
             ir.Domain = CurrentDomain;
             CurrentDomain.Ratings.Add(ir);
