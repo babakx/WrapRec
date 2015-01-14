@@ -137,3 +137,6 @@ public class CustomRatingPredictor : IPredictor<ItemRating>
 ## Usage and Documentations
 The project can be easily installed by downloading the package from [NuGet] (http://www.nuget.org/packages/WrapRec.dll/) gallery.
 This project is quite new. The documentation is continuously updated. Please contact Babak Loni, (babak dot loni At gmail dot com) for questions about this toolbox.
+
+##Acknowledgment
+The implementation of this project is supported by the European 7th Framework Program projects under grant agreements no. 610594 ([CrowdRec](http://www.crowdrec.eu/)).
