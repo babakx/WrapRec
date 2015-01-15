@@ -1,6 +1,7 @@
 ﻿using CsvHelper.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +38,9 @@ namespace WrapRec.Experiments
                     break;
                 case(6):
                     TestEpinionAllDomains();
+                    break;
+                case(7):
+                    CreateSubsetEpinions();
                     break;
                 default:
                     break;
@@ -125,7 +129,7 @@ namespace WrapRec.Experiments
             }
         }
 
-        public void TestMovieLensAllDomains(int numDomains = 4)
+        public void TestMovieLensAllDomains(int numDomains = 2)
         {
             var numAuxRatings = new List<int> { 0, 1, 2, 3 , 4};
 
@@ -256,12 +260,17 @@ namespace WrapRec.Experiments
         }
 
 
-        public void TestEpinionAllDomains(int numDomains = 2)
+        public void TestEpinionAllDomains(int numDomains = 3)
         {
             var numAuxRatings = new List<int> { 0, 1, 2, 3, 4 };
 
             var epinionsReader = new EpinionsCrossDomainReader(Paths.EpinionRoot + "Epinions RED");
-            var container = new EpinionsCrossDomainDataContainer(numDomains + 1);
+            
+            //var domainPaths = Enumerable.Range(1, numDomains)
+            //    .Select(i => string.Format("{0}Epinions RED\\Domains{1}-{2}.csv", Paths.EpinionRoot, numDomains, i)).ToArray();
+            //var epinionsReader = new EpinionsCrossDomainReader(domainPaths);
+
+            var container = new EpinionsCrossDomainDataContainer(numDomains);
             epinionsReader.LoadData(container);
 
             container.Domains.Remove("ep0");
@@ -364,6 +373,38 @@ namespace WrapRec.Experiments
             }
 
             Console.WriteLine("\n");
+        }
+
+        public void CreateSubsetEpinions()
+        {
+            int numDomains = 4;
+            var epinionsReader = new EpinionsCrossDomainReader(Paths.EpinionRoot + "Epinions RED");
+            var container = new EpinionsCrossDomainDataContainer(numDomains + 1);
+            epinionsReader.LoadData(container);
+
+            var output = container.Users.Values.Where(u =>
+            {
+                var counts = u.Ratings.Where(r => r.Domain.Id != "ep0").GroupBy(r => r.Domain).Select(g => g.Count());
+                return counts.All(c => c >= 1 && c <= 20) && (counts.Count() > 3);
+            })
+                //.Select(u => new { UserId = u.Id, Counts = u.Ratings.GroupBy(r => r.Domain.Id).Select(g => g.Count().ToString()).Aggregate((a,b) => a + " " + b) })
+                //.Select(a => a.UserId + "," + a.Counts);
+
+            .SelectMany(u => u.Ratings)
+            .GroupBy(r => r.Domain.Id)
+            .Select(g => g.Select(r => r.ToString())).ToList();
+                //.SelectMany(u => u.Ratings.GroupBy(r => r.Item.Id).Select(g => g.Take(1).Single()))
+            //.Select(r => r.ToString());
+
+            Console.WriteLine("Writing...");
+            var header = new string[] { "UserId,ItemId,Rating" };
+
+            int i = 1;
+            foreach (var domain in output)
+            {
+                // Format of the file: Domains{Number of Domains}-{Domain Number}
+                File.WriteAllLines(string.Format("{0}Epinions RED\\Domains{1}-{2}.csv", Paths.EpinionRoot, numDomains, i++), header.Concat(domain));
+            }
         }
     }
 }

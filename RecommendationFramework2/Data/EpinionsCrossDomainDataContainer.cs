@@ -10,7 +10,7 @@ namespace WrapRec.Data
     {
         public int NumDomains { get; set; }
 
-        List<int> _topCategories = new List<int>() { 21, 7, 18, 10, 32, 23, 12, 57 };
+        List<int> _topCategories = new List<int>() { 10, 32, 23, 12, 57 };
 
         public EpinionsCrossDomainDataContainer(int numDomains)
             : base()
@@ -35,8 +35,13 @@ namespace WrapRec.Data
 
         public override ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
         {
-            CurrentDomain = GetItemDomain(itemId);
-            return base.AddRating(userId, itemId, rating, isTest);
+            //if (CurrentDomain == null)
+                CurrentDomain = GetItemDomain(itemId);
+
+            if (CurrentDomain.Id != "ep0")
+                return base.AddRating(userId, itemId, rating, isTest);
+            else
+                return null;
         }
 
 
