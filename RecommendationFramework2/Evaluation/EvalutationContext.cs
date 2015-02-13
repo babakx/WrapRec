@@ -48,15 +48,31 @@ namespace WrapRec.Evaluation
             {
                 var predictor = (IPredictor<T>)Model;
 
-                // check if the recommender is trained
-                if (!predictor.IsTrained)
-                    predictor.Train(Dataset.TrainSamples);
-
-                Console.WriteLine("Testing on test set...");
-
-                foreach (var sample in Dataset.TestSamples)
+                if (Splitter != null)
                 {
-                    predictor.Predict(sample);
+                    // check if the recommender is trained
+                    if (!predictor.IsTrained)
+                        predictor.Train(Splitter.Train);
+
+                    Console.WriteLine("Testing on test set...");
+
+                    foreach (var sample in Splitter.Test)
+                    {
+                        predictor.Predict(sample);
+                    }
+                }
+                else
+                {
+                    // check if the recommender is trained
+                    if (!predictor.IsTrained)
+                        predictor.Train(Dataset.TrainSamples);
+
+                    Console.WriteLine("Testing on test set...");
+
+                    foreach (var sample in Dataset.TestSamples)
+                    {
+                        predictor.Predict(sample);
+                    }
                 }
             }
             else

@@ -27,7 +27,8 @@ namespace WrapRec
             //(new TrustBasedExperiments()).Run();
             //(new Recsys2014Experiments()).Run();
             //(new Journal2014Experiments()).Run();
-            (new FreeLunchExperiments()).Run();
+            //(new FreeLunchExperiments()).Run();
+            (new TrustExperiments2()).Run();
 
             Console.WriteLine("Finished!.");
 

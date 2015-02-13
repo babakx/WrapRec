@@ -62,6 +62,18 @@ namespace WrapRec.Data
             Domains.Add(domain.Id, domain);
         }
 
+        public void ShuffleDomains()
+        {
+            var rand = new Random();
+            int nbDomains = Domains.Values.Count;
+
+            foreach (var r in Ratings)
+            {
+                int ix = rand.Next(nbDomains);
+                r.Domain = Domains.Values.Skip(ix).Take(1).Single();
+            }
+        }
+
         public override ItemRating AddRating(string userId, string itemId, float rating, bool isTest)
         {
             if (CurrentDomain == null)
@@ -117,7 +129,7 @@ namespace WrapRec.Data
 
         public void PrintStatistics()
         {
-            var targetUserIds = Domains.Values.Where(d => d.IsTarget == true).Single().Ratings.Select(r => r.User.Id).Distinct().ToList();
+            //var targetUserIds = Domains.Values.Where(d => d.IsTarget == true).Single().Ratings.Select(r => r.User.Id).Distinct().ToList();
 
             Console.WriteLine("Data Container Statistics: \n{0} \n\nDomains:", ToString());
 
@@ -127,8 +139,8 @@ namespace WrapRec.Data
                 if (!d.IsTarget)
                 {
                     var domainUserIds = d.Ratings.Select(r => r.User.Id).Distinct().ToList();
-                    int numIntersectUsers = domainUserIds.Intersect(targetUserIds).Count();
-                    Console.WriteLine("Num users in target domain: {0}\n", numIntersectUsers);
+                    //int numIntersectUsers = domainUserIds.Intersect(targetUserIds).Count();
+                    //Console.WriteLine("Num users in target domain: {0}\n", numIntersectUsers);
                 }
             }
             

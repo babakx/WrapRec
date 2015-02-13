@@ -1,4 +1,5 @@
 ﻿using CsvHelper.Configuration;
+using MyMediaLite.RatingPrediction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,17 +16,17 @@ namespace WrapRec.Experiments
 {
     public class FreeLunchExperiments
     {
-        public void Run(int testNum = 6)
+        public void Run(int testNum = 3)
         {
             var startTime = DateTime.Now;
 
             switch (testNum)
             {
                 case (1):
-                    TestMovieLens();
+                    TestMovieLensSingleDomain();
                     break;
                 case(2):
-                    TestMovieLensAllDomains();
+                    TestMovieLensAllDomains(4);
                     break;
                 case(3):
                     TestAllDomainsAllNumberOfDomains();
@@ -51,77 +52,48 @@ namespace WrapRec.Experiments
             Console.WriteLine("Execution time: {0} sec", (int)duration.TotalSeconds);
         }
 
-        public void TestMovieLens()
+        public void TestMovieLensSingleDomain()
         {
-            int numDomains = 6;
+            int numDomains = 1;
 
             // load data
             var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
             var container = new MovieLensCrossDomainContainer(numDomains);
             movieLensReader.LoadData(container);
 
-            //container.CreateClusterFiles(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.raw", Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.feat");
-            //return;
-
             // set taget and active domains
             var targetDomain = container.SpecifyTargetDomain("ml0");
-            //container.DeactiveDomains("ml2", "ml3");
-
             container.PrintStatistics();
 
-            //container.WriteClusters(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust");
-            //return;
+            var startTime = DateTime.Now;
 
             var splitter = new CrossDomainSimpleSplitter(container, 0.25f);
 
-            var numAuxRatings = new List<int> { 0, 1, 2, 3 };
+            // recommender with non-CrossDomain feature builder
+            var model = new MatrixFactorization();
+            model.NumIter = 50;
+            model.NumFactors = 8;
+            model.Regularization = 0.1f;
+            //var recommender = new MediaLiteRatingPredictor(model);
+            var recommender = new LibFmTrainTester();
 
-            var rmse = new List<string>();
-            var mae = new List<string>();
-            var durations = new List<string>();
+            // evaluation
+            var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
+            var ep = new EvaluationPipeline<ItemRating>(ctx);
+            ep.Evaluators.Add(new RMSE());
+            ep.Evaluators.Add(new MAE());
+            ep.Run();
+            var duration = (int)DateTime.Now.Subtract(startTime).TotalMilliseconds;
 
-            foreach (var num in numAuxRatings)
-            {
-                var startTime = DateTime.Now;
+            Console.WriteLine("RMSE\tDuration\n{0}\t{1}", ctx["RMSE"], duration);
 
-                // recommender
-                LibFmTrainTester recommender;
-                CrossDomainLibFmFeatureBuilder featureBuilder = null;
-
-                if (num == 0)
-                {
-                    recommender = new LibFmTrainTester(experimentId: num.ToString());
-                }
-                else
-                {
-                    featureBuilder = new CrossDomainLibFmFeatureBuilder(targetDomain, num);
-                    recommender = new LibFmTrainTester(experimentId: num.ToString(), featureBuilder: featureBuilder);
-                }
-
-                // evaluation
-                var ctx = new EvalutationContext<ItemRating>(recommender, splitter);
-                var ep = new EvaluationPipeline<ItemRating>(ctx);
-                ep.Evaluators.Add(new RMSE());
-                ep.Evaluators.Add(new MAE());
-                ep.Run();
-
-                rmse.Add(recommender.RMSE.ToString());
-                mae.Add(ctx["MAE"].ToString());
-
-                var duration = DateTime.Now.Subtract(startTime);
-                durations.Add(((int)duration.TotalMilliseconds).ToString());
-            }
-
-            Console.WriteLine("NumAuxRatings\tRMSE\tMAE\tDuration");
-            for (int i = 0; i < numAuxRatings.Count(); i++)
-            {
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}", numAuxRatings[i], rmse[i], mae[i], durations[i]);
-            }
+            //container.CreateClusterFiles(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.raw", Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust.feat");
+            //container.WriteClusters(Paths.MovieLens1M.GetDirectoryPath() + "\\movies.clust");
         }
 
         public void TestAllDomainsAllNumberOfDomains()
         {
-            int[] numDomains = new int[] { 2, 4, 6};
+            int[] numDomains = new int[] { 15 };
 
             foreach (int num in numDomains)
             {
@@ -129,12 +101,12 @@ namespace WrapRec.Experiments
             }
         }
 
-        public void TestMovieLensAllDomains(int numDomains = 2)
+        public void TestMovieLensAllDomains(int numDomains)
         {
-            var numAuxRatings = new List<int> { 0, 1, 2, 3 , 4};
+            var numAuxRatings = new List<int> { 1 };
 
             var movieLensReader = new MovieLensCrossDomainReader(Paths.MovieLens1MMovies, Paths.MovieLens1M);
-            var container = new MovieLensCrossDomainContainer(numDomains);
+            var container = new MovieLensCrossDomainContainer(numDomains, false);
             movieLensReader.LoadData(container);
 
             double[,] rmseMatrix = new double[numAuxRatings.Count, numDomains];

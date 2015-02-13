@@ -15,12 +15,15 @@ namespace WrapRec.Data
         Dictionary<string, int> _itemsCluster;
 
         public int NumDomains { get; set; }
-        
-        public MovieLensCrossDomainContainer(int numDomains)
+
+        public bool RandomClusters { get; set; }
+
+        public MovieLensCrossDomainContainer(int numDomains, bool randomClusters = false)
             : base()
         {
             _mapper = new Mapping();
             NumDomains = numDomains;
+            RandomClusters = randomClusters;
             _itemsCluster = new Dictionary<string, int>();
 
             for (int i = 0; i < numDomains; i++)
@@ -58,6 +61,9 @@ namespace WrapRec.Data
 
         public void CreateItemClusters(string clusterPath)
         {
+            if (NumDomains <= 1)
+                return;
+            
             int[] numClusters = new int[] { 2, 3, 4, 5, 6, 8, 10};
             int colNo = numClusters.IndexOf(NumDomains) + 1;
 
@@ -94,6 +100,53 @@ namespace WrapRec.Data
 
             File.WriteAllLines(rawVectorsFile, genreSeqs);
             File.WriteAllLines(matlabInputFile, featureVectors);
+        }
+
+        public void CreateDominantGenre(string outputFile)
+        {
+            var genreSeqs = Items.Values.ToDictionary(i => i.Id, i => i.GetProperty("genres"));
+            var genreFreq = new Dictionary<string, int>();
+            var itemMostFreqGenre = new Dictionary<string, string>();
+
+            foreach (var sq in genreSeqs.Values)
+            {
+                var parts = sq.Split('|');
+                parts.ToList().ForEach(g => 
+                {
+                    if (!genreFreq.ContainsKey(g))
+                    {
+                        genreFreq.Add(g, 0);
+                    }
+                    genreFreq[g] += 1;
+                });
+            }
+
+            Console.WriteLine("Genre Frequencies");
+            genreFreq.Select(kv => string.Format("{0}\t{1}", kv.Key, kv.Value)).ToList().ForEach(Console.WriteLine);
+
+
+            foreach (var kv in genreSeqs)
+            {
+                var parts = kv.Value.Split('|');
+                string genre = "";
+                int max = 0;
+
+                parts.ToList().ForEach(g =>
+                {
+                    if (genreFreq[g] > max)
+                    {
+                        max = genreFreq[g];
+                        genre = g;
+                    }
+                });
+
+                itemMostFreqGenre.Add(kv.Key, genre);
+            }
+
+            File.WriteAllLines(outputFile, itemMostFreqGenre.Select(kv => string.Format("{0},{1}", kv.Key, kv.Value)));
+            Console.WriteLine("Dominant Genres are created!");
+
+            _itemsCluster = itemMostFreqGenre.ToDictionary(kv => kv.Key, kv => _mapper.ToInternalID(kv.Value));
         }
 
         public void CreateDomainsBasedOnDate()
@@ -156,7 +209,19 @@ namespace WrapRec.Data
         {
             // default cluster is 0
             int clusterId = 0;
-            _itemsCluster.TryGetValue(itemId, out clusterId);
+
+            if (RandomClusters)
+            {
+                var r = new Random();
+                clusterId = r.Next(NumDomains);
+            }
+            else if (NumDomains > 1)
+            {
+                _itemsCluster.TryGetValue(itemId, out clusterId);
+            }
+
+            if (clusterId >= 15)
+                clusterId = 14;
 
             return Domains["ml" + clusterId];
         }

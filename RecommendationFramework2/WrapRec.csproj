@@ -161,6 +161,7 @@
     <Compile Include="Experiments\JournalExperiments.cs" />
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
+    <Compile Include="Experiments\TrustExperiments2.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="LibFmFeatureBuilder.cs" />
     <Compile Include="LibSvmFeatureBuilder.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="Readers\MovieLensReader.cs" />
     <Compile Include="Readers\NewReaders\CsvReader.cs" />
     <Compile Include="Readers\NewReaders\EpinionsCrossDomainReader.cs" />
+    <Compile Include="Readers\NewReaders\EpinionTrustReader.cs" />
     <Compile Include="Readers\NewReaders\LibFmReader.cs" />
     <Compile Include="Readers\NewReaders\MovieLensCrossDomainReader.cs" />
     <Compile Include="Readers\XDItemRatingReader.cs" />

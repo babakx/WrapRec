@@ -27,6 +27,10 @@ namespace WrapRec.Readers.NewReaders
             : this(path, config, null)
         { }
 
+        public CsvReader(string path, CsvConfiguration config, bool isTestReader)
+            : this(path, config, null, isTestReader)
+        { }
+
         public CsvReader(string path, CsvConfiguration config, Domain domain)
             : this(path, config, domain, false)
         { }
