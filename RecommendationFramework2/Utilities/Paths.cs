@@ -30,8 +30,8 @@ namespace WrapRec.Utilities
         public static string EpinionTest20 = @"D:\Data\Datasets\Epinion\ratings_test_20.txt";
         public static string EpinionTrain50 = @"D:\Data\Dropbox\TUDelft joint paper\data\Epinion\ratings_train_50.txt";
         public static string EpinionTest50 = @"D:\Data\Dropbox\TUDelft joint paper\data\Epinion\ratings_test_50.txt";
-        public static string EpinionRelations = @"D:\Data\Dropbox\TUDelft joint paper\data\Epinion\trust_data.txt";
-        public static string EpinionRelationsImplicit = @"D:\Data\Dropbox\TUDelft joint paper\data\trust scores\";
+        public static string EpinionRelations = @"D:\Data\Datasets\Epinion\trust_data.txt";
+        public static string EpinionRelationsImplicit = @"D:\Data\Datasets\Epinion\epinion-trust_values\trust_values_PearsonTrustMetric_0.707_2.dat";
 
         // Amazon
         public static string AmazonBooksRatings = @"D:\Data\Datasets\Amazon\Selected\books_selected.csv";

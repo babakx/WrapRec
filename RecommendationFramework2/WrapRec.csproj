@@ -214,6 +214,7 @@
     <Compile Include="Recommenders\MediaLiteItemRecommender.cs" />
     <Compile Include="Recommenders\MediaLiteRatingPredictor.cs" />
     <Compile Include="Relation.cs" />
+    <Compile Include="TrustAwareLibFmFeatureBuilder.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserItem.cs" />
     <Compile Include="UserRankedList.cs" />

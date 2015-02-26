@@ -23,6 +23,10 @@ namespace WrapRec.Data
 
         public virtual ItemRating AddRating(string userId, string itemId, float rating, bool isTest = false)
         {
+            // In case we want to make sure userId and itemIds are not the same we should enable the following lines of code
+            // User u = AddUser(userId + "u");
+            // Item i = AddItem(itemId + "i");
+
             User u = AddUser(userId);
             Item i = AddItem(itemId);
 

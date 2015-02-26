@@ -11,30 +11,34 @@ namespace WrapRec.Readers.NewReaders
 {
     public class EpinionTrustReader : IDatasetReader
     {
-        public IDatasetReader EpinionsReader { get; private set; }
+        public IDatasetReader[] EpinionsReaders { get; private set; }
         public string RelationsPath { get; set; }
         
-        public EpinionTrustReader(IDatasetReader epinionsReader, string relationsPath)
+        public EpinionTrustReader(IDatasetReader[] epinionsReaders, string relationsPath)
         {
-            EpinionsReader = epinionsReader;
+            EpinionsReaders = epinionsReaders;
             RelationsPath = relationsPath;
         }
 
         public void LoadData(DataContainer container)
         {
             // load standard rating data into container
-            EpinionsReader.LoadData(container);
-
-            // add relation specific data
-            foreach (var line in File.ReadAllLines(RelationsPath))
+            foreach (var reader in EpinionsReaders)
             {
-                var parts = line.Split(' ');
-                string userId = parts[0];
-                string connId = parts[1];
-
-                container.Users[userId].AddProperty("Connections", connId);
+                reader.LoadData(container);
             }
 
+            // add relation specific data
+            foreach (var line in File.ReadAllLines(RelationsPath).Skip(1))
+            {
+                var parts = line.TrimStart(' ').Split('\t');
+                string userId = parts[0] + "u";
+                string connId = parts[1];
+                string strngth = parts[2];
+
+                if (container.Users.ContainsKey(userId))
+                    container.Users[userId].AddProperty("Connections", connId + " " + parts[2]);
+            }
         }
     }
 }
