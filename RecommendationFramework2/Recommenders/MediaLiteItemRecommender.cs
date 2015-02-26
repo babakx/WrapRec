@@ -11,6 +11,7 @@ using MyMediaLite.DataType;
 
 namespace WrapRec.Recommenders
 {
+    [Obsolete("Use MediaLitePosFeedbakItemRecommender class instead.")]
     public class MediaLiteItemRecommender : IPredictor<ItemRanking>, IItemRecommender, IUserItemMapper
     {
         ItemRecommender _itemRecommender;

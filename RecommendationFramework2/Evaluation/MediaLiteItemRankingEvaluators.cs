@@ -8,6 +8,7 @@ using MyMediaLite.Eval;
 
 namespace WrapRec.Evaluation
 {
+    [Obsolete("Use MediaLitePositiveFeedback class instead")]
     public class MediaLiteItemRankingEvaluators : IEvaluator<ItemRanking>
     {
         IRecommender _recommender;

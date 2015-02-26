@@ -21,7 +21,12 @@ namespace WrapRec
 
         public virtual string GetLibFmFeatureVector(ItemRating rating)
         {
-            return string.Format("{0} {1}:1 {2}:1", rating.Rating, Mapper.ToInternalID(rating.User.Id), Mapper.ToInternalID(rating.Item.Id + rating.Domain.Id));
+            return string.Format("{0} {1}:1 {2}:1", rating.Rating, Mapper.ToInternalID(rating.User.Id), Mapper.ToInternalID(rating.Item.Id));
+        }
+
+        public virtual string GetLibFmFeatureVector(PositiveFeedback rating)
+        {
+            return string.Format("{0} {1}:1 {2}:1", 1, Mapper.ToInternalID(rating.User.Id), Mapper.ToInternalID(rating.Item.Id));
         }
     }
 }

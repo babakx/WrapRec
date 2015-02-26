@@ -25,7 +25,11 @@ namespace WrapRec
 
         public void AddProperty(string name, string value)
         {
-            Properties.Add(name, value);
+            // allow multiple entrance into a single property
+            if (Properties.ContainsKey(name))
+                Properties[name] = Properties[name] + "," + value;
+            else
+                Properties.Add(name, value);
         }
 
         public int GetMappedId(Mapping mapper)
@@ -34,6 +38,14 @@ namespace WrapRec
                 _mappedId = mapper.ToInternalID(Id);
 
             return _mappedId;
+        }
+
+        public string GetProperty(string name)
+        {
+            string value = "";
+            Properties.TryGetValue(name, out value);
+
+            return value;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Data;
 
 namespace WrapRec.Evaluation
 {
@@ -12,12 +13,21 @@ namespace WrapRec.Evaluation
         
         public IModel Model { get; set; }
         public IDataset<T> Dataset { get; set; }
+        public ISplitter<T> Splitter { get; set; }
         public bool IsTested { get; set; }
-        
+
+        [Obsolete("Use EvalutationContext(IModel model, ISplitter<T> splitter) constructor instead.")]
         public EvalutationContext(IModel model, IDataset<T> dataset)
         {
             Model = model;
             Dataset = dataset;
+            _items = new Dictionary<string, object>();  
+        }
+
+        public EvalutationContext(IModel model, ISplitter<T> splitter)
+        {
+            Model = model;
+            Splitter = splitter;
             _items = new Dictionary<string, object>();
         }
 
@@ -29,21 +39,40 @@ namespace WrapRec.Evaluation
 
             if (Model is ITrainTester<T>)
             {
-                ((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
+                if (Splitter != null)
+                    ((ITrainTester<T>)Model).TrainAndTest(Splitter.Train, Splitter.Test);
+                else
+                    ((ITrainTester<T>)Model).TrainAndTest(Dataset.TrainSamples, Dataset.TestSamples);
             } 
             else if (Model is IPredictor<T>)
             {
                 var predictor = (IPredictor<T>)Model;
 
-                // check if the recommender is trained
-                if (!predictor.IsTrained)
-                    predictor.Train(Dataset.TrainSamples);
-
-                Console.WriteLine("Testing on test set...");
-
-                foreach (var sample in Dataset.TestSamples)
+                if (Splitter != null)
                 {
-                    predictor.Predict(sample);
+                    // check if the recommender is trained
+                    if (!predictor.IsTrained)
+                        predictor.Train(Splitter.Train);
+
+                    Console.WriteLine("Testing on test set...");
+
+                    foreach (var sample in Splitter.Test)
+                    {
+                        predictor.Predict(sample);
+                    }
+                }
+                else
+                {
+                    // check if the recommender is trained
+                    if (!predictor.IsTrained)
+                        predictor.Train(Dataset.TrainSamples);
+
+                    Console.WriteLine("Testing on test set...");
+
+                    foreach (var sample in Dataset.TestSamples)
+                    {
+                        predictor.Predict(sample);
+                    }
                 }
             }
             else

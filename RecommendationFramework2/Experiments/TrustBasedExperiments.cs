@@ -11,7 +11,6 @@ using WrapRec.Recommenders;
 using MyMediaLite.RatingPrediction;
 using MyMediaLite.DataType;
 using WrapRec.Evaluation;
-using WrapRec.Data.Splitters;
 using WrapRec.Utilities;
 using MyMediaLite.ItemRecommendation;
 using WrapRec.Entities;
@@ -30,9 +29,6 @@ namespace WrapRec.Experiments
         {
             switch (testNum)
             { 
-                case(1):
-                    TrainAndTest();
-                    break;
                 case(2):
                     TestExplicitTrust();
                     break;
@@ -50,22 +46,6 @@ namespace WrapRec.Experiments
             }
         }
 
-        public void TrainAndTest()
-        {
-            // step 1: dataset            
-            var dataContext = DataManager.GetDataContext();
-            var modelDataset = dataContext.Datasets.Where(d => d.Name.ToLower() == "epinion").Single();
-            var dataset = new RatingDataset(modelDataset, dataContext, new TrainTestSplitter(0.3));
-            
-            // step 2: recommender
-            var recommender = new MediaLiteRatingPredictor(new BiasedMatrixFactorization());
-
-            // step3: evaluation
-            var ep = new EvaluationPipeline<Rating>(new EvalutationContext<Rating>(recommender, dataset));
-            //ep.Evaluators.Add(new RMSE());
-
-            ep.Run();
-        }
 
         public void SplitDataset()
         {

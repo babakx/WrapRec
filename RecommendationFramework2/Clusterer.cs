@@ -96,12 +96,12 @@ namespace WrapRec
             }
         }
 
-        private Dictionary<string, int> Cluster(IEnumerable<string> itemIds, double[,] features, int numClusters, string centerPath = "",
+        public static Dictionary<string, int> Cluster(IEnumerable<string> itemIds, double[,] features, int numClusters, string centerPath = "",
             ClusteringAlgorithm algorithm = ClusteringAlgorithm.KMeans)
         {
             Console.WriteLine("Clustering...");
 
-            features = Normalized(features);
+            //features = Normalized(features);
 
             Console.WriteLine("Features normalized.");
 
@@ -227,7 +227,7 @@ namespace WrapRec
             Console.WriteLine("Finished writing.");
         }
 
-        private double[,] Normalized(double[,] rawData)
+        private static double[,] Normalized(double[,] rawData)
         {
             // normalize raw data by computing (x - mean) / stddev
             // primary alternative is min-max:

@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace WrapRec.Data
 {
-    public interface ISplitter 
+    public interface ISplitter<T>
     {
-        void Split(Dataset dataset, RecSysContext context, ref IQueryable<Rating> trainset, ref IQueryable<Rating> testset, ref IQueryable<Rating> evalset);
+        IEnumerable<T> Train { get; }
+
+        IEnumerable<T> Test { get; }
     }
 }

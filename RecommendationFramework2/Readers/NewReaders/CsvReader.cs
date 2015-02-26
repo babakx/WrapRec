@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Data;
 
 namespace WrapRec.Readers.NewReaders
 {
@@ -26,6 +27,10 @@ namespace WrapRec.Readers.NewReaders
             : this(path, config, null)
         { }
 
+        public CsvReader(string path, CsvConfiguration config, bool isTestReader)
+            : this(path, config, null, isTestReader)
+        { }
+
         public CsvReader(string path, CsvConfiguration config, Domain domain)
             : this(path, config, domain, false)
         { }
@@ -42,7 +47,7 @@ namespace WrapRec.Readers.NewReaders
         {
             if (Domain != null)
             {
-                ((CrossDomainDataContainer)container).ActiveDomain = Domain;
+                ((CrossDomainDataContainer)container).CurrentDomain = Domain;
             }
             
             while (_reader.Read())

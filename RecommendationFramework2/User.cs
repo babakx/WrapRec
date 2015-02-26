@@ -9,11 +9,13 @@ namespace WrapRec
     public class User : Entity
     {
         public ICollection<ItemRating> Ratings { get; private set; }
+        public ICollection<PositiveFeedback> PositiveFeedbacks { get; private set; }
 
         public User(string id)
             : base(id)
         {
             Ratings = new HashSet<ItemRating>();
+            PositiveFeedbacks = new HashSet<PositiveFeedback>();
         }
 
         public override string ToString()
@@ -23,6 +25,9 @@ namespace WrapRec
 
         public string GetRatings()
         {
+            if (Ratings.Count == 0)
+                return "";
+            
             return Ratings.GroupBy(r => r.Domain)
                 .Select(d => d.Key.Id + " > " + d.Select(dr => string.Format("{0},{1}", dr.Item.Id, dr.Rating))
                     .Aggregate((cur, next) => cur + " " + next))
