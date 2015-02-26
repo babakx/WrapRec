@@ -34,11 +34,11 @@ namespace WrapRec.Recommenders
         public LibFmFeatureBuilder FeatureBuilder { get; set; }
 
         public LibFmTrainTester(string experimentId = "", LibFmFeatureBuilder featureBuilder = null, string dataStorePath = "",
-            string libFmPath = "libFm.exe",
+            string libFmPath = "LibFm.Net.64.exe",
             double learningRate = 0.05, 
-            int numIterations = 50, 
+            int numIterations = 30, 
             string dimensions = "1,1,8", 
-            FmLearnigAlgorithm alg = FmLearnigAlgorithm.SGD,
+            FmLearnigAlgorithm alg = FmLearnigAlgorithm.MCMC ,
             string regularization = "0,0,0.1",
             string trainFile = "",
             string testFile = "")
@@ -104,7 +104,7 @@ namespace WrapRec.Recommenders
 
                 if (data != null && (data.StartsWith("Loading") || data.StartsWith("#")))
                 {
-                    //Console.WriteLine(dataLine.Data);
+                    Console.WriteLine(dataLine.Data);
 
                     if (data.StartsWith("#Iter"))
                     {

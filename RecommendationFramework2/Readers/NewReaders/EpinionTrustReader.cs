@@ -32,6 +32,7 @@ namespace WrapRec.Readers.NewReaders
             foreach (var line in File.ReadAllLines(RelationsPath).Skip(1))
             {
                 var parts = line.TrimStart(' ').Split('\t');
+                // make sure that the "u" suffix is also added when data is loaded into container
                 string userId = parts[0] + "u";
                 string connId = parts[1];
                 string strngth = parts[2];

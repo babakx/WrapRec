@@ -160,6 +160,7 @@
     <Compile Include="Experiments\FreeLunchExperiments.cs" />
     <Compile Include="Experiments\JournalExperiments.cs" />
     <Compile Include="Experiments\Recsys2014Experiments.cs" />
+    <Compile Include="Experiments\RecSys2015Experiments.cs" />
     <Compile Include="Experiments\TrustBasedExperiments.cs" />
     <Compile Include="Experiments\TrustExperiments2.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
