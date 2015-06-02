@@ -140,3 +140,5 @@ This project is quite new. The documentation is continuously updated. Please con
 
 ##Acknowledgment
 The implementation of this project is supported by the European 7th Framework Program projects under grant agreements no. 610594 ([CrowdRec](http://www.crowdrec.eu/)).
+
+<img src='http://crowdrec.eu/wp-content/themes/crowdrec/img/CrowdRec_Logo.png' />
