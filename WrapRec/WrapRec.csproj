@@ -54,6 +54,7 @@
     <Compile Include="Core\Rating.cs" />
     <Compile Include="Core\User.cs" />
     <Compile Include="Data\DataContainer.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
