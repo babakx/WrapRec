@@ -10,6 +10,6 @@ namespace WrapRec
 	{
 		// Log levels
 		// Trace, Debug, Info, Warn, Error, Fatal
-		public static NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+		public static NLog.Logger Current = NLog.LogManager.GetCurrentClassLogger();
 	}
 }

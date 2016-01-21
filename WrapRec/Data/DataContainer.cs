@@ -30,11 +30,13 @@ namespace WrapRec.Data
 		{			
 			int removedBasedOnUser, removedBasedOnItem;
 			int i = 1;
-			Console.WriteLine(ToString());
+
+			Logger.Current.Info("Densify with min feedback {0}...", k);
+			Logger.Current.Trace(ToString());
 
 			do
 			{
-				Console.WriteLine("Iteration {0}: ", i);
+				Logger.Current.Trace("Iteration {0}: ", i);
 
 				var toRemove = Feedbacks.GroupBy(f => f.User).Where(g => g.Count() < k)
 					.SelectMany(g => g);
@@ -46,8 +48,8 @@ namespace WrapRec.Data
 					removedBasedOnUser++;
 				}
 				
-				Console.WriteLine("Removed {0} (user-based)", removedBasedOnUser);
-				Console.WriteLine(ToString());
+				Logger.Current.Trace("Removed {0} (user-based)", removedBasedOnUser);
+				Logger.Current.Trace(ToString());
 
 				toRemove = Feedbacks.GroupBy(f => f.Item).Where(g => g.Count() < k)
 					.SelectMany(g => g);
@@ -59,13 +61,13 @@ namespace WrapRec.Data
 					removedBasedOnItem++;
 				}
 
-				Console.WriteLine("Removed {0} (item-based)", removedBasedOnItem);
-				Console.WriteLine(ToString() + "\n");
+				Logger.Current.Trace("Removed {0} (item-based)", removedBasedOnItem);
+				Logger.Current.Trace(ToString() + "\n");
 				i++;
 			}
 			while (removedBasedOnUser > 0 || removedBasedOnItem > 0);
 
-			Console.WriteLine("Densify complete with min feedback {0}", k);
+			Logger.Current.Info("Densify complete with min feedback {0}", k);
 		}
 
 		public void SaveAsRating(string path)
