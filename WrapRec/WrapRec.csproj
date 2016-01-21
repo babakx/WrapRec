@@ -50,6 +50,7 @@
     <Compile Include="Core\Item.cs" />
     <Compile Include="Core\Rating.cs" />
     <Compile Include="Core\User.cs" />
+    <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -58,7 +59,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="Evaluation\" />
     <Folder Include="IO\" />
     <Folder Include="Models\" />
