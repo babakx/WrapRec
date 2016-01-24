@@ -1,0 +1,37 @@
+<wraprec>
+  <models>
+    <model id="rp">
+      <parameters class="BiasedMatrixFactorization" k="5,10,20" numIter="30"/>
+      <parameters class="MatrixFactorization" k="5" numIter="30" />
+    </model>
+  </models>
+  <datasets>
+    <data id="ml1m-train" path="D:\Dropbox\Datasets\ML1M\train.txt">
+      <reader class="CsvReader" hasHeader="true" />
+    </data>
+    <data id="ml1m-test" path="D:\Dropbox\Datasets\ML1M\train.txt">
+      <reader class="CsvReader" hasHeader="true" />
+    </data>
+    <data id="ml1m" path="D:\Dropbox\Datasets\ML1M\ratings.txt">
+      <reader class="CsvReader" hasHeader="true" />
+    </data>
+    <data id="ml1m-users" path="D:\Dropbox\Datasets\ML1M\users.txt">
+      <reader class="CsvReader" hasHeader="true" />
+    </data>
+  </datasets>
+  <splits>
+    <split id="ml1m-fixed" type="fixed" train="ml1m-train" test="ml1m-test" />
+    <split id="ml1m-dynamic" type="dynamic" data="ml1-m" context="ml1m-users" trainPortion="0.75" />
+    <split id="ml1m-cv" type="cv" data="ml1-m" context="ml1m-users" trainPortion="0.75" folds="5" />
+    <split id="ml1m-custom" type="custom" data="ml1-m" context="ml1m-users" class="CustomSplitter" />
+  </splits>
+  <evalContexts>
+    <evalContext id="rating-default">
+      <evaluator class="RMSE" />
+      <evaluator class="MAE" />
+    </evalContext>
+  </evalContexts>
+  <expriments run="ml-test">
+    <experiment id="ml-test" models="rp" splits="ml1m-cv" evalContexts="rating-default" repeat="5" />
+  </expriments>
+</wraprec>
