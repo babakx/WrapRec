@@ -32,6 +32,7 @@
     </evalContext>
   </evalContexts>
   <expriments run="ml-test">
-    <experiment id="ml-test" models="rp" splits="ml1m-cv" evalContexts="rating-default" repeat="5" />
+    <experiment id="ml-test" models="rp" splits="ml1m-cv" evalContext="rating-default" repeat="5" />
+    <experiment id="ml-test-cust" models="rp" splits="ml1m-cv" evalContext="rating-default" class="ExpCustom" />
   </expriments>
 </wraprec>
