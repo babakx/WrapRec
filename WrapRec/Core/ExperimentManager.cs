@@ -17,7 +17,7 @@ namespace WrapRec.Core
     public class ExperimentManager
     {
         public XElement ConfigRoot { get; private set; }
-		public List<ExperimentBundle> ExperimentBundles { get; private set; }
+		public List<Experiment> Experiments { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 
@@ -29,17 +29,17 @@ namespace WrapRec.Core
 
 		public void RunExperiments()
 		{
-			int numExperiments = ExperimentBundles.Count;
-			int numCases = ExperimentBundles.Sum(eb => eb.Experiments.Count);
+			int numExperiments = Experiments.GroupBy(e => e.Id).Count();
+			int numCases = Experiments.Count;
 
 			Logger.Current.Info("Number of experiments to be done: {0}", numExperiments);
 			Logger.Current.Info("Total number of cases: {0}", numCases);
 
 			int caseNo = 1;
 
-			foreach (ExperimentBundle e in ExperimentBundles)
+			foreach (Experiment e in Experiments)
 			{
-
+				e.Run();
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace WrapRec.Core
 				}
 
 				Logger.Current.Info("Resolving experiments...");
-				ExperimentBundles = expEls.Select(el => ParseExperiment(el)).ToList();
+				Experiments = expEls.SelectMany(el => ParseExperiments(el)).ToList();
 			}
 			catch (Exception ex)
 			{
@@ -78,23 +78,51 @@ namespace WrapRec.Core
 			}
 		}
 
-        private ExperimentBundle ParseExperiment(XElement expEl)
+        private List<Experiment> ParseExperiments(XElement expEl)
         {
-            string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value : "";
-            var bundle = new ExperimentBundle(expClass);
+			string expId = expEl.Attribute("id").Value;
+			string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value : "";
 
-            bundle.Id = expEl.Attribute("id").Value;
+			Type expType;
+			if (!string.IsNullOrEmpty(expClass))
+			{
+				expType = Type.GetType(expClass);
+				if (expType == null)
+					throw new WrapRecException(string.Format("Can not resolve Experiment type: '{0}'", expClass));
 
-            expEl.Attribute("models").Value.Split(',').ToList()
-				.ForEach(mId => bundle.Models.AddRange(ParseModelsSet(mId)));
+				if (!typeof(Experiment).IsAssignableFrom(expType))
+					throw new WrapRecException(string.Format("Experiment type '{0}' should inherit class 'WrapRec.Core.Experiment'", expClass));
+			}
+			else
+				expType = typeof(Experiment);
 
-            expEl.Attribute("splits").Value.Split(',').ToList()
-                .ForEach(sId => bundle.Splits.AddRange(ParseSplitsSet(sId)));
+			// one modelId might map to multiple models (if multiple values are used for parameters)
+			IEnumerable<Model> models = expEl.Attribute("models").Value.Split(',')
+				.SelectMany(mId => ParseModelsSet(mId));
 
-            bundle.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
-            bundle.Repeat = expEl.Attribute("repeat") != null ? int.Parse(expEl.Attribute("repeat").Value) : 1;
+			// one splitId always map to one split
+			IEnumerable<Split> splits = expEl.Attribute("splits").Value.Split(',')
+				.Select(sId => ParseSplit(sId));
 
-            return bundle;
+			var experiments = new List<Experiment>();
+
+			foreach (Model m in models)
+			{
+				foreach (Split s in splits)
+				{
+					var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+					exp.Model = m;
+					exp.Split = s;
+					exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
+					exp.Repeat = expEl.Attribute("repeat") != null ? int.Parse(expEl.Attribute("repeat").Value) : 1;
+					exp.Id = expId;
+
+					experiments.Add(exp);
+				}
+			}
+
+			return experiments;
         }
 
         private IEnumerable<Model> ParseModelsSet(string modelId)
@@ -102,7 +130,7 @@ namespace WrapRec.Core
             return null;
         }
 
-        private IEnumerable<Split> ParseSplitsSet(string splitId)
+        private Split ParseSplit(string splitId)
         {
             return null;
         }
