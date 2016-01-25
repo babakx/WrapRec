@@ -10,44 +10,23 @@ using WrapRec.Utilities;
 
 namespace WrapRec.Core
 {
-    public class Experiment : IExperiment
-    {
-        public List<Model> Models { get; private set; }
-        public List<ISplit> Splits { get; private set; }
-        public EvaluationContext EvaluationContext { get; set; }
-        public string Id { get; set; }
-        public int Repeat { get; set; }
-		public int NumCases { get; private set; }
-		public List<ExperimentResult> Results { get; private set; }
+	public class Experiment : IExperiment
+	{
+		public Model Model { get; set; }
+		public ISplit Split { get; set; }
+		public EvaluationContext EvaluationContext { get; set; }
+		public int TrainTime { get; private set; }
+		public int EvaluationTime { get; private set; }
+		public int PureTrainTime { get; private set; }
+		public int PureEvaluationTime { get; private set; }
+		public int RepeatNum { get; set; }
 
-        public Experiment()
-        {
-            Models = new List<Model>();
-            Splits = new List<ISplit>();
-			Results = new List<ExperimentResult>();
-        }
-
-		
-		public void Run(int repeatNum = 1)
-        {
-			foreach (Model m in Models)
-			{
-				foreach (ISplit s in Splits)
-				{
-					var er = new ExperimentResult() 
-					{
- 						RepeatNum = repeatNum,
-						Model = m,
-						Split = s,
-						EvaluationContext = EvaluationContext
-					};
-
-					er.TrainTime = (int)Wrap.MeasureTime(delegate() { m.Train(s); }).TotalMilliseconds;
-					er.EvaluationTime = (int)Wrap.MeasureTime(delegate() { m.Evaluate(s, EvaluationContext); }).TotalMilliseconds;
-					er.PureTrainTime = m.GetPureTrainTime();
-					er.PureEvaluationTime = m.GetPureEvaluationTime();
-				}
-			}
-        }
-    }
+		public void Run()
+		{
+			TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;
+			EvaluationTime = (int)Wrap.MeasureTime(delegate() { Model.Evaluate(Split, EvaluationContext); }).TotalMilliseconds;
+			PureTrainTime = Model.GetPureTrainTime();
+			PureEvaluationTime = Model.GetPureEvaluationTime();
+		}
+	}
 }

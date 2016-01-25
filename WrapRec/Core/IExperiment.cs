@@ -8,6 +8,6 @@ namespace WrapRec.Core
 {
     public interface IExperiment
     {
-        void Run();
+		void Run(ExperimentManager manager, int repeatNum = 1);
     }
 }

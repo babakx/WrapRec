@@ -48,9 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Entity.cs" />
-    <Compile Include="Core\Experiment.cs" />
+    <Compile Include="Core\ExperimentBundle.cs" />
     <Compile Include="Core\ExperimentManager.cs" />
-    <Compile Include="Core\ExperimentResult.cs" />
+    <Compile Include="Core\Experiment.cs" />
     <Compile Include="Core\Feedback.cs" />
     <Compile Include="Core\FeedbackClass.cs" />
     <Compile Include="Core\IExperiment.cs" />
@@ -60,6 +60,7 @@
     <Compile Include="Core\WrapRecException.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\ISplit.cs" />
+    <Compile Include="Data\Split.cs" />
     <Compile Include="Evaluation\EvaluationContext.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\IModel.cs" />

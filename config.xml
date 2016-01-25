@@ -30,7 +30,7 @@
       <evaluator class="MAE" />
     </evalContext>
   </evalContexts>
-  <expriments run="ml-test">
+  <expriments run="ml-test" resultsFolder="D:\Dropbox" separator="\t" verbosity="info">
     <experiment id="ml-test" models="rp" splits="ml1m-cv" evalContext="rating-default" repeat="5" />
     <experiment id="ml-test-cust" models="rp" splits="ml1m-cv" evalContext="rating-default" class="ExpCustom" />
   </expriments>
