@@ -64,7 +64,7 @@ namespace WrapRec.Core
             exp.Id = expEl.Attribute("id").Value;
 
             expEl.Attribute("models").Value.Split(',').ToList()
-                .ForEach(mId => exp.Models.Add(ParseModel(mId)));
+				.ForEach(mId => exp.Models.AddRange(ParseModelsSet(mId)));
 
             expEl.Attribute("splits").Value.Split(',').ToList()
                 .ForEach(sId => exp.Splits.Add(ParseSplit(sId)));
@@ -76,7 +76,7 @@ namespace WrapRec.Core
             return exp;
         }
 
-        private IModel ParseModel(string modelId)
+        private IEnumerable<Model> ParseModelsSet(string modelId)
         {
             return null;
         }

@@ -50,6 +50,7 @@
     <Compile Include="Core\Entity.cs" />
     <Compile Include="Core\Experiment.cs" />
     <Compile Include="Core\ExperimentManager.cs" />
+    <Compile Include="Core\ExperimentResult.cs" />
     <Compile Include="Core\Feedback.cs" />
     <Compile Include="Core\FeedbackClass.cs" />
     <Compile Include="Core\IExperiment.cs" />
@@ -62,8 +63,10 @@
     <Compile Include="Evaluation\EvaluationContext.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\IModel.cs" />
+    <Compile Include="Models\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\Wrap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -71,7 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="IO\" />
-    <Folder Include="Utilities\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

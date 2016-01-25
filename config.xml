@@ -1,8 +1,7 @@
 <wraprec>
   <models>
-    <model id="rp">
-      <parameters class="BiasedMatrixFactorization" k="5,10,20" numIter="30"/>
-      <parameters class="MatrixFactorization" k="5" numIter="30" />
+    <model id="rp" class="MediaLiteRatingPrediction">
+      <parameters ml-class="MatrixFactorization" k="5,10,20" numIter="30"/>
     </model>
   </models>
   <datasets>
