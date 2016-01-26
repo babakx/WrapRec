@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using WrapRec.Models;
 using WrapRec.Evaluation;
 using WrapRec.Data;
-using WrapRec.Utilities;
+using MyMediaLite;
 
 namespace WrapRec.Core
 {
