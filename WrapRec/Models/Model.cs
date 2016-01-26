@@ -11,6 +11,7 @@ namespace WrapRec.Models
 	public abstract class Model : IModel
 	{
 		public string Id { get; set; }
+		public Dictionary<string, string> AllParameters { get; protected set; }
 		public abstract void Setup(Dictionary<string, string> modelParams);
 		public abstract void Train(ISplit split);
 		public abstract void Evaluate(ISplit split, EvaluationContext context);

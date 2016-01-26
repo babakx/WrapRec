@@ -8,5 +8,6 @@ namespace WrapRec.Evaluation
 {
     public class EvaluationContext
     {
+		public Dictionary<string, string> Results { get; private set; }
     }
 }

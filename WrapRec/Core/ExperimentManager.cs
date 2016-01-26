@@ -21,6 +21,9 @@ namespace WrapRec.Core
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 
+		StreamWriter _resultWriter;
+		string _lastModelId;
+
         public ExperimentManager(string configFile)
         {
             ConfigRoot = XDocument.Load(configFile).Root;
@@ -37,10 +40,29 @@ namespace WrapRec.Core
 
 			int caseNo = 1;
 
-			foreach (Experiment e in Experiments)
+			var expGroups = Experiments.GroupBy(e => e.Id);
+
+			foreach (var expGroup in expGroups)
 			{
-				e.Run();
+				_resultWriter = new StreamWriter(Path.Combine(ResultsFolder, expGroup.Key + ".csv"));
+				foreach (Experiment e in expGroup)
+				{
+					try
+					{
+						Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numCases);
+						LogExperimentInfo(e);
+						e.Run();
+						LogExperimentResults(e);
+						WriteResultsToFile(e);
+					}
+					catch (Exception ex)
+					{
+						Logger.Current.Error("Error in expriment {0}, model {1}, split {2}:\n{1}", e.Id, e.Model.Id, e.Split.Id, ex.Message);
+					}
+				}
+				_resultWriter.Close();
 			}
+
 		}
 
 
@@ -74,7 +96,8 @@ namespace WrapRec.Core
 			}
 			catch (Exception ex)
 			{
-				Logger.Current.Error(ex.Message);
+				Logger.Current.Error("Error in parsing the configuration file: {0}\n", ex.Message);
+				Environment.Exit(1);
 			}
 		}
 
@@ -140,6 +163,56 @@ namespace WrapRec.Core
             return null;
         }
 
+		private void LogExperimentInfo(Experiment exp)
+		{
+			string format = @"
+Experiment Id: {0}
+Split Id: {1}
+Model Id: {2}
+Model Parameteres:
+{3}
+";
+			string modelParameters = exp.Model.AllParameters.Select(kv => kv.Key + ":" + kv.Value)
+				.Aggregate((a, b) => a + " " + b);
+
+			Logger.Current.Info(format, exp.Id, exp.Split.Id, exp.Model.Id, modelParameters);
+		}
+
+		private void LogExperimentResults(Experiment exp)
+		{
+			string format = @"\nResults:\n {0}\nTimes:\n Training: {1} Evaluation: {2}\n";
+
+			string results = exp.EvaluationContext.Results.Select(kv => kv.Key + ":" + kv.Value)
+				.Aggregate((a, b) => a + " " + b);
+
+			Logger.Current.Info(format, results, exp.TrainTime, exp.EvaluationTime);
+		}
+
+		private void WriteResultsToFile(Experiment exp)
+		{
+			// write a header to the csv file if the model is changed (different models have different parameters)
+			if (_lastModelId != exp.Model.Id)
+			{
+				string header = new string[] { "ExpeimentId", "ModelId", "SplitId" }
+					.Concat(exp.Model.AllParameters.Select(kv => kv.Key))
+					.Concat(exp.EvaluationContext.Results.Select(kv => kv.Key))
+					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
+					.Aggregate((a, b) => a + ResultSeparator + b);
+
+				_resultWriter.WriteLine(header);
+				_lastModelId = exp.Model.Id;
+			}
+
+			string result = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
+				.Concat(exp.Model.AllParameters.Select(kv => kv.Value))
+				.Concat(exp.EvaluationContext.Results.Select(kv => kv.Value))
+				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.PureTrainTime.ToString(), exp.PureEvaluationTime.ToString(), 
+					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.PureTrainTime + exp.PureEvaluationTime).ToString() })
+				.Aggregate((a, b) => a + ResultSeparator + b);
+
+			_resultWriter.WriteLine(result);
+			_resultWriter.Flush();
+		}
 
     }
 }
