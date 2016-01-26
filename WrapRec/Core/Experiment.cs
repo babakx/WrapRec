@@ -20,7 +20,6 @@ namespace WrapRec.Core
 		public int EvaluationTime { get; private set; }
 		public int PureTrainTime { get; private set; }
 		public int PureEvaluationTime { get; private set; }
-		public int Repeat { get; set; }
 
 		public void Run()
 		{

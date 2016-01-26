@@ -138,7 +138,6 @@ namespace WrapRec.Core
 					exp.Model = m;
 					exp.Split = s;
 					exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
-					exp.Repeat = expEl.Attribute("repeat") != null ? int.Parse(expEl.Attribute("repeat").Value) : 1;
 					exp.Id = expId;
 
 					experiments.Add(exp);
