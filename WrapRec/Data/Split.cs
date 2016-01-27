@@ -7,7 +7,7 @@ using WrapRec.Core;
 
 namespace WrapRec.Data
 {
-	public class Split : ISplit
+	public class Split
 	{
 		public string Id { get; set; }
 

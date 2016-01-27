@@ -7,7 +7,7 @@ using WrapRec.Core;
 using LinqLib.Sequence;
 using System.IO;
 
-namespace WrapRec.Data.Splits
+namespace WrapRec.Data
 {
     public class FeedbackSimpleSplit : Split
     {
@@ -23,7 +23,7 @@ namespace WrapRec.Data.Splits
 
         public FeedbackSimpleSplit(float trainRatio)
         {
-            var feedbacks = Container.Feedbacks.Shuffle();
+            var feedbacks = Container.Feedbacks.Shuffle(DateTime.Now.Millisecond);
             int trainCount = Convert.ToInt32(Container.Feedbacks.Count * trainRatio);
             
             _train = feedbacks.Take(trainCount);
