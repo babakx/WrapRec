@@ -89,5 +89,9 @@ namespace WrapRec.Models
             return _mmlRpInstance.Predict(_usersMap.ToInternalID(feedback.User.Id), _itemsMap.ToInternalID(feedback.Item.Id));
         }
 
+        public override Dictionary<string, string> GetModelParameters()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

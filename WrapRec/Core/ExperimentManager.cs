@@ -167,6 +167,8 @@ namespace WrapRec.Core
 
         private IEnumerable<Model> ParseModelsSet(string modelId)
         {
+
+
             return null;
         }
 
@@ -189,7 +191,7 @@ Model Id: {2}
 Model Parameteres:
 {3}
 ";
-			string modelParameters = exp.Model.AllParameters.Select(kv => kv.Key + ":" + kv.Value)
+			string modelParameters = exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value)
 				.Aggregate((a, b) => a + " " + b);
 
 			Logger.Current.Info(format, exp.Id, exp.Split.Id, exp.Model.Id, modelParameters);
@@ -211,7 +213,7 @@ Model Parameteres:
 			if (_lastModelId != exp.Model.Id)
 			{
 				string header = new string[] { "ExpeimentId", "ModelId", "SplitId" }
-					.Concat(exp.Model.AllParameters.Select(kv => kv.Key))
+					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(exp.EvaluationContext.Results.Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
@@ -221,7 +223,7 @@ Model Parameteres:
 			}
 
 			string result = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
-				.Concat(exp.Model.AllParameters.Select(kv => kv.Value))
+				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(exp.EvaluationContext.Results.Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
