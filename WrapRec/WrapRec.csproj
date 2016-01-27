@@ -70,6 +70,7 @@
     <Compile Include="Core\User.cs" />
     <Compile Include="Core\WrapRecException.cs" />
     <Compile Include="Data\DataContainer.cs" />
+    <Compile Include="Data\FeedbackSimpleSplit.cs" />
     <Compile Include="Data\ISplit.cs" />
     <Compile Include="Data\Split.cs" />
     <Compile Include="Evaluation\EvaluationContext.cs" />

@@ -45,7 +45,6 @@ namespace WrapRec.Models
             {
                 throw new WrapRecException(string.Format("Cannot resolve MmlRatingPrediction parameters: {0}", ex.Message));
             }
-
         }
 
         public override void Train(Split split)

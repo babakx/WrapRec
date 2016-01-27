@@ -15,60 +15,22 @@ namespace WrapRec.Data
         public Dictionary<string, Item> Items { get; private set; }
         public HashSet<Feedback> Feedbacks { get; private set; }
 
-        public DataContainer()
+        static DataContainer _instance;
+
+        private DataContainer()
         {
             Users = new Dictionary<string, User>();
             Items = new Dictionary<string, Item>();
             Feedbacks = new HashSet<Feedback>();
         }
 
-		/// <summary>
-		/// Desify DataContainer by making sure that each user has at least k items and each item has at least k users
-		/// </summary>
-		/// <param name="k"></param>
-		public void Densify(int k)
-		{			
-			int removedBasedOnUser, removedBasedOnItem;
-			int i = 1;
+        public static DataContainer GetInstance()
+        {
+            if (_instance == null)
+                _instance = new DataContainer();
 
-			Logger.Current.Info("Densify with min feedback {0}...", k);
-			Logger.Current.Trace(ToString());
-
-			do
-			{
-				Logger.Current.Trace("Iteration {0}: ", i);
-
-				var toRemove = Feedbacks.GroupBy(f => f.User).Where(g => g.Count() < k)
-					.SelectMany(g => g);
-
-				removedBasedOnUser = 0;
-				foreach (Feedback f in toRemove)
-				{
-					RemoveFeedback(f);
-					removedBasedOnUser++;
-				}
-				
-				Logger.Current.Trace("Removed {0} (user-based)", removedBasedOnUser);
-				Logger.Current.Trace(ToString());
-
-				toRemove = Feedbacks.GroupBy(f => f.Item).Where(g => g.Count() < k)
-					.SelectMany(g => g);
-
-				removedBasedOnItem = 0;
-				foreach (Feedback f in toRemove)
-				{
-					RemoveFeedback(f);
-					removedBasedOnItem++;
-				}
-
-				Logger.Current.Trace("Removed {0} (item-based)", removedBasedOnItem);
-				Logger.Current.Trace(ToString() + "\n");
-				i++;
-			}
-			while (removedBasedOnUser > 0 || removedBasedOnItem > 0);
-
-			Logger.Current.Info("Densify complete with min feedback {0}", k);
-		}
+            return _instance;
+        }
 
 		public void SaveAsRating(string path)
 		{
@@ -144,6 +106,54 @@ namespace WrapRec.Data
             }
 
             return i;
+        }
+
+        /// <summary>
+        /// Desify DataContainer by making sure that each user has at least k items and each item has at least k users
+        /// </summary>
+        /// <param name="k"></param>
+        public void Densify(int k)
+        {
+            int removedBasedOnUser, removedBasedOnItem;
+            int i = 1;
+
+            Logger.Current.Info("Densify with min feedback {0}...", k);
+            Logger.Current.Trace(ToString());
+
+            do
+            {
+                Logger.Current.Trace("Iteration {0}: ", i);
+
+                var toRemove = Feedbacks.GroupBy(f => f.User).Where(g => g.Count() < k)
+                    .SelectMany(g => g);
+
+                removedBasedOnUser = 0;
+                foreach (Feedback f in toRemove)
+                {
+                    RemoveFeedback(f);
+                    removedBasedOnUser++;
+                }
+
+                Logger.Current.Trace("Removed {0} (user-based)", removedBasedOnUser);
+                Logger.Current.Trace(ToString());
+
+                toRemove = Feedbacks.GroupBy(f => f.Item).Where(g => g.Count() < k)
+                    .SelectMany(g => g);
+
+                removedBasedOnItem = 0;
+                foreach (Feedback f in toRemove)
+                {
+                    RemoveFeedback(f);
+                    removedBasedOnItem++;
+                }
+
+                Logger.Current.Trace("Removed {0} (item-based)", removedBasedOnItem);
+                Logger.Current.Trace(ToString() + "\n");
+                i++;
+            }
+            while (removedBasedOnUser > 0 || removedBasedOnItem > 0);
+
+            Logger.Current.Info("Densify complete with min feedback {0}", k);
         }
 
         public override string ToString()

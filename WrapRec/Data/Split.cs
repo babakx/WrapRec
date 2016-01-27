@@ -11,11 +11,15 @@ namespace WrapRec.Data
 	{
 		public string Id { get; set; }
 
-        public IEnumerable<Split> SubSplits { get; protected set; }
+        public DataContainer Container = DataContainer.GetInstance();
+        protected IEnumerable<Feedback> _train;
+        protected IEnumerable<Feedback> _test;
 
-        public IEnumerable<Feedback> Train { get; protected set; }
+        public IEnumerable<Split> SubSplits { get; set; }
 
-        public IEnumerable<Feedback> Test { get; protected set; }
+        public IEnumerable<Feedback> Train { get { return _train; } }
+
+        public IEnumerable<Feedback> Test { get { return _test; } }
 
         public void Clear()
         {
