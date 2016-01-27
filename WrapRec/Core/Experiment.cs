@@ -18,15 +18,20 @@ namespace WrapRec.Core
 		public EvaluationContext EvaluationContext { get; set; }
 		public int TrainTime { get; private set; }
 		public int EvaluationTime { get; private set; }
-		public int PureTrainTime { get; private set; }
-		public int PureEvaluationTime { get; private set; }
 
 		public void Run()
 		{
-			TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;
-			EvaluationTime = (int)Wrap.MeasureTime(delegate() { Model.Evaluate(Split, EvaluationContext); }).TotalMilliseconds;
-			PureTrainTime = Model.GetPureTrainTime();
-			PureEvaluationTime = Model.GetPureEvaluationTime();
+            Logger.Current.Info("Training...");
+            TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;
+            Logger.Current.Info("Evaluating...");
+            EvaluationTime = (int)Wrap.MeasureTime(delegate() { Model.Evaluate(Split, EvaluationContext); }).TotalMilliseconds;
 		}
+
+        public void Clear()
+        {
+            Model.Clear();
+            EvaluationContext.Clear();
+            Split.Clear();
+        }
 	}
 }

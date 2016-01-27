@@ -133,14 +133,32 @@ namespace WrapRec.Core
 			{
 				foreach (Split s in splits)
 				{
-					var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+                    // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
+                    if (s.SubSplits != null && s.SubSplits.Count() > 0)
+                    {
+                        foreach (Split ss in s.SubSplits)
+                        {
+                            var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
-					exp.Model = m;
-					exp.Split = s;
-					exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
-					exp.Id = expId;
+                            exp.Model = m;
+                            exp.Split = ss;
+                            exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
+                            exp.Id = expId;
 
-					experiments.Add(exp);
+                            experiments.Add(exp);
+                        }
+                    }
+                    else
+                    {
+                        var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+                        exp.Model = m;
+                        exp.Split = s;
+                        exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
+                        exp.Id = expId;
+
+                        experiments.Add(exp);
+                    }
 				}
 			}
 
@@ -205,8 +223,8 @@ Model Parameteres:
 			string result = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
 				.Concat(exp.Model.AllParameters.Select(kv => kv.Value))
 				.Concat(exp.EvaluationContext.Results.Select(kv => kv.Value))
-				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.PureTrainTime.ToString(), exp.PureEvaluationTime.ToString(), 
-					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.PureTrainTime + exp.PureEvaluationTime).ToString() })
+				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
+					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
 				.Aggregate((a, b) => a + ResultSeparator + b);
 
 			_resultWriter.WriteLine(result);

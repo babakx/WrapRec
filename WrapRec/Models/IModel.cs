@@ -11,7 +11,7 @@ namespace WrapRec.Models
     public interface IModel
     {
 		void Setup(Dictionary<string,string> modelParams);
-		void Train(ISplit split);
-		void Evaluate(ISplit split, EvaluationContext context);
+		void Train(Split split);
+		void Evaluate(Split split, EvaluationContext context);
     }
 }

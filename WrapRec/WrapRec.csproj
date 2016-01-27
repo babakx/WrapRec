@@ -73,8 +73,10 @@
     <Compile Include="Data\ISplit.cs" />
     <Compile Include="Data\Split.cs" />
     <Compile Include="Evaluation\EvaluationContext.cs" />
+    <Compile Include="Evaluation\IEvaluator.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\IModel.cs" />
+    <Compile Include="Models\MmlRatingPredictor.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
