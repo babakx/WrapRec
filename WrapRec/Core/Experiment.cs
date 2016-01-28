@@ -21,7 +21,9 @@ namespace WrapRec.Core
 
 		public void Run()
 		{
-            Logger.Current.Info("Training...");
+			Logger.Current.Info("Setuping model...");
+			Model.Setup();
+			Logger.Current.Info("Training...");
             TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;
             Logger.Current.Info("Evaluating...");
             EvaluationTime = (int)Wrap.MeasureTime(delegate() { Model.Evaluate(Split, EvaluationContext); }).TotalMilliseconds;

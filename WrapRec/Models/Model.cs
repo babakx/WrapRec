@@ -13,8 +13,9 @@ namespace WrapRec.Models
 		public string Id { get; set; }
         public int PureTrainTime { get; protected set; }
         public int PureEvaluationTime { get; protected set; }
-        public abstract Dictionary<string, string> GetModelParameters();
-		public abstract void Setup(Dictionary<string, string> modelParams);
+		public Dictionary<string, string> SetupParameters { get; set; }
+		public abstract Dictionary<string, string> GetModelParameters();
+		public abstract void Setup();
 		public abstract void Train(Split split);
 		public abstract void Evaluate(Split split, EvaluationContext context);
         public abstract void Clear();

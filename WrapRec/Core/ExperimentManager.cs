@@ -11,18 +11,20 @@ using WrapRec.Data;
 using WrapRec.Evaluation;
 using System.Globalization;
 using System.IO;
+using WrapRec.Utils;
 
 namespace WrapRec.Core
 {
     public class ExperimentManager
     {
         public XElement ConfigRoot { get; private set; }
-		public List<Experiment> Experiments { get; private set; }
+		public IEnumerable<Experiment> Experiments { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 
 		StreamWriter _resultWriter;
 		string _lastModelId;
+		string _lastExpId;
 
         public ExperimentManager(string configFile)
         {
@@ -32,37 +34,28 @@ namespace WrapRec.Core
 
 		public void RunExperiments()
 		{
-			int numExperiments = Experiments.GroupBy(e => e.Id).Count();
-			int numCases = Experiments.Count;
-
-			Logger.Current.Info("Number of experiments to be done: {0}", numExperiments);
-			Logger.Current.Info("Total number of cases: {0}", numCases);
-
+			int numExperiments = Experiments.Count();
+			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
 			int caseNo = 1;
 
-			var expGroups = Experiments.GroupBy(e => e.Id);
-
-			foreach (var expGroup in expGroups)
+			foreach (Experiment e in Experiments)
 			{
-				_resultWriter = new StreamWriter(Path.Combine(ResultsFolder, expGroup.Key + ".csv"));
-				foreach (Experiment e in expGroup)
+				try
 				{
-					try
-					{
-						Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numCases);
-						LogExperimentInfo(e);
-						e.Run();
-						LogExperimentResults(e);
-						WriteResultsToFile(e);
-					}
-					catch (Exception ex)
-					{
-						Logger.Current.Error("Error in expriment {0}, model {1}, split {2}:\n{1}", e.Id, e.Model.Id, e.Split.Id, ex.Message);
-					}
+					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
+					LogExperimentInfo(e);
+					e.Run();
+					LogExperimentResults(e);
+					WriteResultsToFile(e);
 				}
-				_resultWriter.Close();
+				catch (Exception ex)
+				{
+					Logger.Current.Error("Error in expriment {0}, model {1}, split {2}:\n{1}", e.Id, e.Model.Id, e.Split.Id, ex.Message);
+				}
 			}
-
+			
+			if (_resultWriter != null)
+				_resultWriter.Close();
 		}
 
 
@@ -92,7 +85,7 @@ namespace WrapRec.Core
 				}
 
 				Logger.Current.Info("Resolving experiments...");
-				Experiments = expEls.SelectMany(el => ParseExperiments(el)).ToList();
+				Experiments = expEls.SelectMany(el => ParseExperiments(el));
 			}
 			catch (Exception ex)
 			{
@@ -101,7 +94,7 @@ namespace WrapRec.Core
 			}
 		}
 
-        private List<Experiment> ParseExperiments(XElement expEl)
+        private IEnumerable<Experiment> ParseExperiments(XElement expEl)
         {
 			string expId = expEl.Attribute("id").Value;
 			string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value : "";
@@ -109,10 +102,7 @@ namespace WrapRec.Core
 			Type expType;
 			if (!string.IsNullOrEmpty(expClass))
 			{
-				expType = Type.GetType(expClass);
-				if (expType == null)
-					throw new WrapRecException(string.Format("Can not resolve Experiment type: '{0}'", expClass));
-
+				expType = Type.GetType(expClass, true);
 				if (!typeof(Experiment).IsAssignableFrom(expType))
 					throw new WrapRecException(string.Format("Experiment type '{0}' should inherit class 'WrapRec.Core.Experiment'", expClass));
 			}
@@ -126,8 +116,6 @@ namespace WrapRec.Core
 			// one splitId always map to one split
 			IEnumerable<Split> splits = expEl.Attribute("splits").Value.Split(',')
 				.Select(sId => ParseSplit(sId));
-
-			var experiments = new List<Experiment>();
 
 			foreach (Model m in models)
 			{
@@ -145,7 +133,7 @@ namespace WrapRec.Core
                             exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
                             exp.Id = expId;
 
-                            experiments.Add(exp);
+							yield return exp;
                         }
                     }
                     else
@@ -157,19 +145,38 @@ namespace WrapRec.Core
                         exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
                         exp.Id = expId;
 
-                        experiments.Add(exp);
+						yield return exp;
                     }
 				}
 			}
-
-			return experiments;
         }
 
         private IEnumerable<Model> ParseModelsSet(string modelId)
         {
+            XElement modelEl = ConfigRoot.Descendants("model")
+                .Where(el => el.Attribute("id").Value == modelId).Single();
 
+            Type modelType = Type.GetType(modelEl.Attribute("class").Value, true);
+            if (!typeof(Model).IsAssignableFrom(modelType))
+                throw new WrapRecException(string.Format("Experiment type '{0}' should inherit class 'WrapRec.Models.Model'", modelType));
 
-            return null;
+            var allSetupParams = modelEl.Descendants("parameters").Single()
+                .Attributes().ToDictionary(a => a.Name, a => a.Value);
+
+			var paramCartesians = allSetupParams.Select(kv => kv.Value.Split(',').AsEnumerable()).CartesianProduct();
+
+			foreach (IEnumerable<string> pc in paramCartesians)
+			{
+				var setupParams = allSetupParams.Select(kv => kv.Key)
+					.Zip(pc, (k, v) => new { Name = k, Value = v })
+					.ToDictionary(kv => kv.Name, kv => kv.Value);
+
+				var model = (Model)modelType.GetConstructor(Type.EmptyTypes).Invoke(null);
+				PropertyInfo pi = modelType.GetProperty("SetupParameters");
+				pi.SetValue(model, setupParams);
+
+				yield return model;
+			}
         }
 
         private Split ParseSplit(string splitId)
@@ -209,6 +216,15 @@ Model Parameteres:
 
 		private void WriteResultsToFile(Experiment exp)
 		{
+			if (_lastExpId != exp.Id)
+			{
+				if (_resultWriter != null)
+					_resultWriter.Close();
+
+				_resultWriter = new StreamWriter(Path.Combine(ResultsFolder, exp.Id + ".csv"));
+				_lastExpId = exp.Id;
+			}
+			
 			// write a header to the csv file if the model is changed (different models have different parameters)
 			if (_lastModelId != exp.Model.Id)
 			{

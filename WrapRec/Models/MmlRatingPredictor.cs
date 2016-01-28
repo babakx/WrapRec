@@ -26,16 +26,16 @@ namespace WrapRec.Models
             _itemsMap = new Mapping();
         }
 
-        public override void Setup(Dictionary<string, string> modelParams)
+        public override void Setup()
         {
             try
             {
                 // build MmlRatingPredictor
-                _mmlRpType = Type.GetType(modelParams["ml-class"]);
+                _mmlRpType = Type.GetType(SetupParameters["ml-class"]);
                 _mmlRpInstance = (IRatingPredictor) _mmlRpType.GetConstructor(Type.EmptyTypes).Invoke(null);
                 
                 // Set properties
-                foreach (var param in modelParams.Where(kv => kv.Key != "ml-class"))
+				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
                 {
                     PropertyInfo pi = _mmlRpType.GetType().GetProperty(param.Key);
                     pi.SetValue(_mmlRpInstance, Convert.ChangeType(param.Value, pi.PropertyType));
