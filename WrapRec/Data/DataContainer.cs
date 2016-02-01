@@ -39,7 +39,6 @@ namespace WrapRec.Data
 			File.WriteAllLines(path, header.Concat(output));
 		}
 
-
         public Feedback AddFeedback(string userId, string itemId)
         {
             User u = AddUser(userId);

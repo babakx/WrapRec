@@ -117,9 +117,9 @@ namespace WrapRec.Core
 			IEnumerable<Split> splits = expEl.Attribute("splits").Value.Split(',')
 				.Select(sId => ParseSplit(sId));
 
-			foreach (Model m in models)
+			foreach (Split s in splits)
 			{
-				foreach (Split s in splits)
+				foreach (Model m in models)
 				{
                     // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
                     if (s.SubSplits != null && s.SubSplits.Count() > 0)
