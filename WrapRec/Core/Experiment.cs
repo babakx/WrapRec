@@ -21,6 +21,8 @@ namespace WrapRec.Core
 
 		public void Run()
 		{
+			Logger.Current.Info("Setuping split...");
+			Split.Setup();
 			Logger.Current.Info("Setuping model...");
 			Model.Setup();
 			Logger.Current.Info("Training...");
@@ -31,9 +33,9 @@ namespace WrapRec.Core
 
         public void Clear()
         {
-            Model.Clear();
+            
+			Model.Clear();
             EvaluationContext.Clear();
-            Split.Clear();
         }
 	}
 }

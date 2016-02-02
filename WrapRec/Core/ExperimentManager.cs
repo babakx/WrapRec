@@ -12,6 +12,7 @@ using WrapRec.Evaluation;
 using System.Globalization;
 using System.IO;
 using WrapRec.Utils;
+using WrapRec.IO;
 
 namespace WrapRec.Core
 {
@@ -158,7 +159,7 @@ namespace WrapRec.Core
 
             Type modelType = Type.GetType(modelEl.Attribute("class").Value, true);
             if (!typeof(Model).IsAssignableFrom(modelType))
-                throw new WrapRecException(string.Format("Experiment type '{0}' should inherit class 'WrapRec.Models.Model'", modelType));
+                throw new WrapRecException(string.Format("Model type '{0}' should inherit class 'WrapRec.Models.Model'", modelType.Name));
 
             var allSetupParams = modelEl.Descendants("parameters").Single()
                 .Attributes().ToDictionary(a => a.Name, a => a.Value);
@@ -169,11 +170,10 @@ namespace WrapRec.Core
 			{
 				var setupParams = allSetupParams.Select(kv => kv.Key)
 					.Zip(pc, (k, v) => new { Name = k, Value = v })
-					.ToDictionary(kv => kv.Name, kv => kv.Value);
+					.ToDictionary(kv => kv.Name.LocalName, kv => kv.Value);
 
 				var model = (Model)modelType.GetConstructor(Type.EmptyTypes).Invoke(null);
-				PropertyInfo pi = modelType.GetProperty("SetupParameters");
-				pi.SetValue(model, setupParams);
+				model.SetupParameters = setupParams;
 
 				yield return model;
 			}
@@ -181,8 +181,61 @@ namespace WrapRec.Core
 
         private Split ParseSplit(string splitId)
         {
-            return null;
+            XElement splitEl = ConfigRoot.Descendants("split")
+				.Where(el => el.Attribute("id").Value == splitId).Single();
+
+			DataContainer container = DataContainer.GetInstance();
+			
+
+			SplitType splitKind = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.ToUpper());
+			switch (splitKind)
+			{
+				case SplitType.STATIC:
+							
+					break;
+				case SplitType.DYNAMIC:
+					break;
+				case SplitType.CROSSVALIDATION:
+					break;
+				case SplitType.CUSTOM:
+					break;
+				default:
+					break;
+			}
+			
+			return null;
         }
+
+		private void LoadData(string dataId)
+		{
+			DataContainer container = DataContainer.GetInstance();
+
+			XElement dataEl = ConfigRoot.Descendants("data")
+				.Where(el => el.Attribute("id").Value == dataId).Single();
+
+			string path = dataEl.Attribute("path").Value;
+			// should be train,test,other
+			string sliceType = dataEl.Attribute("type").Value;	
+			// should be ratings,posFeedback,userContext,itemContext,other
+			string dataType = dataEl.Attribute("contains").Value;
+
+			XElement readerEl = dataEl.Descendants("reader").First();
+			Type readerType = Type.GetType(readerEl.Attribute("class").Value);
+
+			if (!typeof(DatasetReader).IsAssignableFrom(readerType))
+				throw new WrapRecException(string.Format("DataReader type '{0}' should inherit class 'WrapRec.IO.DatasetReader'", readerType.Name));
+
+			var setupParams = readerEl.Attributes().Where(a => a.Name != "class")
+				.ToDictionary(a => a.Name.LocalName, a => a.Value);
+			
+			DatasetReader reader = (DatasetReader)readerType.GetConstructor(Type.EmptyTypes).Invoke(null);
+			reader.DatasetId = dataId;
+			reader.Path = path;
+			reader.SetupParameters = setupParams;
+			// not best practice. The container should be loaded in a lazy fashion
+			reader.Setup();
+			reader.LoadData(container);
+		}
 
         private EvaluationContext ParseEvaluationContext(string evalId)
         {

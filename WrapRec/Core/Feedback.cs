@@ -10,14 +10,14 @@ namespace WrapRec.Core
     {
         public User User { get; set; }
         public Item Item { get; set; }
-        public FeedbackClass Class { get; set; }
+        public FeedbackSlice SliceType { get; set; }
 
         public Feedback(User user, Item item)
             : base()
         {
             User = user;
             Item = item;
-            Class = FeedbackClass.NOT_SET;
+            SliceType = FeedbackSlice.NOT_APPLICABLE;
         }
 
 

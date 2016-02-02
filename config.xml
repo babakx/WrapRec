@@ -5,23 +5,23 @@
     </model>
   </models>
   <datasets>
-    <data id="ml1m-train" path="D:\Dropbox\Datasets\ML1M\train.txt">
+    <data id="ml1m-train" type="train" path="D:\Dropbox\Datasets\ML1M\train.txt">
       <reader class="CsvReader" hasHeader="true" />
     </data>
-    <data id="ml1m-test" path="D:\Dropbox\Datasets\ML1M\train.txt">
+    <data id="ml1m-test" type="test" path="D:\Dropbox\Datasets\ML1M\train.txt">
       <reader class="CsvReader" hasHeader="true" />
     </data>
-    <data id="ml1m" path="D:\Dropbox\Datasets\ML1M\ratings.txt">
-      <reader class="CsvReader" hasHeader="true" />
+    <data id="ml1m" type="other" path="D:\Dropbox\Datasets\ML1M\ratings.txt">
+      <reader type="csv" hasHeader="true" delimiter="::" />
     </data>
-    <data id="ml1m-users" path="D:\Dropbox\Datasets\ML1M\users.txt">
-      <reader class="CsvReader" hasHeader="true" />
+    <data id="ml1m-users" type="other" contains="userContext" path="D:\Dropbox\Datasets\ML1M\users.txt">
+      <reader class="CsvReader" hasHeader="true" delimiter="::" CustomPar="1" />
     </data>
   </datasets>
   <splits>
-    <split id="ml1m-fixed" type="fixed" train="ml1m-train" test="ml1m-test" />
+    <split id="ml1m-fixed" type="static" data="ml1m-train,ml1m-test" />
     <split id="ml1m-dynamic" type="dynamic" data="ml1-m" context="ml1m-users" trainPortion="0.75" />
-    <split id="ml1m-cv" type="cv" data="ml1-m" context="ml1m-users" trainPortion="0.75" folds="5" />
+    <split id="ml1m-cv" type="crossValidation" data="ml1-m" context="ml1m-users" trainPortion="0.75" folds="5" />
     <split id="ml1m-custom" type="custom" data="ml1-m" context="ml1m-users" class="CustomSplitter" />
   </splits>
   <evalContexts>

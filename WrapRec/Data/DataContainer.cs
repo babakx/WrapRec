@@ -155,6 +155,11 @@ namespace WrapRec.Data
             Logger.Current.Info("Densify complete with min feedback {0}", k);
         }
 
+		public void Clear()
+		{ 
+		
+		}
+
         public override string ToString()
         {
             return string.Format("{0} Users, {1} Items, {2} Feedbacks", Users.Count, Items.Count, Feedbacks.Count);
