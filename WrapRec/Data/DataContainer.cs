@@ -6,31 +6,38 @@ using System.Threading.Tasks;
 using WrapRec.Core;
 using LinqLib.Sequence;
 using System.IO;
+using WrapRec.IO;
 
 namespace WrapRec.Data
 {
     public class DataContainer
     {
-        public Dictionary<string, User> Users { get; private set; }
+		public string Id { get; set; }
+		public List<DatasetReader> DataReaders { get; private set; }
+		public bool IsLoaded { get; private set; }
+		public Dictionary<string, User> Users { get; private set; }
         public Dictionary<string, Item> Items { get; private set; }
         public HashSet<Feedback> Feedbacks { get; private set; }
 
-        static DataContainer _instance;
 
-        private DataContainer()
+        public DataContainer()
         {
-            Users = new Dictionary<string, User>();
+			DataReaders = new List<DatasetReader>();
+			Users = new Dictionary<string, User>();
             Items = new Dictionary<string, Item>();
             Feedbacks = new HashSet<Feedback>();
         }
 
-        public static DataContainer GetInstance()
-        {
-            if (_instance == null)
-                _instance = new DataContainer();
-
-            return _instance;
-        }
+		public void Load()
+		{
+			if (!IsLoaded)
+				DataReaders.ForEach(dr => 
+				{ 
+					dr.Setup();
+					dr.LoadData(this);
+				});
+			IsLoaded = true;
+		}
 
 		public void SaveAsRating(string path)
 		{

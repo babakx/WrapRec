@@ -14,15 +14,13 @@ namespace WrapRec.Data
 		DYNAMIC,
 		CROSSVALIDATION,
 		CROSSVALIDATION_SPLIT,
-		CUSTOM,
-		NOT_SET
+		CUSTOM
 	}
 
 	public abstract class Split
 	{
 		public string Id { get; set; }
-		public List<DatasetReader> Readers = new List<DatasetReader>();
-        public DataContainer Container = DataContainer.GetInstance();
+		public DataContainer Container { get; set; }
 		public Dictionary<string, string> SetupParameters { get; set; }
 		public SplitType Type { get; set; }
 		

@@ -9,18 +9,26 @@ namespace WrapRec.Evaluation
 {
     public class EvaluationContext
     {
+		public string Id { get; set; }
 		public Dictionary<string, string> Results { get; private set; }
-        public List<IEvaluator> Evaluators { get; private set; }
+        public List<Evaluator> Evaluators { get; private set; }
         public Dictionary<Feedback, float> PredictedScores { get; private set; }
+		public bool IsSetuped { get; private set; }
 
         public EvaluationContext()
         {
-            Evaluators = new List<IEvaluator>();
+            Evaluators = new List<Evaluator>();
             Results = new Dictionary<string, string>();
             PredictedScores = new Dictionary<Feedback, float>();
         }
 
-        public void AddEvaluator(IEvaluator evaluator)
+		public void Setup()
+		{
+			Evaluators.ForEach(e => e.Setup());
+			IsSetuped = true;
+		}
+
+        public void AddEvaluator(Evaluator evaluator)
         {
             Evaluators.Add(evaluator);
         }

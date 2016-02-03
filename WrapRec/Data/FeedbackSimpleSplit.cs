@@ -17,9 +17,6 @@ namespace WrapRec.Data
 			if (Type == SplitType.CROSSVALIDATION_SPLIT)
 				return;
 
-			// Loading DataContainer
-			Readers.ForEach(r => r.LoadData(Container));
-
 			// Setuping splits
 			float trainRatio = 1f;
 			int numFolds = 5;
@@ -59,7 +56,8 @@ namespace WrapRec.Data
 						return new FeedbackSimpleSplit(train, test) 
 						{ 
 							Id = this.Id + "-fold" + (i + 1),
-							Type = SplitType.CROSSVALIDATION_SPLIT
+							Type = SplitType.CROSSVALIDATION_SPLIT,
+							Container = this.Container
 						};
 					});
 			}

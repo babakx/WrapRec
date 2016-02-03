@@ -20,6 +20,8 @@ namespace WrapRec.Core
     {
         public XElement ConfigRoot { get; private set; }
 		public IEnumerable<Experiment> Experiments { get; private set; }
+		public Dictionary<string, DataContainer> DataContainers { get; private set; }
+		public Dictionary<string, EvaluationContext> EvaluationContexts { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 
@@ -30,6 +32,8 @@ namespace WrapRec.Core
         public ExperimentManager(string configFile)
         {
             ConfigRoot = XDocument.Load(configFile).Root;
+			DataContainers = new Dictionary<string, DataContainer>();
+			EvaluationContexts = new Dictionary<string, EvaluationContext>();
 			Setup();
         }
 
@@ -44,10 +48,12 @@ namespace WrapRec.Core
 				try
 				{
 					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
+					e.Setup();
 					LogExperimentInfo(e);
 					e.Run();
 					LogExperimentResults(e);
 					WriteResultsToFile(e);
+					e.Clear();
 				}
 				catch (Exception ex)
 				{
@@ -131,7 +137,7 @@ namespace WrapRec.Core
 
                             exp.Model = m;
                             exp.Split = ss;
-                            exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
+                            exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
                             exp.Id = expId;
 
 							yield return exp;
@@ -143,7 +149,7 @@ namespace WrapRec.Core
 
                         exp.Model = m;
                         exp.Split = s;
-                        exp.EvaluationContext = ParseEvaluationContext(expEl.Attribute("evalContext").Value);
+                        exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
                         exp.Id = expId;
 
 						yield return exp;
@@ -184,63 +190,120 @@ namespace WrapRec.Core
             XElement splitEl = ConfigRoot.Descendants("split")
 				.Where(el => el.Attribute("id").Value == splitId).Single();
 
-			DataContainer container = DataContainer.GetInstance();
+			SplitType splitType = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.ToUpper());
+			DataContainer container = GetDataContainer(splitEl.Attribute("dataContainer").Value);
 			
-
-			SplitType splitKind = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.ToUpper());
-			switch (splitKind)
+			Split split;
+			if (splitEl.Attribute("class") != null)
 			{
-				case SplitType.STATIC:
-							
-					break;
-				case SplitType.DYNAMIC:
-					break;
-				case SplitType.CROSSVALIDATION:
-					break;
-				case SplitType.CUSTOM:
-					break;
-				default:
-					break;
+				Type splitClassType = Type.GetType(splitEl.Attribute("class").Value);
+				if (!typeof(Split).IsAssignableFrom(splitClassType))
+					throw new WrapRecException(string.Format("Split type '{0}' should inherit class 'WrapRec.Data.Split'", splitClassType.Name));
+
+				split = (Split) splitClassType.GetConstructor(Type.EmptyTypes).Invoke(null);
 			}
-			
-			return null;
+			else
+				split = new FeedbackSimpleSplit();
+
+			var setupParams = splitEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+
+			split.Id = splitId;
+			split.Type = splitType;
+			split.Container = container;
+			split.SetupParameters = setupParams;
+
+			return split;
         }
 
-		private void LoadData(string dataId)
+		private DataContainer GetDataContainer(string containerId)
 		{
-			DataContainer container = DataContainer.GetInstance();
+			if (DataContainers.ContainsKey(containerId))
+				return DataContainers[containerId];
 
-			XElement dataEl = ConfigRoot.Descendants("data")
-				.Where(el => el.Attribute("id").Value == dataId).Single();
+			XElement dcEl = ConfigRoot.Descendants("dataContainer")
+				.Where(el => el.Attribute("id").Value == containerId).Single();
 
-			string path = dataEl.Attribute("path").Value;
-			// should be train,test,other
-			string sliceType = dataEl.Attribute("type").Value;	
-			// should be ratings,posFeedback,userContext,itemContext,other
-			string dataType = dataEl.Attribute("contains").Value;
+			var container = new DataContainer();
+			container.Id = containerId;
+			foreach (string readerId in dcEl.Attribute("dataReaders").Value.Split(','))
+			{
+				container.DataReaders.Add(ParseDataReader(readerId));
+			}
 
-			XElement readerEl = dataEl.Descendants("reader").First();
-			Type readerType = Type.GetType(readerEl.Attribute("class").Value);
-
-			if (!typeof(DatasetReader).IsAssignableFrom(readerType))
-				throw new WrapRecException(string.Format("DataReader type '{0}' should inherit class 'WrapRec.IO.DatasetReader'", readerType.Name));
-
-			var setupParams = readerEl.Attributes().Where(a => a.Name != "class")
-				.ToDictionary(a => a.Name.LocalName, a => a.Value);
-			
-			DatasetReader reader = (DatasetReader)readerType.GetConstructor(Type.EmptyTypes).Invoke(null);
-			reader.DatasetId = dataId;
-			reader.Path = path;
-			reader.SetupParameters = setupParams;
-			// not best practice. The container should be loaded in a lazy fashion
-			reader.Setup();
-			reader.LoadData(container);
+			DataContainers.Add(containerId, container);
+			return container;
 		}
 
-        private EvaluationContext ParseEvaluationContext(string evalId)
+		private DatasetReader ParseDataReader(string readerId)
+		{
+			XElement readerEl = ConfigRoot.Descendants("reader")
+				.Where(el => el.Attribute("id").Value == readerId).Single();
+
+			FeedbackSlice sliceType = FeedbackSlice.NOT_APPLICABLE;
+			XAttribute sliceTypeAttr = readerEl.Attribute("sliceType");
+			if (sliceTypeAttr != null)
+			{
+				if (sliceTypeAttr.Value == "train")
+					sliceType = FeedbackSlice.TRAIN;
+				else if (sliceTypeAttr.Value == "test")
+					sliceType = FeedbackSlice.TEST;
+			}
+
+			DataType dataType = DataType.Other;
+			XAttribute dataTypeAttr = readerEl.Attribute("dataType");
+			if (dataTypeAttr != null)
+				dataType = (DataType)Enum.Parse(typeof(DataType), dataTypeAttr.Value);
+
+			DatasetReader reader;
+			if (readerEl.Attribute("class") != null)
+			{
+				Type readerClassType = Type.GetType(readerEl.Attribute("class").Value);
+				if (!typeof(DatasetReader).IsAssignableFrom(readerClassType))
+					throw new WrapRecException(string.Format("Reader type '{0}' should inherit class 'WrapRec.Data.DatasetReader'", readerClassType.Name));
+
+				reader = (DatasetReader)readerClassType.GetConstructor(Type.EmptyTypes).Invoke(null);
+			}
+			else
+				reader = new CsvReader();
+
+			reader.Id = readerId;
+			reader.Path = readerEl.Attribute("path").Value;
+			reader.DataType = dataType;
+			reader.SliceType = sliceType;
+			reader.SetupParameters = readerEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+
+			return reader;
+		}
+
+        private EvaluationContext GetEvaluationContext(string contextId)
         {
-            return null;
+			if (EvaluationContexts.ContainsKey(contextId))
+				return EvaluationContexts[contextId];
+			
+			XElement contextEl = ConfigRoot.Descendants("evalContext")
+				.Where(el => el.Attribute("id").Value == contextId).Single();
+
+			var ec = new EvaluationContext();
+			ec.Id = contextEl.Attribute("id").Value;
+
+			foreach (XElement evalEl in contextEl.Descendants("evaluator"))
+			{
+				Evaluator eval;
+				Type evalType = Type.GetType(evalEl.Attribute("class").Value);
+				if (!typeof(Evaluator).IsAssignableFrom(evalType))
+					throw new WrapRecException(string.Format("Evaluator type '{0}' should inherit class 'WrapRec.Evaluation.Evaluator'", evalType.Name));
+
+				eval = (Evaluator)evalType.GetConstructor(Type.EmptyTypes).Invoke(null);
+				eval.SetupParameters = evalEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);				
+
+				ec.AddEvaluator(eval);
+			}
+
+			EvaluationContexts.Add(contextId, ec);
+			return ec;
         }
+
+		
 
 		private void LogExperimentInfo(Experiment exp)
 		{

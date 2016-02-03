@@ -67,7 +67,6 @@
     <Compile Include="Core\Experiment.cs" />
     <Compile Include="Core\Feedback.cs" />
     <Compile Include="Core\FeedbackSlice.cs" />
-    <Compile Include="Core\IExperiment.cs" />
     <Compile Include="Core\Item.cs" />
     <Compile Include="Core\Rating.cs" />
     <Compile Include="Core\User.cs" />
@@ -76,7 +75,7 @@
     <Compile Include="Data\FeedbackSimpleSplit.cs" />
     <Compile Include="Data\Split.cs" />
     <Compile Include="Evaluation\EvaluationContext.cs" />
-    <Compile Include="Evaluation\IEvaluator.cs" />
+    <Compile Include="Evaluation\Evaluator.cs" />
     <Compile Include="IO\CsvReader.cs" />
     <Compile Include="IO\DatasetReader.cs" />
     <Compile Include="Logger.cs" />

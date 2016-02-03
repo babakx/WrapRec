@@ -9,8 +9,10 @@ using WrapRec.Models;
 
 namespace WrapRec.Evaluation
 {
-    public interface IEvaluator
+    public abstract class Evaluator
     {
-        void Evaluate(EvaluationContext context, Model model, Split split);
+		public Dictionary<string, string> SetupParameters { get; set; }
+		public abstract void Setup();
+		public abstract void Evaluate(EvaluationContext context, Model model, Split split);
     }
 }

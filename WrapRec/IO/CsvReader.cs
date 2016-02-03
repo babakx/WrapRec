@@ -25,28 +25,12 @@ namespace WrapRec.IO
 				Delimiter = delimiter,
 				HasHeaderRecord = hasHeader
 			};
-
-			ReaderSliceType = FeedbackSlice.NOT_APPLICABLE;
-			if (SetupParameters.ContainsKey("type"))
-			{
-				if (SetupParameters["type"] == "train")
-					ReaderSliceType = FeedbackSlice.TRAIN;
-				else if (SetupParameters["type"] == "test")
-					ReaderSliceType = FeedbackSlice.TEST;
-			}
-
-			if (SetupParameters.ContainsKey("contains"))
-				DataType = (DataType)Enum.Parse(typeof(DataType), SetupParameters["contains"]);
-			else
-				DataType = DataType.Other;
-
-			Reader = new CsvHelper.CsvReader(File.OpenText(Path), CsvConfig);
 		}
-
 
         public override void LoadData(DataContainer container)
         {
-            Logger.Current.Trace("Loading data '{0}' into container...", DatasetId);
+			Logger.Current.Trace("Loading data '{0}' into container...", Id);
+			Reader = new CsvHelper.CsvReader(File.OpenText(Path), CsvConfig);
 
 			switch (DataType)
 			{
@@ -65,7 +49,7 @@ namespace WrapRec.IO
 				case DataType.Other:
 				default:
 					throw new WrapRecException(
-						string.Format("DataType (attribute 'contains' of data element '{0}) is not specified or not supported by CsvReader", DatasetId));
+						string.Format("DataType (attribute 'contains' of data element '{0}) is not specified or not supported by CsvReader", Id));
 			}
         }
 
@@ -75,7 +59,7 @@ namespace WrapRec.IO
 			while (Reader.Read())
 			{
 				Feedback feedback = container.AddFeedback(Reader.GetField(0), Reader.GetField(1));
-				feedback.SliceType = ReaderSliceType;
+				feedback.SliceType = SliceType;
 
 				// load additional attributes (if there are any)
 				foreach (string attrName in Reader.FieldHeaders.Skip(2))
@@ -89,7 +73,7 @@ namespace WrapRec.IO
 			while (Reader.Read())
 			{
 				Rating rating = container.AddRating(Reader.GetField(0), Reader.GetField(1), float.Parse(Reader.GetField(2)));
-				rating.SliceType = ReaderSliceType;
+				rating.SliceType = SliceType;
 
 				// load additional attributes (if there are any)
 				foreach (string attrName in Reader.FieldHeaders.Skip(3))
