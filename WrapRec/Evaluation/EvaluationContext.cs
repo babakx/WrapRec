@@ -36,6 +36,7 @@ namespace WrapRec.Evaluation
         public void Clear()
         {
             Results.Clear();
+			PredictedScores.Clear();
         }
     }
 }

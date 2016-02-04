@@ -1,7 +1,7 @@
 <wraprec>
   <models>
     <model id="ml-rp" class="WrapRec.Models.MmlRatingPredictor">
-      <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="5,10" NumIter="30"/>
+      <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="2,5" NumIter="10,20"/>
     </model>
   </models>
   <data>
@@ -17,7 +17,7 @@
   </data>
   <splits>
     <split id="ml1m-fixed" type="static" dataContainer="ml" />
-    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainPortion="0.75" />
+    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatio="0.75" />
     <split id="ml1m-cv" type="crossValidation" dataContainer="ml" folds="5" />
     <split id="ml1m-custom" type="custom" dataContainer="ml" class="CustomSplitter" />
   </splits>

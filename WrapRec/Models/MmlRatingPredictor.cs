@@ -92,7 +92,13 @@ namespace WrapRec.Models
 
         public override Dictionary<string, string> GetModelParameters()
         {
-			return SetupParameters;
+			string mlClass = SetupParameters["ml-class"].Split('.').Last();
+			return SetupParameters.Select(kv =>
+			{
+				if (kv.Key == "ml-class")
+					return new KeyValuePair<string, string>("ml-class", mlClass);
+				return kv;
+			}).ToDictionary(kv => kv.Key, kv => kv.Value);
         }
     }
 }
