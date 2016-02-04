@@ -27,7 +27,7 @@
       <evaluator class="WrapRec.Evaluation.MAE" />
     </evalContext>
   </evalContexts>
-  <experiments run="ml100k-test" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" separator="\t" verbosity="info">
+  <experiments run="ml100k-test" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
     <experiment id="ml100k-test" models="ml-rp" splits="ml100k-dynamic" evalContext="rating-default" />
   </experiments>
 </wraprec>

@@ -82,8 +82,9 @@ namespace WrapRec.Core
 					Logger.Current = NLog.LogManager.GetLogger("traceLogger");
 
 				ResultSeparator = allExpEl.Attribute("separator") != null ? allExpEl.Attribute("separator").Value.Replace("\\t","\t") : ",";
-				
-				string expFolder = DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture);
+
+				bool subFolder = allExpEl.Attribute("subFolder") != null && allExpEl.Attribute("subFolder").Value == "true" ? true : false;
+				string expFolder = subFolder ? DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture) : "";
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
 					: Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				ResultsFolder = Directory.CreateDirectory(Path.Combine(rootPath, expFolder)).FullName;
