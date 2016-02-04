@@ -1,33 +1,33 @@
 <wraprec>
   <models>
-    <model id="rp" class="MediaLiteRatingPrediction">
-      <parameters ml-class="MatrixFactorization" k="5,10,20" numIter="30"/>
+    <model id="ml-rp" class="WrapRec.Models.MmlRatingPredictor">
+      <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="5,10" NumIter="30"/>
     </model>
   </models>
   <data>
 		<dataReaders>
-			<reader id="ml1m-train" path="D:\Dropbox\Datasets\ML1M\train.txt" sliceType="train" dataType="ratings" class="CsvReader" hasHeader="true" delimiter="::" />
+			<reader id="ml100k-all" path="D:\Dropbox\Datasets\MovieLens\ml-100k\u.data" sliceType="other" dataType="ratings" 
+				class="WrapRec.IO.CsvReader" hasHeader="false" delimiter="\t" />
 			<reader id="ml1m-test" path="D:\Dropbox\Datasets\ML1M\train.txt" sliceType="test" dataType="ratings" class="CsvReader" />
 			<reader id="ml1m-users" path="D:\Dropbox\Datasets\ML1M\users.txt" sliceType="other" dataType="userContext" class="CsvReader" />
 		</dataReaders>
 		<dataContainers>
-			<dataContainer id="ml" dataReaders="ml1m-train,ml1m-test" />
+			<dataContainer id="ml100k" dataReaders="ml100k-all" />
 		</dataContainers>
   </data>
   <splits>
     <split id="ml1m-fixed" type="static" dataContainer="ml" />
-    <split id="ml1m-dynamic" type="dynamic" dataContainer="ml" trainPortion="0.75" />
+    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainPortion="0.75" />
     <split id="ml1m-cv" type="crossValidation" dataContainer="ml" folds="5" />
     <split id="ml1m-custom" type="custom" dataContainer="ml" class="CustomSplitter" />
   </splits>
   <evalContexts>
     <evalContext id="rating-default">
-      <evaluator class="RMSE" />
-      <evaluator class="MAE" />
+      <evaluator class="WrapRec.Evaluation.RMSE" />
+      <evaluator class="WrapRec.Evaluation.MAE" />
     </evalContext>
   </evalContexts>
-  <expriments run="ml-test" resultsFolder="D:\Dropbox" separator="\t" verbosity="info">
-    <experiment id="ml-test" models="rp" splits="ml1m-cv" evalContext="rating-default" />
-    <experiment id="ml-test-cust" models="rp" splits="ml1m-cv" evalContext="rating-default" class="ExpCustom" />
-  </expriments>
+  <experiments run="ml100k-test" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" separator="\t" verbosity="info">
+    <experiment id="ml100k-test" models="ml-rp" splits="ml100k-dynamic" evalContext="rating-default" />
+  </experiments>
 </wraprec>

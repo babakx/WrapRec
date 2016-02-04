@@ -41,7 +41,7 @@ namespace WrapRec.Core
 		{
 			int numExperiments = Experiments.Count();
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
-			int caseNo = 1;
+			int caseNo = 1, numSuccess = 0, numFails = 0;
 
 			foreach (Experiment e in Experiments)
 			{
@@ -54,15 +54,21 @@ namespace WrapRec.Core
 					LogExperimentResults(e);
 					WriteResultsToFile(e);
 					e.Clear();
+					numSuccess++;
 				}
 				catch (Exception ex)
 				{
-					Logger.Current.Error("Error in expriment {0}, model {1}, split {2}:\n{1}", e.Id, e.Model.Id, e.Split.Id, ex.Message);
+					Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}", 
+						e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+					numFails++;
 				}
 			}
 			
 			if (_resultWriter != null)
 				_resultWriter.Close();
+
+			Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
+				numSuccess, numFails, ResultsFolder);
 		}
 
 
@@ -75,7 +81,7 @@ namespace WrapRec.Core
 				if (allExpEl.Attribute("verbosity") != null && allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
 					Logger.Current = NLog.LogManager.GetLogger("traceLogger");
 
-				ResultSeparator = allExpEl.Attribute("separator") != null ? allExpEl.Attribute("separator").Value : ",";
+				ResultSeparator = allExpEl.Attribute("separator") != null ? allExpEl.Attribute("separator").Value.Replace("\\t","\t") : ",";
 				
 				string expFolder = DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture);
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
@@ -96,7 +102,7 @@ namespace WrapRec.Core
 			}
 			catch (Exception ex)
 			{
-				Logger.Current.Error("Error in parsing the configuration file: {0}\n", ex.Message);
+				Logger.Current.Error("Error in parsing the configuration file: {0}\n{1}\n", ex.Message, ex.StackTrace);
 				Environment.Exit(1);
 			}
 		}
@@ -109,7 +115,7 @@ namespace WrapRec.Core
 			Type expType;
 			if (!string.IsNullOrEmpty(expClass))
 			{
-				expType = Type.GetType(expClass, true);
+				expType = Helpers.ResolveType(expClass);
 				if (!typeof(Experiment).IsAssignableFrom(expType))
 					throw new WrapRecException(string.Format("Experiment type '{0}' should inherit class 'WrapRec.Core.Experiment'", expClass));
 			}
@@ -163,7 +169,7 @@ namespace WrapRec.Core
             XElement modelEl = ConfigRoot.Descendants("model")
                 .Where(el => el.Attribute("id").Value == modelId).Single();
 
-            Type modelType = Type.GetType(modelEl.Attribute("class").Value, true);
+			Type modelType = Helpers.ResolveType(modelEl.Attribute("class").Value);
             if (!typeof(Model).IsAssignableFrom(modelType))
                 throw new WrapRecException(string.Format("Model type '{0}' should inherit class 'WrapRec.Models.Model'", modelType.Name));
 
@@ -179,6 +185,7 @@ namespace WrapRec.Core
 					.ToDictionary(kv => kv.Name.LocalName, kv => kv.Value);
 
 				var model = (Model)modelType.GetConstructor(Type.EmptyTypes).Invoke(null);
+				model.Id = modelId;
 				model.SetupParameters = setupParams;
 
 				yield return model;
@@ -196,7 +203,7 @@ namespace WrapRec.Core
 			Split split;
 			if (splitEl.Attribute("class") != null)
 			{
-				Type splitClassType = Type.GetType(splitEl.Attribute("class").Value);
+				Type splitClassType = Helpers.ResolveType(splitEl.Attribute("class").Value);
 				if (!typeof(Split).IsAssignableFrom(splitClassType))
 					throw new WrapRecException(string.Format("Split type '{0}' should inherit class 'WrapRec.Data.Split'", splitClassType.Name));
 
@@ -252,12 +259,12 @@ namespace WrapRec.Core
 			DataType dataType = DataType.Other;
 			XAttribute dataTypeAttr = readerEl.Attribute("dataType");
 			if (dataTypeAttr != null)
-				dataType = (DataType)Enum.Parse(typeof(DataType), dataTypeAttr.Value);
+				dataType = (DataType)Enum.Parse(typeof(DataType), dataTypeAttr.Value, true);
 
 			DatasetReader reader;
 			if (readerEl.Attribute("class") != null)
 			{
-				Type readerClassType = Type.GetType(readerEl.Attribute("class").Value);
+				Type readerClassType = Helpers.ResolveType(readerEl.Attribute("class").Value);
 				if (!typeof(DatasetReader).IsAssignableFrom(readerClassType))
 					throw new WrapRecException(string.Format("Reader type '{0}' should inherit class 'WrapRec.Data.DatasetReader'", readerClassType.Name));
 
@@ -289,7 +296,7 @@ namespace WrapRec.Core
 			foreach (XElement evalEl in contextEl.Descendants("evaluator"))
 			{
 				Evaluator eval;
-				Type evalType = Type.GetType(evalEl.Attribute("class").Value);
+				Type evalType = Helpers.ResolveType(evalEl.Attribute("class").Value);
 				if (!typeof(Evaluator).IsAssignableFrom(evalType))
 					throw new WrapRecException(string.Format("Evaluator type '{0}' should inherit class 'WrapRec.Evaluation.Evaluator'", evalType.Name));
 

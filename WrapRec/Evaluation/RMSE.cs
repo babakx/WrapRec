@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WrapRec.Core;
 
-namespace WrapRec.Evaluation.Measures
+namespace WrapRec.Evaluation
 {
     public class RMSE : Evaluator
     {

@@ -7,7 +7,7 @@ using WrapRec.Core;
 using WrapRec.Data;
 using WrapRec.Models;
 
-namespace WrapRec.Evaluation.Measures
+namespace WrapRec.Evaluation
 {
     public class MAE : Evaluator
     {

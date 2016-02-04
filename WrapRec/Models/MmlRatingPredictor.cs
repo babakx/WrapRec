@@ -10,6 +10,7 @@ using WrapRec.Evaluation;
 using WrapRec.Data;
 using System.Reflection;
 using MyMediaLite;
+using WrapRec.Utils;
 
 namespace WrapRec.Models
 {
@@ -31,19 +32,19 @@ namespace WrapRec.Models
             try
             {
                 // build MmlRatingPredictor
-                _mmlRpType = Type.GetType(SetupParameters["ml-class"]);
+				_mmlRpType = Helpers.ResolveType(SetupParameters["ml-class"]);
                 _mmlRpInstance = (IRatingPredictor) _mmlRpType.GetConstructor(Type.EmptyTypes).Invoke(null);
                 
                 // Set properties
 				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
                 {
-                    PropertyInfo pi = _mmlRpType.GetType().GetProperty(param.Key);
+					PropertyInfo pi = _mmlRpInstance.GetType().GetProperty(param.Key);
                     pi.SetValue(_mmlRpInstance, Convert.ChangeType(param.Value, pi.PropertyType));
                 }
             }
             catch (Exception ex)
             {
-                throw new WrapRecException(string.Format("Cannot resolve MmlRatingPrediction parameters: {0}", ex.Message));
+                throw new WrapRecException(string.Format("Cannot resolve MmlRatingPrediction: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
@@ -91,7 +92,7 @@ namespace WrapRec.Models
 
         public override Dictionary<string, string> GetModelParameters()
         {
-            throw new NotImplementedException();
+			return SetupParameters;
         }
     }
 }

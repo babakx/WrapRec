@@ -19,7 +19,7 @@ namespace WrapRec.IO
 		public override void Setup()
 		{
 			bool hasHeader = (SetupParameters.ContainsKey("hasHeader") && SetupParameters["hasHeader"] == "false") ? false : true;
-			string delimiter = SetupParameters.ContainsKey("delimiter") ? SetupParameters["delimiter"] : ",";
+			string delimiter = SetupParameters.ContainsKey("delimiter") ? SetupParameters["delimiter"].Replace("\\t", "\t") : ",";
 			CsvConfig = new CsvHelper.Configuration.CsvConfiguration()
 			{
 				Delimiter = delimiter,
@@ -62,8 +62,9 @@ namespace WrapRec.IO
 				feedback.SliceType = SliceType;
 
 				// load additional attributes (if there are any)
-				foreach (string attrName in Reader.FieldHeaders.Skip(2))
-					feedback.AddAttribute(attrName, Reader.GetField(attrName));
+				if (Reader.FieldHeaders != null)
+					foreach (string attrName in Reader.FieldHeaders.Skip(2))
+						feedback.AddAttribute(attrName, Reader.GetField(attrName));
 			}
 		}
 
@@ -76,13 +77,17 @@ namespace WrapRec.IO
 				rating.SliceType = SliceType;
 
 				// load additional attributes (if there are any)
-				foreach (string attrName in Reader.FieldHeaders.Skip(3))
-					rating.AddAttribute(attrName, Reader.GetField(attrName));
+				if (Reader.FieldHeaders != null)
+					foreach (string attrName in Reader.FieldHeaders.Skip(3))
+						rating.AddAttribute(attrName, Reader.GetField(attrName));
 			}
 		}
 
 		private void LoadUserContext(DataContainer container)
 		{
+			if (Reader.FieldHeaders == null)
+				throw new WrapRecException(string.Format("Expect field headers for loading UserContext in reader '{0}'.", Id));
+
 			// Assuming format userId,attr1,attr2,...
 			while (Reader.Read())
 			{
@@ -96,6 +101,9 @@ namespace WrapRec.IO
 
 		private void LoadItemContext(DataContainer container)
 		{
+			if (Reader.FieldHeaders == null)
+				throw new WrapRecException(string.Format("Expect field headers for loading ItemContext in reader '{0}'.", Id));
+
 			// Assuming format itemId,attr1,attr2,...
 			while (Reader.Read())
 			{
