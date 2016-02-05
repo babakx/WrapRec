@@ -26,8 +26,6 @@ namespace WrapRec.Core
 				Logger.Current.Info("Loading DataContainer '{0}'...", Split.Container.Id);
 				Split.Container.Load();
 			}
-			Logger.Current.Info("Setuping split '{0}'...", Split.Id);
-			Split.Setup();
 			Logger.Current.Info("Setuping model '{0}'...", Model.Id);
 			Model.Setup();
 			if (!EvaluationContext.IsSetuped)

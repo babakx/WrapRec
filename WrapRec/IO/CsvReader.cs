@@ -29,7 +29,7 @@ namespace WrapRec.IO
 
         public override void LoadData(DataContainer container)
         {
-			Logger.Current.Trace("Loading data '{0}' into container...", Id);
+			Logger.Current.Info("Loading data '{0}' into container...", Id);
 			Reader = new CsvHelper.CsvReader(File.OpenText(Path), CsvConfig);
 
 			switch (DataType)

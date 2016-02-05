@@ -78,5 +78,36 @@ namespace WrapRec.Utils
         {
             return path.Substring(path.LastIndexOf('.') + 1);
         }
-    }
+
+		// The following four extensions are added to support lazyLoad taking and skipping
+		// http://stackoverflow.com/questions/35209540/c-sharp-is-it-possible-to-lazy-load-function-parameter-after-calling-the-functio
+		public static IEnumerable<T> Take<T>(this IEnumerable<T> source, Lazy<int> count)
+		{
+			var takeSequence = source.Take(count.Value);
+			foreach (var item in takeSequence) 
+				yield return item;
+		}
+		
+		public static IEnumerable<T> Take<T>(this IEnumerable<T> source, Func<int> getCount)
+		{
+			var takeSequence = source.Take(getCount());
+			foreach (var item in takeSequence)
+				yield return item;
+		}
+
+		public static IEnumerable<T> Skip<T>(this IEnumerable<T> source, Lazy<int> count)
+		{
+			var skipSeq = source.Skip(count.Value);
+			foreach (var item in skipSeq)
+				yield return item;
+		}
+
+		public static IEnumerable<T> Skip<T>(this IEnumerable<T> source, Func<int> getCount)
+		{
+			var skipSeq = source.Skip(getCount());
+			foreach (var item in skipSeq)
+				yield return item;
+		}
+
+	}
 }

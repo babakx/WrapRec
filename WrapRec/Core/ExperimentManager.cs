@@ -143,7 +143,7 @@ namespace WrapRec.Core
                             var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
                             exp.Model = m;
-                            exp.Split = ss;
+							exp.Split = ss;
                             exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
                             exp.Id = expId;
 
@@ -219,6 +219,10 @@ namespace WrapRec.Core
 			split.Type = splitType;
 			split.Container = container;
 			split.SetupParameters = setupParams;
+			// Splits are required to be Setuped when they are being created to make sure 
+			// the subSplits are being formed (this is necessary for CrossValidation) becuase
+			// the number of experiments is determined based on the number of SubSplits
+			split.Setup();
 
 			return split;
         }
@@ -330,7 +334,7 @@ Model Parameteres:
 
 		private void LogExperimentResults(Experiment exp)
 		{
-			string format = @"\nResults:\n {0}\nTimes:\n Training: {1} Evaluation: {2}\n";
+			string format = "\nResults:\n {0}\nTimes:\n Training: {1} Evaluation: {2}\n";
 
 			string results = exp.EvaluationContext.Results.Select(kv => kv.Key + ":" + kv.Value)
 				.Aggregate((a, b) => a + " " + b);

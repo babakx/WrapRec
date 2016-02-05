@@ -23,7 +23,8 @@ namespace WrapRec.Data
 		public DataContainer Container { get; set; }
 		public Dictionary<string, string> SetupParameters { get; set; }
 		public SplitType Type { get; set; }
-		
+		public bool IsSetup { get; protected set; }
+
 		protected IEnumerable<Feedback> _train;
         protected IEnumerable<Feedback> _test;
 
