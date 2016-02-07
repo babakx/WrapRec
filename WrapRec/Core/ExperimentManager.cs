@@ -27,7 +27,11 @@ namespace WrapRec.Core
 
 		StreamWriter _resultWriter;
 		string _lastModelId;
-		string _lastExpId;
+        string _lastExpId;
+        Dictionary<string, StreamWriter> _statWriters;
+		Dictionary<string, Dictionary<string, string>> _splitStats = new Dictionary<string, Dictionary<string, string>>();
+		Dictionary<string, Dictionary<string, string>> _containerStats = new Dictionary<string, Dictionary<string, string>>();
+        Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
 
         public ExperimentManager(string configFile)
         {
@@ -39,10 +43,22 @@ namespace WrapRec.Core
 
 		public void RunExperiments()
 		{
-			int numExperiments = Experiments.Count();
+            int numExperiments = 0;
+            try
+            {
+                // this will cause all experiments to be formed
+                // sine the experiments contain lazy load objects, this is not a heavy process
+                numExperiments = Experiments.Count();
+            }
+            catch (Exception ex)
+            {
+                Logger.Current.Error("Error in setuping experiments. Make sure the configuration file is formatted correctly. \nError: {0}\n{1}", ex.Message, ex.StackTrace);
+                Environment.Exit(1);
+            }
+
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
 			int caseNo = 1, numSuccess = 0, numFails = 0;
-
+            
 			foreach (Experiment e in Experiments)
 			{
 				try
@@ -67,7 +83,10 @@ namespace WrapRec.Core
 			if (_resultWriter != null)
 				_resultWriter.Close();
 
-			Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
+            foreach (StreamWriter w in _statWriters.Values)
+                w.Close();
+
+            Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
 				numSuccess, numFails, ResultsFolder);
 		}
 
@@ -95,7 +114,9 @@ namespace WrapRec.Core
 				if (runAttr != null)
 				{
 					var expIds = runAttr.Value.Split(',');
-					expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
+                    _statWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".splits.csv")));
+                    _loggedSplits = expIds.ToDictionary(eId => eId, eId => new List<string>());
+                    expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
 				}
 
 				Logger.Current.Info("Resolving experiments...");
@@ -103,7 +124,7 @@ namespace WrapRec.Core
 			}
 			catch (Exception ex)
 			{
-				Logger.Current.Error("Error in parsing the configuration file: {0}\n{1}\n", ex.Message, ex.StackTrace);
+				Logger.Current.Error("Error in setuping experiments or parsing the configuration file: {0}\n{1}\n", ex.Message, ex.StackTrace);
 				Environment.Exit(1);
 			}
 		}
@@ -375,6 +396,47 @@ Model Parameteres:
 
 			_resultWriter.WriteLine(result);
 			_resultWriter.Flush();
+		}
+
+		private void WriteSplitInfo(Experiment exp)
+		{
+            if (_loggedSplits[exp.Id].Contains(exp.Split.Id))
+                return;
+
+            var splitStats = GetSplitStatistics(exp.Split.Id);
+            var containerStats = GetContainerStatistics(exp.Split.Container.Id);
+
+            if (!_loggedSplits[exp.Id].Contains("header"))
+            {
+                string header = splitStats.Keys.Concat(containerStats.Keys)
+                    .Aggregate((a, b) => a + ResultSeparator + b);
+                _statWriters[exp.Id].WriteLine(header);
+                _loggedSplits[exp.Id].Add("header");
+            }
+
+            string stats = splitStats.Values.Concat(containerStats.Values)
+                .Aggregate((a, b) => a + ResultSeparator + b);
+            _statWriters[exp.Id].WriteLine(stats);
+            _loggedSplits[exp.Id].Add(exp.Split.Id);
+            _statWriters[exp.Id].Flush();
+        }
+
+        public Dictionary<string, string> GetSplitStatistics(string splitId)
+		{
+			if (_splitStats.ContainsKey(splitId))
+				return _splitStats[splitId];
+			
+			Logger.Current.Info("Calculating split '{0}' statistics...", splitId);
+			return null;
+		}
+		
+		public Dictionary<string, string> GetContainerStatistics(string containerId)
+		{
+			if (_containerStats.ContainsKey(containerId))
+				return _containerStats[containerId];
+
+			Logger.Current.Info("Calculating dataContainer '{0}' statistics...", containerId);
+			return null;
 		}
 
     }
