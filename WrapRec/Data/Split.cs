@@ -27,6 +27,7 @@ namespace WrapRec.Data
 
 		protected IEnumerable<Feedback> _train;
         protected IEnumerable<Feedback> _test;
+        protected Dictionary<string, string> _statistics;
 
         public IEnumerable<Split> SubSplits { get; set; }
 
@@ -42,5 +43,102 @@ namespace WrapRec.Data
 
 		public abstract void Setup();
 
-	}
+        public Dictionary<string, string> GetStatistics()
+        {
+            if (_statistics != null)
+                return _statistics;
+
+            Logger.Current.Info("Calculating split '{0}' statistics...", Id);
+
+            var trainUsers = new Dictionary<string, int>();
+            var trainItems = new Dictionary<string, int>();
+
+            var testUsers = new Dictionary<string, int>();
+            var testItems = new Dictionary<string, int>();
+
+            int trainCount = 0, testCount = 0;
+
+            foreach (Feedback f in Train)
+            {
+                trainCount++;
+                string userId = f.User.Id;
+                string itemId = f.Item.Id;
+
+                if (!trainUsers.ContainsKey(userId))
+                    trainUsers[userId] = 1;
+                else
+                    trainUsers[userId]++;
+
+                if (!trainItems.ContainsKey(itemId))
+                    trainItems[itemId] = 1;
+                else
+                    trainItems[itemId]++;
+            }
+
+            foreach (Feedback f in Test)
+            {
+                testCount++;
+                string userId = f.User.Id;
+                string itemId = f.Item.Id;
+
+                if (!testUsers.ContainsKey(userId))
+                    testUsers[userId] = 1;
+                else
+                    testUsers[userId]++;
+
+                if (!testItems.ContainsKey(itemId))
+                    testItems[itemId] = 1;
+                else
+                    testItems[itemId]++;
+            }
+
+            _statistics = new Dictionary<string, string>();
+
+            int totalCount = trainCount + testCount;
+            float percTrain = 100f * ((float)trainCount / totalCount);
+            float percTest = 100f * ((float)testCount / totalCount);
+
+            long trainMatrixCount = (long)trainUsers.Count * trainItems.Count;
+            double sparsityTrain = (double)100L * (trainMatrixCount - trainCount) / trainMatrixCount;
+
+            long testMatrixCount = (long)testUsers.Count * testItems.Count;
+            double sparsityTest = (double)100L * (testMatrixCount - testCount) / testMatrixCount;
+
+            _statistics.Add("splitId", Id);
+
+            _statistics.Add("train", trainCount.ToString());
+            _statistics.Add("test", testCount.ToString());
+            _statistics.Add("%train", string.Format("{0:0.00}", percTrain));
+            _statistics.Add("%test", string.Format("{0:0.00}", percTest));
+
+            _statistics.Add("trainUsers", trainUsers.Count.ToString());
+            _statistics.Add("trainItems", trainItems.Count.ToString());
+            _statistics.Add("sparsityTrain", string.Format("{0:0.00}", sparsityTrain));
+
+            _statistics.Add("testUsers", testUsers.Count.ToString());
+            _statistics.Add("testItems", testItems.Count.ToString());
+            _statistics.Add("sparsityTest", string.Format("{0:0.00}", sparsityTest));
+
+            _statistics.Add("newTestUsers", testUsers.Keys.Except(trainUsers.Keys).Count().ToString());
+            _statistics.Add("newTestItems", testItems.Keys.Except(trainItems.Keys).Count().ToString());
+
+            _statistics.Add("trUsrMinFb", trainUsers.Values.Min().ToString());
+            _statistics.Add("trUsrMaxFb", trainUsers.Values.Max().ToString());
+            _statistics.Add("trUsrAvgFb", string.Format("{0:0.00}", trainUsers.Values.Average()));
+
+            _statistics.Add("teUsrMinFb", testUsers.Values.Min().ToString());
+            _statistics.Add("teUsrMaxFb", testUsers.Values.Max().ToString());
+            _statistics.Add("teUsrAvgFb", string.Format("{0:0.00}", testUsers.Values.Average()));
+
+            _statistics.Add("trItmMinFb", trainItems.Values.Min().ToString());
+            _statistics.Add("trItmMaxFb", trainItems.Values.Max().ToString());
+            _statistics.Add("trItmAvgFb", string.Format("{0:0.00}", trainItems.Values.Average()));
+
+            _statistics.Add("teItmMinFb", testItems.Values.Min().ToString());
+            _statistics.Add("teItmMaxFb", testItems.Values.Max().ToString());
+            _statistics.Add("teItmAvgFb", string.Format("{0:0.00}", testItems.Values.Average()));
+
+            return _statistics;
+        }
+    }
 }

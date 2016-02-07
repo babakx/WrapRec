@@ -19,6 +19,7 @@ namespace WrapRec.Data
         public Dictionary<string, Item> Items { get; private set; }
         public HashSet<Feedback> Feedbacks { get; private set; }
 
+        protected Dictionary<string, string> _statistics;
 
         public DataContainer()
         {
@@ -162,14 +163,57 @@ namespace WrapRec.Data
             Logger.Current.Info("Densify complete with min feedback {0}", k);
         }
 
-		public void Clear()
-		{ 
-		
-		}
-
         public override string ToString()
         {
             return string.Format("{0} Users, {1} Items, {2} Feedbacks", Users.Count, Items.Count, Feedbacks.Count);
+        }
+
+        public Dictionary<string, string> GetStatistics()
+        {
+            if (_statistics != null)
+                return _statistics;
+
+            Logger.Current.Info("Calculating dataContainer '{0}' statistics...", Id);
+            _statistics = new Dictionary<string, string>();
+
+            long matrixCount = (long)Users.Count * Items.Count;
+            double sparsity = (double)100L * (matrixCount - Feedbacks.Count) / matrixCount;
+
+            var users = new Dictionary<string, int>();
+            var items = new Dictionary<string, int>();
+
+            foreach (Feedback f in Feedbacks)
+            {
+                string userId = f.User.Id;
+                string itemId = f.Item.Id;
+
+                if (!users.ContainsKey(userId))
+                    users[userId] = 1;
+                else
+                    users[userId]++;
+
+                if (!items.ContainsKey(itemId))
+                    items[itemId] = 1;
+                else
+                    items[itemId]++;
+            }
+
+            _statistics.Add("containerId", Id);
+
+            _statistics.Add("feedbacks", Feedbacks.Count.ToString());
+            _statistics.Add("users", Users.Count.ToString());
+            _statistics.Add("items", Items.Count.ToString());
+            _statistics.Add("sparsity", string.Format("{0:0.00}", sparsity));
+
+            _statistics.Add("usrMinFb", users.Values.Min().ToString());
+            _statistics.Add("usrMaxFb", users.Values.Max().ToString());
+            _statistics.Add("usrAvgFb", string.Format("{0:0.00}", users.Values.Average()));
+
+            _statistics.Add("itmMinFb", items.Values.Min().ToString());
+            _statistics.Add("itmMaxFb", items.Values.Max().ToString());
+            _statistics.Add("itmAvgFb", string.Format("{0:0.00}", items.Values.Average()));
+
+            return _statistics;
         }
     }
 }

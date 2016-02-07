@@ -29,8 +29,6 @@ namespace WrapRec.Core
 		string _lastModelId;
         string _lastExpId;
         Dictionary<string, StreamWriter> _statWriters;
-		Dictionary<string, Dictionary<string, string>> _splitStats = new Dictionary<string, Dictionary<string, string>>();
-		Dictionary<string, Dictionary<string, string>> _containerStats = new Dictionary<string, Dictionary<string, string>>();
         Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
 
         public ExperimentManager(string configFile)
@@ -66,7 +64,8 @@ namespace WrapRec.Core
 					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
 					e.Setup();
 					LogExperimentInfo(e);
-					e.Run();
+                    WriteSplitInfo(e);
+                    e.Run();
 					LogExperimentResults(e);
 					WriteResultsToFile(e);
 					e.Clear();
@@ -403,8 +402,8 @@ Model Parameteres:
             if (_loggedSplits[exp.Id].Contains(exp.Split.Id))
                 return;
 
-            var splitStats = GetSplitStatistics(exp.Split.Id);
-            var containerStats = GetContainerStatistics(exp.Split.Container.Id);
+            var splitStats = exp.Split.GetStatistics();
+            var containerStats = exp.Split.Container.GetStatistics();
 
             if (!_loggedSplits[exp.Id].Contains("header"))
             {
@@ -420,24 +419,6 @@ Model Parameteres:
             _loggedSplits[exp.Id].Add(exp.Split.Id);
             _statWriters[exp.Id].Flush();
         }
-
-        public Dictionary<string, string> GetSplitStatistics(string splitId)
-		{
-			if (_splitStats.ContainsKey(splitId))
-				return _splitStats[splitId];
-			
-			Logger.Current.Info("Calculating split '{0}' statistics...", splitId);
-			return null;
-		}
-		
-		public Dictionary<string, string> GetContainerStatistics(string containerId)
-		{
-			if (_containerStats.ContainsKey(containerId))
-				return _containerStats[containerId];
-
-			Logger.Current.Info("Calculating dataContainer '{0}' statistics...", containerId);
-			return null;
-		}
 
     }
 }
