@@ -25,11 +25,10 @@ namespace WrapRec.Core
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 
-		StreamWriter _resultWriter;
-		string _lastModelId;
-        string _lastExpId;
         Dictionary<string, StreamWriter> _statWriters;
+        Dictionary<string, StreamWriter> _resultWriters;
         Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
+        Dictionary<string, List<string>> _loggedModels = new Dictionary<string, List<string>>();
 
         public ExperimentManager(string configFile)
         {
@@ -78,9 +77,9 @@ namespace WrapRec.Core
 					numFails++;
 				}
 			}
-			
-			if (_resultWriter != null)
-				_resultWriter.Close();
+
+            foreach (StreamWriter w in _resultWriters.Values)
+                w.Close();
 
             foreach (StreamWriter w in _statWriters.Values)
                 w.Close();
@@ -113,8 +112,12 @@ namespace WrapRec.Core
 				if (runAttr != null)
 				{
 					var expIds = runAttr.Value.Split(',');
+
+                    _resultWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".csv")));
                     _statWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".splits.csv")));
                     _loggedSplits = expIds.ToDictionary(eId => eId, eId => new List<string>());
+                    _loggedModels = expIds.ToDictionary(eId => eId, eId => new List<string>());
+
                     expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
 				}
 
@@ -364,17 +367,8 @@ Model Parameteres:
 
 		private void WriteResultsToFile(Experiment exp)
 		{
-			if (_lastExpId != exp.Id)
-			{
-				if (_resultWriter != null)
-					_resultWriter.Close();
-
-				_resultWriter = new StreamWriter(Path.Combine(ResultsFolder, exp.Id + ".csv"));
-				_lastExpId = exp.Id;
-			}
-			
-			// write a header to the csv file if the model is changed (different models have different parameters)
-			if (_lastModelId != exp.Model.Id)
+            // write a header to the csv file if the model is changed (different models have different parameters)
+            if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
 				string header = new string[] { "ExpeimentId", "ModelId", "SplitId" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
@@ -382,8 +376,8 @@ Model Parameteres:
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
 
-				_resultWriter.WriteLine(header);
-				_lastModelId = exp.Model.Id;
+				_resultWriters[exp.Id].WriteLine(header);
+                _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
 			string result = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
@@ -393,8 +387,8 @@ Model Parameteres:
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
 				.Aggregate((a, b) => a + ResultSeparator + b);
 
-			_resultWriter.WriteLine(result);
-			_resultWriter.Flush();
+			_resultWriters[exp.Id].WriteLine(result);
+			_resultWriters[exp.Id].Flush();
 		}
 
 		private void WriteSplitInfo(Experiment exp)
