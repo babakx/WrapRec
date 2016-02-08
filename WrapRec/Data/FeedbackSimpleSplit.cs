@@ -15,15 +15,18 @@ namespace WrapRec.Data
 		public override void Setup()
 		{
 			// the CrossValidationSplit is already setuped by its parent split
-			if (IsSetup || Type == SplitType.CROSSVALIDATION_SPLIT)
+			if (IsSetup || Type == SplitType.CROSSVALIDATION_SUBSPLIT || Type == SplitType.DYNAMIC_SUBSPLIT)
+			{
+				IsSetup = true;
 				return;
+			}
 
 			// Setuping splits
-			float trainRatio = 1f;
+			float[] trainRatios = new float[] { 1f };
 			int numFolds = 5;
 
-			if (SetupParameters.ContainsKey("trainRatio"))
-				trainRatio = float.Parse(SetupParameters["trainRatio"]);
+			if (SetupParameters.ContainsKey("trainRatios"))
+				trainRatios = SetupParameters["trainRatios"].Split(',').Select(tr => float.Parse(tr)).ToArray();
 
 			if (SetupParameters.ContainsKey("numFolds"))
 				numFolds = int.Parse(SetupParameters["numFolds"]);
@@ -36,12 +39,23 @@ namespace WrapRec.Data
 			else if (Type == SplitType.DYNAMIC)
 			{
 				var feedbacks = Container.Feedbacks.Shuffle();
-				// the trainCount wont be calculated until the enumerator is being used
-				// So container is not required to be loaded in advanced
-				var trainCount = new Lazy<int>(() => Convert.ToInt32(Container.Feedbacks.Count * trainRatio));
 
-				_train = feedbacks.Take(trainCount);
-				_test = feedbacks.Skip(trainCount);
+				SubSplits = trainRatios.Select(tr => 
+				{
+					// the trainCount wont be calculated until the enumerator is being used
+					// So container is not required to be loaded in advanced
+					var trainCount = new Lazy<int>(() => Convert.ToInt32(Container.Feedbacks.Count * tr));
+
+					var train = feedbacks.Take(trainCount);
+					var test = feedbacks.Skip(trainCount);
+
+					return new FeedbackSimpleSplit(train, test) 
+					{ 
+						Id = Id + "-" + tr.ToString(),
+						Type = SplitType.DYNAMIC_SUBSPLIT,
+						Container = this.Container
+					};
+				});
 			}
 			else if (Type == SplitType.CROSSVALIDATION)
 			{
@@ -61,7 +75,7 @@ namespace WrapRec.Data
 						return new FeedbackSimpleSplit(train, test) 
 						{ 
 							Id = this.Id + "-fold" + (i + 1),
-							Type = SplitType.CROSSVALIDATION_SPLIT,
+							Type = SplitType.CROSSVALIDATION_SUBSPLIT,
 							Container = this.Container
 						};
 					});
