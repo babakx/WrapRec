@@ -81,7 +81,7 @@
     <Compile Include="IO\CsvReader.cs" />
     <Compile Include="IO\DatasetReader.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="Models\MmlRatingPredictor.cs" />
+    <Compile Include="Models\MmlRecommender.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
