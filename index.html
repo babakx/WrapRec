@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Wraprec by babakx</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Wraprec</h1>
+        <h2>A framework to evaluate recommender system algorithms</h2>
+        <a href="https://github.com/babakx/WrapRec" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="wraprec" class="anchor" href="#wraprec" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>WrapRec</h1>
+
+<p>A toolkit to implement recommender system algorithms</p>
+
+<p>WrapRec is a toolkit, implemented in C#, for recommender system algorithms.</p>
+
+<p>Check the <a href="https://github.com/babakx/WrapRec/wiki">Wiki page</a> for more documenations about WrapRec.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li><p><strong>Easy to use</strong>
+The most important feature of this toolbox is to be able to run a recommender algorithm in a few clear steps.</p></li>
+<li><p><strong>Common interface for reading datasets with different format</strong>
+The toolbox is customizable to read any data format. </p></li>
+<li><p><strong>Cross-Domain recommendation</strong>
+The toolbox provide interfaces for Cross-Domain recommendation in a object-oriented manner.</p></li>
+<li><p><strong>Pipeline-based evaluation</strong>
+Evaluation of different algorithms can be done in a pipeline-based-pattern mechanism. This allows to easily use different evaluators for an experiment.</p></li>
+<li><p><strong>Context-aware recommendation</strong>
+The toolbox is highly customizable to handle context-aware recommendation algorithms.</p></li>
+<li><p><strong>Relational data interface</strong>
+The toolbox provides an additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature benefits from the advatages of the <a href="http://msdn.microsoft.com/en-us/data/ef.aspx">Micorsoft Entity Framework</a> as well as the .Net Language Intergrated Query (LINQ) to do data access in a felixible way.</p></li>
+<li><p><strong>Exetensions of existing libraries</strong>
+The object model of WrapRec allows this toolbox to easily integrate existing toolboxes into the model and benefits from the existing code. Currently this toolbox has wrappers around <a href="http://www.mymedialite.net">MyMediaLite</a>, a recommendation framework wrriten in C#, and <a href="http://www.libfm.org">LibFM</a>, a library for factorization machines written in C++.</p></li>
+</ul>
+
+<h2>
+<a id="usage-samples" class="anchor" href="#usage-samples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage Samples</h2>
+
+<h4>
+<a id="simple-train-and-test-scenario" class="anchor" href="#simple-train-and-test-scenario" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Simple train and test scenario</h4>
+
+<p>With a few lines of code you can run a full train/test scenario. This can be done in 3 steps: 1. Define a dataset 2. Define a recommender algorithm 3. Evaluate.</p>
+
+<p>Below is a sample code, which loads Movielens data, splits it into 70% training set and 30% testset and evaluates it based on the BiasedMatricFactorization algorithm. The evaluation metrics are RMSE and MAE.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// step 1: dataset            </span>
+<span class="pl-k">var</span> dataset <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Dataset</span><span class="pl-k">&lt;</span>MovieLensItemRating<span class="pl-k">&gt;</span>(<span class="pl-k">new</span> <span class="pl-en">MovieLensReader</span>(<span class="pl-s"><span class="pl-pds">"</span>/ratings.dat<span class="pl-pds">"</span></span>), <span class="pl-c1">0.7</span>);
+
+<span class="pl-c">// step 2: recommender</span>
+<span class="pl-k">var</span> recommender <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MediaLiteRatingPredictor</span>(<span class="pl-k">new</span> <span class="pl-en">BiasedMatrixFactorization</span>());
+
+<span class="pl-c">// step3: evaluation</span>
+<span class="pl-k">var</span> ep <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">EvaluationPipeline</span><span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span>(<span class="pl-k">new</span> <span class="pl-en">EvalutationContext</span><span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span>(recommender, dataset));
+<span class="pl-smi">ep</span>.<span class="pl-smi">Evaluators</span>.<span class="pl-en">Add</span>(<span class="pl-k">new</span> <span class="pl-en">RMSE</span>());
+<span class="pl-smi">ep</span>.<span class="pl-smi">Evaluators</span>.<span class="pl-en">Add</span>(<span class="pl-k">new</span> <span class="pl-en">MAE</span>());
+
+<span class="pl-smi">ep</span>.<span class="pl-en">Run</span>();</pre></div>
+
+<h4>
+<a id="custom-data-reader" class="anchor" href="#custom-data-reader" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Data Reader</h4>
+
+<p>WrapRec is capable of easily incorporating custom data formats. In the above example, you can replace class <code>MovieLensReader</code> with a custom dataset reader. Any class which implements the interface <code>IDatasetReader&lt;T&gt;</code> can be incoporated into the mode.
+Here is an example of a custom dataset reader.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MyCustomDataReader</span> <span class="pl-k">:</span> IDatasetReader<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span>
+{
+    string _datasetPath;
+
+    <span class="pl-k">public</span> <span class="pl-en">MyCustomDataReader</span>(string datasetPath)
+    {
+        _datasetPath <span class="pl-k">=</span> datasetPath;
+    }
+
+    <span class="pl-k">public</span> IEnumerable<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span> <span class="pl-en">ReadSamples</span>()
+    {
+        <span class="pl-c">// logic to read data is here</span>
+    }
+}</pre></div>
+
+<h4>
+<a id="custom-evaluator" class="anchor" href="#custom-evaluator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Evaluator</h4>
+
+<p>The framework provides a configurable evaluation mechanism through pipeline pattern. If you want to have your own custom evaluator, all you need is to implement the interface <code>IEvaluator</code>. This method already provides a context object which includes the results of the tested samples.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">CustomEvaluator</span> <span class="pl-k">:</span> IEvaluator<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span>
+{
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">Evaluate</span>(EvalutationContext<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span> context)
+    {
+        <span class="pl-c">// make sure that the test samples are predicted</span>
+        <span class="pl-smi">context</span>.<span class="pl-en">RunDefaultTrainAndTest</span>();
+
+        <span class="pl-c">// here you can access to tested samples</span>
+        <span class="pl-k">var</span> testset <span class="pl-k">=</span> <span class="pl-smi">context</span>.<span class="pl-smi">Dataset</span>.<span class="pl-smi">TestSamples</span>;
+
+        <span class="pl-c">// here is the evaluation logic</span>
+        double metric <span class="pl-k">=</span> <span class="pl-en">LogicToCalculateMetic</span>(testset);
+
+        <span class="pl-c">// here you update the context with calculated metric for posisble re-use by other evaluators</span>
+        context[<span class="pl-s"><span class="pl-pds">"</span>CustomEvaluator<span class="pl-pds">"</span></span>] <span class="pl-k">=</span> metric
+    }
+}</pre></div>
+
+<h3>
+<a id="custom-recommender-algorithm" class="anchor" href="#custom-recommender-algorithm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom Recommender Algorithm</h3>
+
+<p>With a similar logic, custom recommendation algorithms can be implemented by implementing either interface <code>IPredictor&lt;T&gt;</code> for rating prediction tasks, or interface <code>IItemRecommender</code> for item recommendation tasks. Here we already wrapped MyMediaLite rating algorithms into the toolbox. Following you can see a sample of a custom recommender algorithm.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">CustomRatingPredictor</span> <span class="pl-k">:</span> IPredictor<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span>
+{
+    bool _isTrained;
+    Model _trainedModel;
+
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">Train</span>(IEnumerable<span class="pl-k">&lt;</span>ItemRating<span class="pl-k">&gt;</span> trainSet)
+    {
+        <span class="pl-c">// logic for training is here</span>
+        <span class="pl-c">// ...</span>
+
+        <span class="pl-c">// _trainedModel is build</span>
+
+        <span class="pl-c">// if training was successfull</span>
+        _isTrained <span class="pl-k">=</span> <span class="pl-c1">true</span>;
+    }
+
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">Predict</span>(ItemRating sample)
+    {
+        <span class="pl-c">// update the sample with the predicted rating</span>
+        <span class="pl-smi">sample</span>.<span class="pl-smi">PredictedRating</span> <span class="pl-k">=</span> <span class="pl-smi">_trainedModel</span>.<span class="pl-en">Predict</span>(sample);
+    }
+
+    <span class="pl-k">public</span> bool IsTrained
+    {
+        get
+        {
+            <span class="pl-k">return</span> _isTrained;
+        }
+    }
+}</pre></div>
+
+<h2>
+<a id="usage-and-documentations" class="anchor" href="#usage-and-documentations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage and Documentations</h2>
+
+<p>The project can be easily installed by downloading the package from <a href="http://www.nuget.org/packages/WrapRec.dll/">NuGet</a> gallery.
+This project is quite new. The documentation is continuously updated. Please contact Babak Loni, (babak dot loni At gmail dot com) for questions about this toolbox.</p>
+
+<h2>
+<a id="acknowledgment" class="anchor" href="#acknowledgment" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acknowledgment</h2>
+
+<p>The implementation of this project is supported by the European 7th Framework Program projects under grant agreements no. 610594 (<a href="http://www.crowdrec.eu/">CrowdRec</a>).</p>
+
+<p><img src="http://crowdrec.eu/wp-content/themes/crowdrec/img/CrowdRec_Logo.png"></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/babakx/WrapRec/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/babakx/WrapRec/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/babakx/WrapRec"></a> is maintained by <a href="https://github.com/babakx">babakx</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
