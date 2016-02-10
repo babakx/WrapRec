@@ -91,11 +91,10 @@ namespace WrapRec.Models
 		{
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
 			{
-				foreach (var feedback in split.Test)
-				{
-					context.PredictedScores.Add(feedback, Predict(feedback));
-				}
-
+				if (DataType == DataType.Ratings)
+					foreach (var feedback in split.Test)
+						context.PredictedScores.Add(feedback, Predict(feedback));
+	
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
 		}

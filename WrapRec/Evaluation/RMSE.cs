@@ -17,7 +17,7 @@ namespace WrapRec.Evaluation
 				sum += Math.Pow(((Rating)kv.Key).Value - kv.Value, 2);
 			}
 
-			context.Results["RMSE"] = string.Format("{0:0.0000}", Math.Sqrt(sum / context.PredictedScores.Count()));
+			context.AddResult("rmse", "RMSE", string.Format("{0:0.0000}", Math.Sqrt(sum / context.PredictedScores.Count())));
 		}
 	}
 }

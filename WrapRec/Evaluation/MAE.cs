@@ -19,7 +19,7 @@ namespace WrapRec.Evaluation
 				sum += Math.Abs(((Rating)kv.Key).Value - kv.Value);
 			}
 
-			context.Results["MAE"] = string.Format("{0:0.0000}", sum / context.PredictedScores.Count());
+			context.AddResult("mae", "MAE", string.Format("{0:0.0000}", sum / context.PredictedScores.Count()));
 		}
 	}
 }

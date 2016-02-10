@@ -359,7 +359,9 @@ Model Parameteres:
 		{
 			string format = "\nResults:\n {0}\nTimes:\n Training: {1} Evaluation: {2}\n";
 
-			string results = exp.EvaluationContext.Results.Select(kv => kv.Key + ":" + kv.Value)
+			// only first set of results would be logged due to space issue in the screen 
+			// complete results would be stored in the csv file
+			string results = exp.EvaluationContext.GetResults().First().Select(kv => kv.Key + ":" + kv.Value)
 				.Aggregate((a, b) => a + " " + b);
 
 			Logger.Current.Info(format, results, exp.TrainTime, exp.EvaluationTime);
@@ -367,27 +369,35 @@ Model Parameteres:
 
 		private void WriteResultsToFile(Experiment exp)
 		{
-            // write a header to the csv file if the model is changed (different models have different parameters)
+            var allResults = exp.EvaluationContext.GetResults().ToList();
+			
+			// write a header to the csv file if the model is changed (different models have different parameters)
             if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
-				string header = new string[] { "ExpeimentId", "ModelId", "SplitId" }
+				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
-					.Concat(exp.EvaluationContext.Results.Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
 
-				_resultWriters[exp.Id].WriteLine(header);
+				string resultsHeader = allResults.Take(1).Single().Select(kv => kv.Key).Aggregate((a, b) => a + ResultSeparator + b);
+
+				_resultWriters[exp.Id].WriteLine(expHeader + ResultSeparator + resultsHeader);
                 _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
-			string result = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
+			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
-				.Concat(exp.EvaluationContext.Results.Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
 				.Aggregate((a, b) => a + ResultSeparator + b);
 
-			_resultWriters[exp.Id].WriteLine(result);
+			// for each set of results one row would be written to the file
+			foreach (Dictionary<string, string> resultsDic in allResults)
+			{
+				var results = resultsDic.Select(kv => kv.Value).Aggregate((a, b) => a + ResultSeparator + b);
+				_resultWriters[exp.Id].WriteLine(expInfo + ResultSeparator + results);
+			}
+
 			_resultWriters[exp.Id].Flush();
 		}
 
