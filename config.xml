@@ -25,10 +25,10 @@
     <evalContext id="rating-default">
       <evaluator class="WrapRec.Evaluation.RMSE" />
       <evaluator class="WrapRec.Evaluation.MAE" />
-      <evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
+      <evaluator class="WrapRec.Evaluation.RankingEvaluatorsOpr" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
     </evalContext>
 		<evalContext id="ranking">
-			<evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="test" candidateItemsFile="file.txt" numCandidates="max" cutOffs="10"  />
+			<evaluator class="WrapRec.Evaluation.RankingEvaluatorsOpr" candidateItemsMode="test" candidateItemsFile="file.txt" numCandidates="max" cutOffs="10"  />
 		</evalContext>
 	</evalContexts>
   <experiments run="ml100k-dynamic" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">

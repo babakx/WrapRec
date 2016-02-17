@@ -13,7 +13,7 @@ using LinqLib.Sequence;
 
 namespace WrapRec.Evaluation
 {
-	public class RankingEvaluators : Evaluator
+	public class RankingEvaluatorsOpr : Evaluator
 	{
         public string CandidateItemsFile { get; private set; }
         public CandidateItems CandidateItemsMode { get; private set; }
@@ -154,6 +154,7 @@ namespace WrapRec.Evaluation
 					results.Add("Recall", string.Format("{0:0.0000}", recallsOpr[maxCand, k]));
 					results.Add("MRR", string.Format("{0:0.0000}", mrrOpr[maxCand, k]));
 					results.Add("NDCG", string.Format("{0:0.0000}", ndcgOpr[maxCand, k]));
+					results.Add("EvalMethod", "OPR");
 
 					context.AddResultsSet("rankingMeasures", results);
 				}				

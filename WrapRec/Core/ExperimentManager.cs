@@ -373,8 +373,10 @@ Model Parameteres:
 		private void WriteResultsToFile(Experiment exp)
 		{
             var allResults = exp.EvaluationContext.GetResults().ToList();
-			
+			var resultFields = allResults.SelectMany(dic => dic.Keys).Distinct().ToList();
+
 			// write a header to the csv file if the model is changed (different models have different parameters)
+			// assuming one evaluation context is beeing used for all experiments
             if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
 				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId" }
@@ -382,7 +384,7 @@ Model Parameteres:
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
 
-				string resultsHeader = allResults.Take(1).Single().Select(kv => kv.Key).Aggregate((a, b) => a + ResultSeparator + b);
+				string resultsHeader = resultFields.Aggregate((a, b) => a + ResultSeparator + b);
 
 				_resultWriters[exp.Id].WriteLine(expHeader + ResultSeparator + resultsHeader);
                 _loggedModels[exp.Id].Add(exp.Model.Id);
@@ -397,7 +399,18 @@ Model Parameteres:
 			// for each set of results one row would be written to the file
 			foreach (Dictionary<string, string> resultsDic in allResults)
 			{
-				var results = resultsDic.Select(kv => kv.Value).Aggregate((a, b) => a + ResultSeparator + b);
+				string results = "";
+				for (int i = 0; i < resultFields.Count; i++)
+				{
+					if (resultsDic.ContainsKey(resultFields[i]))
+						results += resultsDic[resultFields[i]];
+					else
+						results += "NA";
+
+					if (i < resultFields.Count - 1)
+						results += ResultSeparator;
+				}
+
 				_resultWriters[exp.Id].WriteLine(expInfo + ResultSeparator + results);
 			}
 
