@@ -1,9 +1,9 @@
 <wraprec>
   <models>
-    <model id="ml-rp" class="WrapRec.Models.MmlRatingPredictor">
-      <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="2,5" NumIter="10,20"/>
+    <model id="ml-rp" class="WrapRec.Models.MmlRecommender">
+      <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="5" NumIter="10,20" />
     </model>
-  </models>
+	</models>
   <data>
 		<dataReaders>
 			<reader id="ml100k-all" path="D:\Dropbox\Datasets\MovieLens\ml-100k\u.data" sliceType="other" dataType="ratings" 
@@ -17,17 +17,22 @@
   </data>
   <splits>
     <split id="ml1m-fixed" type="static" dataContainer="ml" />
-    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatio="0.75" />
-    <split id="ml1m-cv" type="crossValidation" dataContainer="ml" folds="5" />
+    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatios="0.75" />
+    <split id="ml100k-cv" type="crossValidation" dataContainer="ml100k" numFolds="5" />
     <split id="ml1m-custom" type="custom" dataContainer="ml" class="CustomSplitter" />
   </splits>
   <evalContexts>
     <evalContext id="rating-default">
       <evaluator class="WrapRec.Evaluation.RMSE" />
       <evaluator class="WrapRec.Evaluation.MAE" />
+      <evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
     </evalContext>
-  </evalContexts>
-  <experiments run="ml100k-test" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
-    <experiment id="ml100k-test" models="ml-rp" splits="ml100k-dynamic" evalContext="rating-default" />
+		<evalContext id="ranking">
+			<evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="test" candidateItemsFile="file.txt" numCandidates="max" cutOffs="10"  />
+		</evalContext>
+	</evalContexts>
+  <experiments run="ml100k-dynamic" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
+    <experiment id="ml100k-dynamic" models="ml-rp" splits="ml100k-dynamic" evalContext="rating-default" />
+    <experiment id="ml100k-cv" models="ml-rp" splits="ml100k-cv" evalContext="rating-default" />
   </experiments>
 </wraprec>

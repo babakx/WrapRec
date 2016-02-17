@@ -44,6 +44,15 @@ namespace WrapRec.Data
 
 		public abstract void Setup();
 
+        public void UpdateFeedbackSlices()
+        {
+            foreach (Feedback f in Train)
+                f.SliceType = FeedbackSlice.TRAIN;
+
+            foreach (Feedback f in Test)
+                f.SliceType = FeedbackSlice.TEST;
+        }
+
         public Dictionary<string, string> GetStatistics()
         {
             if (_statistics != null)

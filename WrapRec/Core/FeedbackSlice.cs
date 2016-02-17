@@ -10,7 +10,6 @@ namespace WrapRec.Core
     {
         TRAIN,
         TEST,
-		TEST_CANDIDATE,
         EXCLUDED,
         NOT_APPLICABLE
     }

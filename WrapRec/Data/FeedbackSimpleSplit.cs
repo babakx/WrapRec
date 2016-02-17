@@ -34,7 +34,7 @@ namespace WrapRec.Data
 			if (Type == SplitType.STATIC)
 			{
 				_train = Container.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TRAIN);
-				_test = Container.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST || f.SliceType == FeedbackSlice.TEST_CANDIDATE);
+				_test = Container.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST);
 			}
 			else if (Type == SplitType.DYNAMIC)
 			{

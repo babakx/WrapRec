@@ -93,7 +93,7 @@ namespace WrapRec.Models
 			{
 				if (DataType == DataType.Ratings)
 					foreach (var feedback in split.Test)
-						context.PredictedScores.Add(feedback, Predict(feedback));
+						context.PredictedScores.Add(feedback, Predict(feedback.User.Id, feedback.Item.Id));
 	
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
@@ -105,9 +105,9 @@ namespace WrapRec.Models
 			_itemsMap = new Mapping();
 		}
 
-		public float Predict(Feedback feedback)
+		public override float Predict(string userId, string itemId)
 		{
-			return _mmlRecommenderInstance.Predict(_usersMap.ToInternalID(feedback.User.Id), _itemsMap.ToInternalID(feedback.Item.Id));
+			return _mmlRecommenderInstance.Predict(_usersMap.ToInternalID(userId), _itemsMap.ToInternalID(itemId));
 		}
 
 		public override Dictionary<string, string> GetModelParameters()

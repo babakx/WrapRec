@@ -17,6 +17,7 @@ namespace WrapRec.Models
 		public abstract void Setup();
 		public abstract void Train(Split split);
 		public abstract void Evaluate(Split split, EvaluationContext context);
+        public abstract float Predict(string userId, string itemId);
         public abstract void Clear();
 		public abstract Dictionary<string, string> GetModelParameters();
 	}

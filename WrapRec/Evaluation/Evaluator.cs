@@ -12,7 +12,7 @@ namespace WrapRec.Evaluation
     public abstract class Evaluator
     {
 		public Dictionary<string, string> SetupParameters { get; set; }
-		public void Setup()
+		public virtual void Setup()
 		{ 
 			// Empty body
 		}

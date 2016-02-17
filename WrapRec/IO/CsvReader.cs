@@ -20,7 +20,7 @@ namespace WrapRec.IO
 		{
 			bool hasHeader = (SetupParameters.ContainsKey("hasHeader") && SetupParameters["hasHeader"] == "false") ? false : true;
 			string delimiter = SetupParameters.ContainsKey("delimiter") ? SetupParameters["delimiter"].Replace("\\t", "\t") : ",";
-			CsvConfig = new CsvHelper.Configuration.CsvConfiguration()
+			CsvConfig = new CsvConfiguration()
 			{
 				Delimiter = delimiter,
 				HasHeaderRecord = hasHeader
