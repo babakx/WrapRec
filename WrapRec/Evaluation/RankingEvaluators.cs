@@ -103,7 +103,7 @@ namespace WrapRec.Evaluation
 				}
 			}
 
-			foreach (User u in testUsers)
+			Parallel.ForEach(testUsers, u => 
             {
 				var candidateItems = GetCandidateItems(split, u);
 			
@@ -135,7 +135,7 @@ namespace WrapRec.Evaluation
 						}
                     }
 				}
-            }
+            });
 
 			// aggregating measures and storing the results
 			foreach (int maxCand in NumCandidates)
