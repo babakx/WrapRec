@@ -89,6 +89,8 @@ namespace WrapRec.Evaluation
             var testUsers = split.Test.Select(f => f.User).Distinct();
             int testedCases = 0;
             var recallsOpr = new MultiKeyDictionary<int, int, double>();
+			var ndcgOpr = new MultiKeyDictionary<int, int, double>();
+			var mrrOpr = new MultiKeyDictionary<int, int, double>();
 
 			// initialize measures
 			foreach (int maxCand in NumCandidates)
@@ -96,6 +98,8 @@ namespace WrapRec.Evaluation
 				foreach (int k in CutOffs)
 				{
                     recallsOpr[maxCand, k] = 0;
+					ndcgOpr[maxCand, k] = 0;
+					mrrOpr[maxCand, k] = 0;
 				}
 			}
 
@@ -118,8 +122,17 @@ namespace WrapRec.Evaluation
                     foreach (Tuple<string, double> item in scoredRelevantItems)
                     {
                         int rank = IndexOfNewItem(candidatesRankedList, item.Item2);
-                        foreach (int k in CutOffs)
-                            recallsOpr[maxCand, k] += (rank < k) ? 1 : 0;
+						foreach (int k in CutOffs)
+						{
+							if (rank < k)
+							{
+								// if the relevant items falls into the top k items recall would be one (because the only relevent items is covered)
+								// IDCG would be one as well (if relevant item appears in the first position)
+								recallsOpr[maxCand, k] += 1;
+								ndcgOpr[maxCand, k] += 1.0 / Math.Log(rank + 2, 2);
+								mrrOpr[maxCand, k] += 1.0 / (rank + 1);
+							}
+						}
                     }
 				}
             }
@@ -130,6 +143,8 @@ namespace WrapRec.Evaluation
 				foreach (int k in CutOffs)
 				{
                     recallsOpr[maxCand, k] /= testedCases;
+					ndcgOpr[maxCand, k] /= testedCases;
+					mrrOpr[maxCand, k] /= testedCases;
 
                     var results = new Dictionary<string, string>();
                     results.Add("TestedCases", testedCases.ToString());
@@ -137,6 +152,8 @@ namespace WrapRec.Evaluation
 					results.Add("NumCandidates", maxCand.ToString());
 					results.Add("CutOff", k.ToString());
 					results.Add("Recall", string.Format("{0:0.0000}", recallsOpr[maxCand, k]));
+					results.Add("MRR", string.Format("{0:0.0000}", mrrOpr[maxCand, k]));
+					results.Add("NDCG", string.Format("{0:0.0000}", ndcgOpr[maxCand, k]));
 
 					context.AddResultsSet("rankingMeasures", results);
 				}				

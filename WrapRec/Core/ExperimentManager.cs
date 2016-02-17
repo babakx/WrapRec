@@ -357,14 +357,17 @@ Model Parameteres:
 
 		private void LogExperimentResults(Experiment exp)
 		{
-			string format = "\nResults:\n {0}\nTimes:\n Training: {1} Evaluation: {2}\n";
+			Logger.Current.Info("\nResults:");
 
-			// only first set of results would be logged due to space issue in the screen 
-			// complete results would be stored in the csv file
-			string results = exp.EvaluationContext.GetResults().First().Select(kv => kv.Key + ":" + kv.Value)
-				.Aggregate((a, b) => a + " " + b);
+			foreach (var result in exp.EvaluationContext.GetResults())
+			{
+				var output = result.Select(kv => kv.Key + ":" + kv.Value)
+					.Aggregate((a, b) => a + " " + b);
 
-			Logger.Current.Info(format, results, exp.TrainTime, exp.EvaluationTime);
+				Logger.Current.Info("\n" + output);
+			}
+			
+			Logger.Current.Info("\nTimes:\nTraining: {0} Evaluation: {1}", exp.TrainTime, exp.EvaluationTime);
 		}
 
 		private void WriteResultsToFile(Experiment exp)
