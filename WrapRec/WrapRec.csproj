@@ -77,6 +77,7 @@
     <Compile Include="Evaluation\EvaluationContext.cs" />
     <Compile Include="Evaluation\Evaluator.cs" />
     <Compile Include="Evaluation\MAE.cs" />
+    <Compile Include="Evaluation\RankingEvaluators.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsOpr.cs" />
     <Compile Include="Evaluation\RMSE.cs" />
     <Compile Include="IO\CsvReader.cs" />
