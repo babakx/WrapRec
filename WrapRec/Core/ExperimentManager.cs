@@ -379,7 +379,7 @@ Model Parameteres:
 			// assuming one evaluation context is beeing used for all experiments
             if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
-				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId" }
+				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
@@ -390,7 +390,7 @@ Model Parameteres:
                 _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
-			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id }
+			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id }
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
