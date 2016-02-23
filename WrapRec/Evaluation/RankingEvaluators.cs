@@ -181,6 +181,8 @@ namespace WrapRec.Evaluation
 					var results = new Dictionary<string, string>();
 					results.Add("TestedCases", testedCases.ToString());
 					results.Add("CandidatesMode", CandidateItemsMode.ToString());
+					if (CandidateItemsMode == CandidateItems.EXPLICIT)
+						results.Add("CandidatesFile", CandidateItemsFile.Substring(CandidateItemsFile.LastIndexOf('\\') + 1));
 					results.Add("NumCandidates", maxCand == int.MaxValue ? "max" : maxCand.ToString());
 					results.Add("CutOff", k.ToString());
 					results.Add("Precision", string.Format("{0:0.0000}", precision[maxCand, k]));
