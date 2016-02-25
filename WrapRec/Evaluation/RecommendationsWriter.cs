@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Core;
 using WrapRec.Data;
 using WrapRec.Models;
 
@@ -35,7 +36,7 @@ namespace WrapRec.Evaluation
             if (model is MmlRecommender)
                 _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i));
 
-            Parallel.ForEach(candidateUsers, u =>
+            foreach(User u in candidateUsers)
             {
                 var candidateItems = GetCandidateItems(split, u);
                 var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, float>(i, model.Predict(u.Id, i)));
@@ -47,7 +48,7 @@ namespace WrapRec.Evaluation
                     .Aggregate((a, b) => a + " " + b);
 
                 output.Add(line);
-            });
+            }
 
             OutputFile = string.Format("{0}.{1}.{2}", OutputFile, split.Id, model.Id);
             File.WriteAllLines(OutputFile, output);
