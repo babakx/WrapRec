@@ -34,9 +34,9 @@ namespace WrapRec.Evaluation
             // this will make sure that all candidate items are already in the mapping object
             // this is a workaroud to prevent cross-thread access to ItemMap
             if (model is MmlRecommender)
-                _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i));
+                _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i)).ToList();
 
-            foreach(User u in candidateUsers)
+            Parallel.ForEach(candidateUsers, u =>
             {
                 var candidateItems = GetCandidateItems(split, u);
                 var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, float>(i, model.Predict(u.Id, i)));
@@ -48,7 +48,7 @@ namespace WrapRec.Evaluation
                     .Aggregate((a, b) => a + " " + b);
 
                 output.Add(line);
-            }
+            });
 
             OutputFile = string.Format("{0}.{1}.{2}", OutputFile, split.Id, model.Id);
             File.WriteAllLines(OutputFile, output);
