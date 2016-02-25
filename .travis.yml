@@ -1,2 +1,9 @@
-language csharp
-solution WrapRec.sln
+language: csharp
+mono:
+ - latest
+ - 3.8.0
+solution: WrapRec.sln
+install:
+  - nuget restore WrapRec.sln
+script:
+  - xbuild /p:Configuration=Release WrapRec.sln
