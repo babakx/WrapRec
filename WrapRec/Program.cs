@@ -21,7 +21,10 @@ namespace WrapRec
 
 			var em = new ExperimentManager(args[0]);
 			em.RunExperiments();
-			Console.Read();
 		}
-	}
+
+    }
+
+
 }
+
