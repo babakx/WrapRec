@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Core;
 using WrapRec.Data;
 using WrapRec.Models;
 
@@ -33,7 +34,7 @@ namespace WrapRec.Evaluation
             // this will make sure that all candidate items are already in the mapping object
             // this is a workaroud to prevent cross-thread access to ItemMap
             if (model is MmlRecommender)
-                _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i));
+                _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i)).ToList();
 
             Parallel.ForEach(candidateUsers, u =>
             {
