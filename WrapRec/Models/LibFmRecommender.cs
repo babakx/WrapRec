@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace WrapRec.Models
 {
 	public class LibFmRecommender : Model
 	{
-		LibFmManager _libFm;
+		//LibFmManager _libFm;
 		FmFeatureBuilder _featureBuilder;
 		List<string> allParams;
 
@@ -111,3 +112,4 @@ namespace WrapRec.Models
 		}
 	}
 }
+*/
