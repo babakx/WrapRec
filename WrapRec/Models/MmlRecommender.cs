@@ -118,5 +118,15 @@ namespace WrapRec.Models
 				return kv;
 			}).ToDictionary(kv => kv.Key, kv => kv.Value);
 		}
+
+        public Mapping UsersMap
+        {
+            get { return _usersMap; }
+        }
+
+        public Mapping ItemsMap
+        {
+            get { return _itemsMap; }
+        }
 	}
 }

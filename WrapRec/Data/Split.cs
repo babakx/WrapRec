@@ -55,6 +55,7 @@ namespace WrapRec.Data
 
         public Dictionary<string, string> GetStatistics()
         {
+            // TODO: when test is empty ther is error
             if (_statistics != null)
                 return _statistics;
 
