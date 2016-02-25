@@ -16,8 +16,10 @@ namespace WrapRec.Evaluation
 	public class RankingEvaluators : Evaluator
 	{
 		public string CandidateItemsFile { get; private set; }
-		public CandidateItems CandidateItemsMode { get; private set; }
-		public int[] NumCandidates { get; private set; }
+        public string CandidateUsersFile { get; set; }
+        public CandidateItems CandidateItemsMode { get; private set; }
+        public CandidateItems CandidateUsersMode { get; private set; }
+        public int[] NumCandidates { get; private set; }
 		public int[] CutOffs { get; private set; }
 
 		int _maxNumCandidates;
@@ -25,17 +27,29 @@ namespace WrapRec.Evaluation
 
 		public override void Setup()
 		{
-			if (!SetupParameters.ContainsKey("candidateItemsMode"))
+            // candidate items
+            if (!SetupParameters.ContainsKey("candidateItemsMode"))
 				CandidateItemsMode = CandidateItems.TRAINING;
 			else
 				CandidateItemsMode = (CandidateItems)Enum.Parse(typeof(CandidateItems), SetupParameters["candidateItemsMode"], true);
 
-			if (SetupParameters.ContainsKey("candidateItemsFile"))
-				CandidateItemsFile = SetupParameters["candidateItemsFile"];
-			else if (CandidateItemsMode == CandidateItems.EXPLICIT)
-				throw new WrapRecException("Expect a 'candidateItemsFile' for the mode 'explicit!'");
+            if (SetupParameters.ContainsKey("candidateItemsFile"))
+                CandidateItemsFile = SetupParameters["candidateItemsFile"];
+            else if (CandidateItemsMode == CandidateItems.EXPLICIT)
+                throw new WrapRecException("Expect a 'candidateItemsFile' for the mode 'explicit!'");
 
-			CutOffs = SetupParameters["cutOffs"].Split(',').Select(c => int.Parse(c)).ToArray();
+            // candidate useres
+            if (!SetupParameters.ContainsKey("candidateUsersMode"))
+                CandidateUsersMode = CandidateItems.TEST;
+            else
+                CandidateUsersMode = (CandidateItems)Enum.Parse(typeof(CandidateItems), SetupParameters["candidateUsersMode"], true);
+
+            if (SetupParameters.ContainsKey("candidateUsersFile"))
+                CandidateUsersFile = SetupParameters["candidateUsersFile"];
+            else if (CandidateUsersMode == CandidateItems.EXPLICIT)
+                throw new WrapRecException("Expect a 'candidateUsersFile' for the mode 'explicit!'");
+
+            CutOffs = SetupParameters["cutOffs"].Split(',').Select(c => int.Parse(c)).ToArray();
 
 			if (!SetupParameters.ContainsKey("numCandidates"))
 				NumCandidates = new int[] { int.MaxValue };
@@ -48,7 +62,31 @@ namespace WrapRec.Evaluation
 			_maxNumCandidates = NumCandidates.Max();
 		}
 
-		public void InitializeCandidateItems(Split split)
+        public IEnumerable<User> GetCandidateUsers(Split split)
+        {
+            if (CandidateUsersMode == CandidateItems.TRAINING)
+                return split.Train.Select(f => f.User).Distinct();
+            else if (CandidateUsersMode == CandidateItems.TEST)
+                return split.Test.Select(f => f.User).Distinct();
+            else if (CandidateUsersMode == CandidateItems.UNION)
+                return split.Container.Users.Values;
+            else if (CandidateUsersMode == CandidateItems.OVERLAP)
+            {
+                var trainUsers = split.Train.Select(f => f.User).Distinct();
+                var testUsers = split.Test.Select(f => f.User).Distinct();
+
+                return trainUsers.Intersect(testUsers);
+            }
+            else // explicit
+            {
+                return File.ReadAllLines(CandidateUsersFile)
+                    // if user exists return it, otherwise create new user
+                    .Select(uId => split.Container.AddUser(uId));
+            }
+
+        }
+
+        public void InitializeCandidateItems(Split split)
 		{
 			if (CandidateItemsMode == CandidateItems.TRAINING)
 				_allCandidateItems = split.Train.Select(f => f.Item.Id).Distinct().ToList();
@@ -86,7 +124,7 @@ namespace WrapRec.Evaluation
 			split.UpdateFeedbackSlices();
 			InitializeCandidateItems(split);
 
-			var testUsers = split.Test.Select(f => f.User).Distinct();
+            var testUsers = GetCandidateUsers(split);
 			int testedUsersCount = 0, testedCases = 0;
 			var precision = new MultiKeyDictionary<int, int, double>();
 			var recall = new MultiKeyDictionary<int, int, double>();

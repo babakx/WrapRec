@@ -26,7 +26,7 @@ namespace WrapRec.Evaluation
             split.UpdateFeedbackSlices();
             InitializeCandidateItems(split);
 
-            var candidateUsers = split.Train.Select(f => f.User).Distinct();
+            var candidateUsers = GetCandidateUsers(split);
             var output = new List<string>();
             int maxCutOff = CutOffs.Max();
 

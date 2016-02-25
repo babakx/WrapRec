@@ -4,13 +4,13 @@
       <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization" NumFactors="5" NumIter="20" />
     </model>
 		<model id="ml-ir" class="WrapRec.Models.MmlRecommender">
-			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.BPRMF" NumFactors="10" NumIter="30" WithReplacement="true" UniformUserSampling="false" />
+			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.BPRMF" NumFactors="20" NumIter="50" WithReplacement="true" UniformUserSampling="false" />
 		</model>
 		<model id="ml-mp" class="WrapRec.Models.MmlRecommender">
 			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.MostPopular"/>
 		</model>
 		<model id="ml-uknn" class="WrapRec.Models.MmlRecommender">
-			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.UserKNN" K="20,40"/>
+			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.UserKNN" K="40"/>
 		</model>
 		<model id="ml-iknn" class="WrapRec.Models.MmlRecommender">
 			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.ItemKNN" K="20,40"/>
@@ -51,7 +51,7 @@
 		</evalContext>
     <evalContext id="writer">
       <evaluator class="WrapRec.Evaluation.RecommendationsWriter" candidateItemsMode="training" candidateItemsFile="file.txt" cutOffs="50" 
-        outputFile="D:\Dropbox\Datasets\Wraprec Results\recommendations.txt" />
+        outputFile="D:\Dropbox\Datasets\Wraprec Results\recommendations.txt" candidateUsersMode="test" />
     </evalContext>
   </evalContexts>
   <experiments run="rec-writer" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
