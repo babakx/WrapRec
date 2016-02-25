@@ -23,7 +23,7 @@ namespace WrapRec.Evaluation
 		public int[] CutOffs { get; private set; }
 
 		int _maxNumCandidates;
-		IList<string> _allCandidateItems;
+		protected IList<string> _allCandidateItems;
 
 		public override void Setup()
 		{

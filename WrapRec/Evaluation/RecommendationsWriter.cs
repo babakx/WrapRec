@@ -30,6 +30,11 @@ namespace WrapRec.Evaluation
             var output = new List<string>();
             int maxCutOff = CutOffs.Max();
 
+            // this will make sure that all candidate items are already in the mapping object
+            // this is a workaroud to prevent cross-thread access to ItemMap
+            if (model is MmlRecommender)
+                _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i));
+
             Parallel.ForEach(candidateUsers, u =>
             {
                 var candidateItems = GetCandidateItems(split, u);
