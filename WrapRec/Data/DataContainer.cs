@@ -21,6 +21,8 @@ namespace WrapRec.Data
 
         protected Dictionary<string, string> _statistics;
 
+		float _minTarget = 1, _maxTarget = 1;
+
         public DataContainer()
         {
 			DataReaders = new List<DatasetReader>();
@@ -77,7 +79,13 @@ namespace WrapRec.Data
 
         public Rating AddRating(string userId, string itemId, float rating)
         {
-            User u = AddUser(userId);
+			if (rating > _maxTarget)
+				_maxTarget = rating;
+			
+			if (rating < _minTarget)
+				_minTarget = rating;
+			
+			User u = AddUser(userId);
             Item i = AddItem(itemId);
 
             var r = new Rating(u, i, rating);
@@ -162,6 +170,16 @@ namespace WrapRec.Data
 
             Logger.Current.Info("Densify complete with min feedback {0}", k);
         }
+
+		public float MinTarget
+		{
+			get { return _minTarget; }
+		}
+
+		public float MaxTarget
+		{
+			get { return _maxTarget; }
+		}
 
         public override string ToString()
         {

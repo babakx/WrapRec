@@ -24,8 +24,6 @@ namespace WrapRec.Models
 		Type _mmlRecommenderType;
 		IRecommender _mmlRecommenderInstance;
 
-		public DataType DataType { get; private set; }
-
 		public MmlRecommender()
         {
             _usersMap = new Mapping();
