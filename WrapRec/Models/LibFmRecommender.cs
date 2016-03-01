@@ -1,5 +1,4 @@
-﻿/*
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,15 +10,17 @@ using MyMediaLite;
 using WrapRec.IO;
 using WrapRec.Core;
 using MyMediaLite.Data;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace WrapRec.Models
 {
 	public class LibFmRecommender : Model
 	{
-		//LibFmManager _libFm;
+		// this is reference to managed wrapper of libFm C++ code
+		LibFmManager _libFm;
 		FmFeatureBuilder _featureBuilder;
-		List<string> allParams;
-
+		
 		public override void Setup()
 		{
 			if (SetupParameters.ContainsKey("dim"))
@@ -28,12 +29,13 @@ namespace WrapRec.Models
 			if (SetupParameters.ContainsKey("regular"))
 				SetupParameters["regular"] = SetupParameters["regular"].Replace('-', ',');
 
-			SetupParameters = SetupParameters.ToDictionary(kv => "-" + kv.Key, kv => kv.Value);
-
 			// default data type
 			DataType = DataType.Ratings;
 
-			allParams = SetupParameters.SelectMany(kv => new string[] { kv.Key, kv.Value }).ToList();
+			List<string> allParams = SetupParameters.ToDictionary(kv => "-" + kv.Key, kv => kv.Value)
+				.SelectMany(kv => new string[] { kv.Key, kv.Value }).ToList();
+			_libFm = new LibFmManager();
+			_libFm.Setup(allParams);
 
 			_featureBuilder = new FmFeatureBuilder();
 		}
@@ -42,8 +44,6 @@ namespace WrapRec.Models
 		{
 			List<string> train = split.Train.Select(f => _featureBuilder.GetLibFmFeatureVector(f)).ToList();
 
-			_libFm = new LibFmManager();
-			_libFm.Setup(allParams);
 			_libFm.CreateTrainSet(train, split.Container.MinTarget, split.Container.MaxTarget,
 				_featureBuilder.GetNumMappedValues(), _featureBuilder.Mapper.NumberOfEntities);
 
@@ -112,4 +112,3 @@ namespace WrapRec.Models
 		}
 	}
 }
-*/
