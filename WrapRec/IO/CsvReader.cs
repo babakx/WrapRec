@@ -16,6 +16,7 @@ namespace WrapRec.IO
         protected CsvHelper.CsvReader Reader { get; private set; }
         protected CsvConfiguration CsvConfig { get; private set; }
 		protected Dictionary<string, string> Header { get; private set; }
+		protected Dictionary<string, int> FieldIndices { get; private set; }
 
 		public override void Setup()
 		{
@@ -28,6 +29,7 @@ namespace WrapRec.IO
 			};
 
 			if (SetupParameters.ContainsKey("header"))
+			{
 				Header = SetupParameters["header"].Split(',').Select(h =>
 					{
 						var parts = h.Split(':');
@@ -37,7 +39,11 @@ namespace WrapRec.IO
 
 						return new { Header = parts[0], Type = parts[1] };
 
-					}).ToDictionary(kv => kv.Header, kv => kv.Type);
+					}).ToDictionary(h => h.Header, h => h.Type);
+
+				int i = 0;
+				FieldIndices = SetupParameters["header"].Split(',').ToDictionary(h => h.Split(':')[0], h => i++);
+			}
 		}
 
         public override void LoadData(DataContainer container)
@@ -72,17 +78,19 @@ namespace WrapRec.IO
 
 		protected IEnumerable<Core.Attribute> GetAttributes(KeyValuePair<string, string> header)
 		{
+			string fieldValue = Reader[FieldIndices[header.Key]];
+			
 			if (header.Value == "md")
-				foreach (string attr in Reader[header.Key].Split('|'))
+				foreach (string attr in fieldValue.Split('|'))
 					yield return new Core.Attribute() { Name = header.Key, Value = attr, Type = AttributeType.Discrete };
 			else if (header.Value == "r")
-				yield return new Core.Attribute() { Name = header.Key, Value = Reader[header.Key], Type = AttributeType.RealValued };
+				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.RealValued };
 			else if (header.Value == "b")
-				yield return new Core.Attribute() { Name = header.Key, Value = Reader[header.Key], Type = AttributeType.Binary };
+				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Binary };
 			else if (header.Value == "n")
 				yield break;
-			else
-				yield return new Core.Attribute() { Name = header.Key, Value = Reader[header.Key], Type = AttributeType.Discrete };
+			else // by default attributes are considered as discrete
+				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Discrete };
 		}
 
 		private void LoadPosFeedback(DataContainer container)
