@@ -44,8 +44,25 @@ namespace WrapRec.Models
 			FeatureBuilder = new FmFeatureBuilder();
 		}
 
+		protected void UpdateFeatureBuilder(Split split)
+		{ 
+			if (split.SetupParameters.ContainsKey("userAttributes"))
+				foreach (string attr in split.SetupParameters["userAttributes"].Split(','))
+					FeatureBuilder.UserAttributes.Add(attr);
+
+			if (split.SetupParameters.ContainsKey("itemAttributes"))
+				foreach (string attr in split.SetupParameters["itemAttributes"].Split(','))
+					FeatureBuilder.ItemAttributes.Add(attr);
+
+			if (split.SetupParameters.ContainsKey("feedbackAttributes"))
+				foreach (string attr in split.SetupParameters["feedbackAttributes"].Split(','))
+					FeatureBuilder.FeedbackAttributes.Add(attr);
+		}
+
 		public override void Train(Split split)
 		{
+			UpdateFeatureBuilder(split);
+			
 			var train = split.Train.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 			var test = split.Test.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 
@@ -148,6 +165,9 @@ namespace WrapRec.Models
 		{
 			FeatureBuilder.RestartNumValues();
 			FeatureBuilder.Mapper = new Mapping();
+			FeatureBuilder.UserAttributes.Clear();
+			FeatureBuilder.ItemAttributes.Clear();
+			FeatureBuilder.FeedbackAttributes.Clear();
 		}
 
 		public override Dictionary<string, string> GetModelParameters()

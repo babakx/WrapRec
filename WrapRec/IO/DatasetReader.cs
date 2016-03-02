@@ -12,8 +12,8 @@ namespace WrapRec.IO
 	{
 		Ratings,
 		PosFeedback,
-		UserContext,
-		ItemContext,
+		UserAttributes,
+		ItemAttributes,
 		Other
 	}
 

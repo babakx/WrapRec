@@ -30,6 +30,8 @@ namespace WrapRec.Models
 
 		public override void Train(Split split)
 		{
+			UpdateFeatureBuilder(split);
+
 			List<string> train = split.Train.Select(f => FeatureBuilder.GetLibFmFeatureVector(f)).ToList();
 
 			_libFm.CreateTrainSet(train, split.Container.MinTarget, split.Container.MaxTarget,
