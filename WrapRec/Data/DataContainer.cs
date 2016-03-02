@@ -199,7 +199,7 @@ namespace WrapRec.Data
 
             var users = new Dictionary<string, int>();
             var items = new Dictionary<string, int>();
-
+			
             foreach (Feedback f in Feedbacks)
             {
                 string userId = f.User.Id;
@@ -216,6 +216,10 @@ namespace WrapRec.Data
                     items[itemId]++;
             }
 
+			var feedbackAttrs = Feedbacks.First().Attributes.Select(a => a.Name).Distinct().ToList();
+			var userAttrs = Feedbacks.First().User.Attributes.Select(a => a.Name).Distinct().ToList();
+			var itemAttrs = Feedbacks.First().Item.Attributes.Select(a => a.Name).Distinct().ToList();
+
             _statistics.Add("containerId", Id);
 
             _statistics.Add("feedbacks", Feedbacks.Count.ToString());
@@ -230,6 +234,10 @@ namespace WrapRec.Data
             _statistics.Add("itmMinFb", items.Values.Min().ToString());
             _statistics.Add("itmMaxFb", items.Values.Max().ToString());
             _statistics.Add("itmAvgFb", string.Format("{0:0.00}", items.Values.Average()));
+
+			_statistics.Add("allFeedbackAttrs", feedbackAttrs.Count > 0 ? feedbackAttrs.Aggregate((a, b) => a + "|" + b) : "NA");
+			_statistics.Add("allUserAttrs", userAttrs.Count > 0 ? userAttrs.Aggregate((a, b) => a + "|" + b) : "NA");
+			_statistics.Add("allItemAttrs", itemAttrs.Count > 0 ? itemAttrs.Aggregate((a, b) => a + "|" + b) : "NA");
 
             return _statistics;
         }

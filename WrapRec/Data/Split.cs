@@ -149,6 +149,10 @@ namespace WrapRec.Data
             _statistics.Add("teItmMaxFb", testItems.Values.Max().ToString());
             _statistics.Add("teItmAvgFb", string.Format("{0:0.00}", testItems.Values.Average()));
 
+			_statistics.Add("feedbackAttrs", SetupParameters.ContainsKey("feedbackAttributes") ? SetupParameters["feedbackAttributes"] : "NA");
+			_statistics.Add("userAttrs", SetupParameters.ContainsKey("userAttributes") ? SetupParameters["userAttributes"] : "NA");
+			_statistics.Add("itemAttrs", SetupParameters.ContainsKey("itemAttributes") ? SetupParameters["itemAttributes"] : "NA");
+
             return _statistics;
         }
     }
