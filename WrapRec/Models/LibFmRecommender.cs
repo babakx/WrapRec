@@ -15,42 +15,31 @@ using System.Runtime.InteropServices;
 
 namespace WrapRec.Models
 {
-	public class LibFmRecommender : Model
+	public class LibFmRecommender : LibFmWrapper
 	{
 		// this is reference to managed wrapper of libFm C++ code
 		LibFmManager _libFm;
-		FmFeatureBuilder _featureBuilder;
 		
 		public override void Setup()
 		{
-			if (SetupParameters.ContainsKey("dim"))
-				SetupParameters["dim"] = SetupParameters["dim"].Replace('-', ',');
+			base.Setup();
 
-			if (SetupParameters.ContainsKey("regular"))
-				SetupParameters["regular"] = SetupParameters["regular"].Replace('-', ',');
-
-			// default data type
-			DataType = DataType.Ratings;
-
-			List<string> allParams = SetupParameters.ToDictionary(kv => "-" + kv.Key, kv => kv.Value)
-				.SelectMany(kv => new string[] { kv.Key, kv.Value }).ToList();
 			_libFm = new LibFmManager();
-			_libFm.Setup(allParams);
-
-			_featureBuilder = new FmFeatureBuilder();
+			_libFm.Setup(LibFmArguments);
 		}
 
 		public override void Train(Split split)
 		{
-			List<string> train = split.Train.Select(f => _featureBuilder.GetLibFmFeatureVector(f)).ToList();
+			List<string> train = split.Train.Select(f => FeatureBuilder.GetLibFmFeatureVector(f)).ToList();
 
 			_libFm.CreateTrainSet(train, split.Container.MinTarget, split.Container.MaxTarget,
-				_featureBuilder.GetNumMappedValues(), _featureBuilder.Mapper.NumberOfEntities);
+				FeatureBuilder.GetNumMappedValues(), FeatureBuilder.Mapper.NumberOfEntities);
 
 			Logger.Current.Trace("Training with LibFm recommender...");
-			PureTrainTime = (int)Wrap.MeasureTime(delegate() { 
-				_libFm.Train(); })
-				.TotalMilliseconds;
+			PureTrainTime = (int)Wrap.MeasureTime(delegate() 
+			{ 
+				_libFm.Train(); 
+			}).TotalMilliseconds;
 		}
 
 		public override void Evaluate(Split split, EvaluationContext context)
@@ -67,12 +56,12 @@ namespace WrapRec.Models
 
 		public override float Predict(string userId, string itemId)
 		{
-			return Predict(_featureBuilder.GetLibFmFeatureVector(userId, itemId));
+			return Predict(FeatureBuilder.GetLibFmFeatureVector(userId, itemId));
 		}
 
 		public float Predict(Feedback feedback)
 		{
-			return Predict(_featureBuilder.GetLibFmFeatureVector(feedback));
+			return Predict(FeatureBuilder.GetLibFmFeatureVector(feedback));
 		}
 
 		public float Predict(string featureVector)
@@ -102,13 +91,8 @@ namespace WrapRec.Models
 		public override void Clear()
 		{
 			_libFm.Clear();
-			_featureBuilder.RestartNumValues();
-			_featureBuilder.Mapper = new Mapping();
+			base.Clear();
 		}
 
-		public override Dictionary<string, string> GetModelParameters()
-		{
-			return SetupParameters;
-		}
 	}
 }

@@ -130,6 +130,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Models\FmFeatureBuilder.cs" />
     <Compile Include="Models\LibFmRecommender.cs" />
+    <Compile Include="Models\LibFmWrapper.cs" />
     <Compile Include="Models\MmlRecommender.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Program.cs" />
