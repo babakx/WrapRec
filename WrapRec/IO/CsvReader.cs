@@ -53,7 +53,11 @@ namespace WrapRec.IO
 
 			Reader.Read();
 			if (Header == null && Reader.FieldHeaders != null)
+			{
 				Header = Reader.FieldHeaders.ToDictionary(h => h, h => "d");
+				int i = 0;
+				FieldIndices = Reader.FieldHeaders.ToDictionary(h => h, h => i++);
+			}
 
 			switch (DataType)
 			{
