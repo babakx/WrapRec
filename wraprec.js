@@ -12,8 +12,7 @@ $body.scrollspy({
 	offset: navHeight
 });
 
-debugger
-$('#header').load("header.html");
+$('#header').load("http://babakx.github.io/WrapRec/header.html");
 
 var xml1 = ['<wraprec>',
 '  <models>',
