@@ -1,0 +1,90 @@
+﻿body {
+	padding-top:50px;
+	font-size: 16px;
+	line-height: 26px;
+}
+
+#masthead {
+	min-height:250px;
+	background-color:#1A2C69;
+  	color:#E2E2E6;
+	margin-top: 5px;
+}
+
+#masthead h1 {
+	font-size: 50px;
+	line-height: 1;
+	color:#E2E2E6;
+}
+
+#masthead #headbuttons {
+	margin-top:20%;
+}
+
+#masthead button {
+	margin: 10px;	
+}
+.icon-bar {
+	background-color:#fff;
+}
+
+@media screen and (min-width: 768px) {
+	#masthead h1 {
+		font-size: 100px;
+	}
+}
+
+.navbar-bright {
+	background-color:#1A2C69;
+    color:#fff;
+}
+  
+.navbar-bright a, #masthead a, #masthead .lead {
+  	color:#aaaacc;
+}
+
+.navbar-bright li > a:hover {
+    background-color:#000033;
+}
+
+.affix-top,.affix{
+	position: static;
+}
+
+@media (min-width: 979px) {
+  #sidebar.affix-top {
+    position: static;
+  	margin-top:30px;
+  	width:228px;
+  }
+  
+  #sidebar.affix {
+    position: fixed;
+    top:70px;
+    width:228px;
+  }
+}
+
+#sidebar li.active {
+  	border:0 #eee solid;
+  	border-right-width:4px;
+}
+
+#mainCol {
+	padding-right: 30px;
+}
+
+#mainCol h2 {
+	padding-top: 55px;
+    margin-top: -55px;
+	font-weight: bold;
+}
+
+h1 .lead {
+	margin-top: 10px;
+	font-weight: bold;
+}
+
+#mainCol pre {
+	word-wrap: normal;
+}

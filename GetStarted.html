@@ -1,0 +1,191 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<!-- <link rel="icon" href="../../favicon.ico"> -->
+
+	<title>WrapRec :: Evaluation Framework for Recommender Systems</title>
+
+	<!-- Bootstrap core CSS -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+
+	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+	<link href="assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+	<!-- Custom styles for this template -->
+	<link href="starter-template.css" rel="stylesheet">
+	<link href="wraprec.css" rel="stylesheet">
+
+	<!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+	<!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+	<script src="assets/js/ie-emulation-modes-warning.js"></script>
+	<script src="prettify/prettify.js"></script>
+	<link href="prettify/prettify.css" rel="stylesheet">
+	<script src="prettify/run_prettify.js"></script>
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body onload="prettyPrint()">
+	<!-- template from: http://www.bootply.com/90936 -->
+	<div class="container">
+		<div id="header"></div>
+		<div id="masthead">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-7">
+						<h1>
+							WrapRec
+							<p class="lead">The easiest way to evaluate Recommender Systems</p>
+						</h1>
+					</div>
+					<div class="col-md-4">
+						<div id="headbuttons" class="row">
+							<div class="col-sm-6">
+								<button type="button" class="btn btn-primary btn-lg">View on GitHub</button>
+							</div>
+							<div class="col-sm-6">
+								<button type="button" class="btn btn-primary btn-lg">Download</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div><!-- /cont -->
+		</div>
+
+		<!-- Begin Body -->
+		<div class="container">
+			<div class="row">
+				<div class="col-md-3" id="leftCol">
+
+					<ul class="nav nav-stacked" id="sidebar">
+						<li><a href="#sec0">WrapRec</a></li>
+						<li><a href="#sec1">Features</a></li>
+						<li><a href="#sec2">How to Use</a></li>
+						<li><a href="#sec3">Example</a></li>
+					</ul>
+
+				</div>
+				<div class="col-md-9" id="mainCol">
+
+					<br>
+
+					<h2 id="sec0">WrapRec</h2>
+					WrapRec is an easy-to-use open-source toolkit, written in C#, that allows users to easily build a recommender model and evaluate it.
+
+					WrapRec is not about low-level RecSys algorithms, its instead a framework which Wrap several RecSys toolkits and make it possible to
+					evaluate several algorithms under same evaluation framewrok.
+
+
+					<br />
+					<br />
+
+					<h2 id="sec1">Features</h2>
+					<p>
+						<ul>
+							<li>
+					<p>
+						<strong>Easy to use</strong>
+						The most important feature of this toolbox is to be able to run a recommender algorithm in a few clear steps.
+					</p></li>
+					<li>
+						<p>
+							<strong>Common interface for reading datasets with different format</strong>
+							The toolbox is customizable to read any data format.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Cross-Domain recommendation</strong>
+							The toolbox provide interfaces for Cross-Domain recommendation in a object-oriented manner.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Pipeline-based evaluation</strong>
+							Evaluation of different algorithms can be done in a pipeline-based-pattern mechanism. This allows to easily use different evaluators for an experiment.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Context-aware recommendation</strong>
+							The toolbox is highly customizable to handle context-aware recommendation algorithms.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Relational data interface</strong>
+							The toolbox provides an additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature benefits from the advatages of the <a href="http://msdn.microsoft.com/en-us/data/ef.aspx">Micorsoft Entity Framework</a> as well as the .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Exetensions of existing libraries</strong>
+							The object model of WrapRec allows this toolbox to easily integrate existing toolboxes into the model and benefits from the existing code. Currently this toolbox has wrappers around <a href="http://www.mymedialite.net">MyMediaLite</a>, a recommendation framework wrriten in C#, and <a href="http://www.libfm.org">LibFM</a>, a library for factorization machines written in C++.
+						</p>
+					</li>
+					</ul>
+					</p>
+
+
+					<br />
+					<br />
+
+					<h2 id="sec2">How to Use</h2>
+					<p>
+						WrapRec can be simply used by running the executable application. All the settings and parameters should be defined in an xml-based
+						configuration file. Using WrapRec is as easy as running the following command:
+						<h3>Windows</h3>
+						<pre>wraprec.exe [config.xml]</pre>
+
+						<h3>Linux and Mac</h3>
+						In Linux and Mac you should have <a href="http://www.mono-project.com/">.Net Mono</a> installed and the WrapRec can be runned via:
+						<pre>mono wraprec.exe [config.xml]</pre>
+
+					</p>
+
+					<h3>Configuration File</h3>
+					In WrapRec all the desired settings and parameters are defined in a signle configuration file. With the configuration file
+					you shoud specify four main things:
+					<ul>
+						<li><h4>Models</h4> To specify the models that you use for training the recommender system</li>
+						<li><h4>Data</h4> To specify where the data is stored and how it should be loaded</li>
+						<li><h4>Splits</h4> To define how the data should be splited (for training and evaluation)</li>
+						<li><h4>Evaluation</h4> To specify the methods and metrics for evalution</li>
+					</ul>
+
+
+					Below is an example configuration file which performs a simple train and test with <a href="http://grouplens.org/datasets/movielens/100k/">MovieLens 100K</a>  dataset.
+					<pre id="xml1" class="prettyprint lang-xml">
+					</pre>
+					<br />
+					<br />
+
+					<h2 id="sec3">Example</h2>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> -->
+	<script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="wraprec.js"></script>
+	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+	<script src="assets/js/ie10-viewport-bug-workaround.js"></script>
+</body>
+</html>
