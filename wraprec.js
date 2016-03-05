@@ -43,7 +43,7 @@ var xml1 = ['<wraprec>',
 '      <evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" numCandidates="1000" cutOffs="5,10,20" />',
 '    </evalContext>',
 '  </evalContexts>',
-'  <experiments run="ml100k" resultsFolder="Results" separator="\\t" verbosity="info">',
+'  <experiments run="ml100k" resultsFolder="results" separator="\\t" verbosity="info">',
 '    <experiment id="ml100k" models="bprmf,libfm" splits="ml100k-dynamic,ml100k-cv" evalContext="eval" />',
 '  </experiments>',
 '</wraprec>'].join('\n');
