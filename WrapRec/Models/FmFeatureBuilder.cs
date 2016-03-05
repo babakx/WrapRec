@@ -31,44 +31,50 @@ namespace WrapRec.Models
 			// "u" and "i" are added to make sure user and item Ids are distinguished
 			int userMappedId = Mapper.ToInternalID(userId + "u");
 			int itemMappedId = Mapper.ToInternalID(itemId + "i");
-			_numValues += 2;
+			
 			return string.Format("{0}:1 {1}:1", userMappedId, itemMappedId);
 		}
 		
 		public virtual string GetLibFmFeatureVector(Feedback feedback)
         {
-            // "u" and "i" are added to make sure user and item Ids are distinguished
-            int userMappedId = Mapper.ToInternalID(feedback.User.Id + "u");
-            int itemMappedId = Mapper.ToInternalID(feedback.Item.Id + "i");
-            
             string featVector;
-            if (feedback is Rating)
-                featVector = string.Format("{0} {1}:1 {2}:1", ((Rating)feedback).Value, userMappedId, itemMappedId);
-            else
-                featVector = string.Format("{0}:1 {1}:1", userMappedId, itemMappedId);
+			if (feedback is Rating)
+				featVector = ((Rating)feedback).Value + " " + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
+			else
+				featVector = GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
 
 			_numValues += 2;
 
-			foreach (string attr in FeedbackAttributes)
-			{
-				featVector += string.Format(" {0}:1", Mapper.ToInternalID(feedback.Attributes[attr]));
-				_numValues++;
-			}
+			var feedbackAttrs = feedback.Attributes.Where(a => FeedbackAttributes.Contains("all") || FeedbackAttributes.Contains(a.Name));
+			var itemAttrs = feedback.Item.Attributes.Where(a => ItemAttributes.Contains("all") || ItemAttributes.Contains(a.Name));
+			var userAttrs = feedback.User.Attributes.Where(a => UserAttributes.Contains("all") || UserAttributes.Contains(a.Name));
 
-			foreach (string attr in UserAttributes)
+			foreach (var attr in feedbackAttrs.Union(userAttrs).Union(itemAttrs))
 			{
-				featVector += string.Format(" {0}:1", Mapper.ToInternalID(feedback.User.Attributes[attr]));
-				_numValues++;
-			}
-
-			foreach (string attr in ItemAttributes)
-			{
-				featVector += string.Format(" {0}:1", Mapper.ToInternalID(feedback.Item.Attributes[attr]));
-				_numValues++;
+				string trans = TranslateAttribute(attr);
+				if (!string.IsNullOrEmpty(trans))
+				{
+					featVector += " " + trans;
+					_numValues++;
+				}
 			}
 
             return featVector;
         }
+
+		protected string TranslateAttribute(WrapRec.Core.Attribute attr)
+		{
+			string trans = "";
+			
+			if (attr.Type == AttributeType.Binary && (attr.Value == "1" || attr.Value == "true"))
+				trans = string.Format("{0}:1", Mapper.ToInternalID(attr.Name));
+			else if (attr.Type == AttributeType.Discrete)
+				trans = string.Format("{0}:1", Mapper.ToInternalID(attr.Value));
+			else if (attr.Type == AttributeType.RealValued)
+				trans = string.Format("{0}:{1}", Mapper.ToInternalID(attr.Name), attr.Value);
+
+			return trans;
+		}
 
 		public void RestartNumValues()
 		{

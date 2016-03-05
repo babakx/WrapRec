@@ -53,7 +53,8 @@ namespace WrapRec.Data
 					{ 
 						Id = Id + "-" + tr.ToString(),
 						Type = SplitType.DYNAMIC_SUBSPLIT,
-						Container = this.Container
+						Container = this.Container,
+						SetupParameters = this.SetupParameters
 					};
 				});
 			}
@@ -76,7 +77,8 @@ namespace WrapRec.Data
 						{ 
 							Id = this.Id + "-fold" + (i + 1),
 							Type = SplitType.CROSSVALIDATION_SUBSPLIT,
-							Container = this.Container
+							Container = this.Container,
+							SetupParameters = this.SetupParameters
 						};
 					});
 			}

@@ -15,49 +15,52 @@
 		<model id="ml-iknn" class="WrapRec.Models.MmlRecommender">
 			<parameters ml-class="MyMediaLite.dll:MyMediaLite.ItemRecommendation.ItemKNN" K="20,40"/>
 		</model>
-		<model id="libfm" class="WrapRec.Models.LibFmRecommender">
-			<parameters task="r" dim="1-1-10" method="sgd" learn_rate="0.02" iter="30" />			
+		<model id="libfm" class="WrapRec.Models.LibFmWrapper">
+			<parameters libFmPath="D:\Dropbox\Projects\WrapRec Projects\WrapRec\lib\libfm.net.exe" 
+				task="r" dim="1-1-8" method="sgd,mcmc" iter="30" learn_rate="0.02" />			
 		</model>
 	</models>
   <data>
 		<dataReaders>
 			<reader id="ml100k-all" path="D:\Dropbox\Datasets\MovieLens\ml-100k\u.data" sliceType="other" dataType="ratings" 
 				class="WrapRec.IO.CsvReader" hasHeader="false" delimiter="\t" />
+			<reader id="ml100k-items" path="D:\Dropbox\Datasets\MovieLens\ml-100k\u.item" sliceType="other" dataType="itemAttributes"
+				class="WrapRec.IO.CsvReader" hasHeader="false" delimiter="|" 
+				header="movie_id:d,movie_title:n,release_date:n,video_release_date:n,IMDb_URL:n,unknown:b,Action:b,Adventure:b,Animation:b,Children's:b,Comedy:b,Crime:b,Documentary:b,Drama:b,Fantasy:b,Film-Noir:b,Horror:b,Musical:b,Mystery:b,Romance:b,Sci-Fi:b,Thriller:b,War:b,Western:b" />
 			<reader id="ml1m-test" path="D:\Dropbox\Datasets\ML1M\train.txt" sliceType="test" dataType="ratings" class="CsvReader" />
 			<reader id="ml1m-users" path="D:\Dropbox\Datasets\ML1M\users.txt" sliceType="other" dataType="userContext" class="CsvReader" />
-			<reader id="kollekt-up" path="D:\Dropbox\Datasets\Kollectfm\user_playlist.csv" sliceType="other" dataType="posFeedback"
-				class="WrapRec.IO.CsvReader" hasHeader="true" delimiter=","/>
+			<reader id="kollekt-up" path="D:\Dropbox\Datasets\Kollectfm\input.csv" sliceType="other" dataType="posFeedback"
+				class="WrapRec.IO.CsvReader" hasHeader="true" delimiter="," />
 		</dataReaders>
 		<dataContainers>
-			<dataContainer id="ml100k" dataReaders="ml100k-all" />
+			<dataContainer id="ml100k" dataReaders="ml100k-all,ml100k-items" />
 			<dataContainer id="kollekt" dataReaders="kollekt-up" />
 		</dataContainers>
   </data>
   <splits>
-    <split id="ml1m-fixed" type="static" dataContainer="ml" />
+    <split id="ml100k-fixed" type="dynamic" dataContainer="ml100k" trainRatios="0.75" itemAttributes="all" />
     <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatios="0.75" />
     <split id="ml100k-cv" type="crossValidation" dataContainer="ml100k" numFolds="5" />
     <split id="ml1m-custom" type="custom" dataContainer="ml" class="CustomSplitter" />
-		<split id="kollekt-dynamic" type="dynamic" dataContainer="kollekt" trainRatios="0.75" />
+		<split id="kollekt" type="dynamic" dataContainer="kollekt" trainRatios="0.99" />
 	</splits>
   <evalContexts>
     <evalContext id="rating-default">
       <evaluator class="WrapRec.Evaluation.RMSE" />
       <evaluator class="WrapRec.Evaluation.MAE" />
-			<evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
 		</evalContext>
 		<evalContext id="ranking">
 			<evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
 		</evalContext>
     <evalContext id="writer">
-      <evaluator class="WrapRec.Evaluation.RecommendationsWriter" candidateItemsMode="training" candidateItemsFile="file.txt" cutOffs="50" 
-        outputFile="D:\Dropbox\Datasets\Wraprec Results\recommendations.txt" candidateUsersMode="test" />
+      <evaluator class="WrapRec.Evaluation.RecommendationsWriter" candidateItemsMode="explicit" candidateItemsFile="D:\Dropbox\Datasets\Kollectfm\candidates.csv" cutOffs="50" 
+        outputFile="D:\Dropbox\Datasets\Wraprec Results\recommendations.txt" candidateUsersMode="training" />
     </evalContext>
   </evalContexts>
-  <experiments run="rec-writer" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
-    <experiment id="ml100k-dynamic" models="libfm" splits="ml100k-dynamic" evalContext="rating-default" />
+  <experiments run="ml100k" resultsFolder="D:\Dropbox\Datasets\Wraprec Results" subFolder="false" separator="\t" verbosity="info">
+    <experiment id="ml100k" models="libfm" splits="ml100k-fixed" evalContext="rating-default" />
     <experiment id="ml100k-cv" models="ml-rp" splits="ml100k-cv" evalContext="rating-default" />
 		<experiment id="kollekt-up-dynamic" models="ml-ir" splits="kollekt-dynamic" evalContext="ranking" />
-    <experiment id="rec-writer" models="ml-ir" splits="ml100k-dynamic" evalContext="writer" />
+    <experiment id="rec-writer" models="ml-ir" splits="kollekt" evalContext="writer" />
   </experiments>
 </wraprec>
