@@ -80,8 +80,9 @@
 					<br>
 
 					<h2 id="sec0">WrapRec</h2>
-					WrapRec is an easy-to-use open-source toolkit, written in C#, that allows users to easily build a recommender model and evaluate it.
-
+					<p class="lead">
+						WrapRec is an easy-to-use open-source toolkit, written in C#, that allows users to easily build a recommender model and evaluate it.
+					</p>
 					WrapRec is not about low-level RecSys algorithms, its instead a framework which Wrap several RecSys toolkits and make it possible to
 					evaluate several algorithms under same evaluation framewrok.
 
@@ -90,54 +91,24 @@
 					<br />
 
 					<h2 id="sec1">Features</h2>
-					<p>
-						<ul>
-							<li>
-					<p>
-						<strong>Easy to use</strong>
-						The most important feature of this toolbox is to be able to run a recommender algorithm in a few clear steps.
-					</p></li>
-					<li>
-						<p>
-							<strong>Common interface for reading datasets with different format</strong>
-							The toolbox is customizable to read any data format.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Cross-Domain recommendation</strong>
-							The toolbox provide interfaces for Cross-Domain recommendation in a object-oriented manner.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Pipeline-based evaluation</strong>
-							Evaluation of different algorithms can be done in a pipeline-based-pattern mechanism. This allows to easily use different evaluators for an experiment.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Context-aware recommendation</strong>
-							The toolbox is highly customizable to handle context-aware recommendation algorithms.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Relational data interface</strong>
-							The toolbox provides an additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature benefits from the advatages of the <a href="http://msdn.microsoft.com/en-us/data/ef.aspx">Micorsoft Entity Framework</a> as well as the .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Exetensions of existing libraries</strong>
-							The object model of WrapRec allows this toolbox to easily integrate existing toolboxes into the model and benefits from the existing code. Currently this toolbox has wrappers around <a href="http://www.mymedialite.net">MyMediaLite</a>, a recommendation framework wrriten in C#, and <a href="http://www.libfm.org">LibFM</a>, a library for factorization machines written in C++.
-						</p>
-					</li>
-					</ul>
+					<p class="lead">
+						<h4 class="lead">Easy to Use</h4>
+						To perform experiments with WrapWrec all you need to do is to write your settings in a configuration file.
+						<h4 class="lead">Wrap Multiple Algorithms, Evaluate on Single Framework</h4>
+						WrapRec is designed to wrap multiple algorithms (from different toolkits) and evaluate your model under a single
+						evaluation framework.
+						<h4 class="lead">Multiple experiments in one Run</h4>
+						In WrapRec parameters (that you define in the config file) can have multiple values.
+						WrapRec detects those values and run evaluation experiments as many times as the cartesian product of all those parameters.
+						<h4 class="lead">Context-aware Recommendation</h4>
+						WrapRec contain components that makes it easy to perform context-aware recommendations. 
+						<h4 class="lead">Multiple Evaluation Method</h4>
+						With WrapRec you can run multiple evaluation methods on a single algorithm and compare the results.
+						<h4 class="lead">Easily Extendible</h4>
+						Without requiring to modify the WrapRec source code, you can define your own extension and plug it into the framework.
 					</p>
 
 
-					<br />
 					<br />
 
 					<h2 id="sec2">How to Use</h2>

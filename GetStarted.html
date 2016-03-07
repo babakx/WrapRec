@@ -14,7 +14,7 @@
 
 	<!-- Bootstrap core CSS -->
 	<link href="css/bootstrap.min.css" rel="stylesheet">
-
+	<link href="assets/css/docs.min.css" rel="stylesheet" />
 	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 	<link href="assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
@@ -58,10 +58,11 @@
 				<div class="col-md-3" id="leftCol">
 
 					<ul class="nav nav-stacked" id="sidebar">
-						<li><a href="#sec0">WrapRec</a></li>
-						<li><a href="#sec1">Features</a></li>
-						<li><a href="#sec2">How to Use</a></li>
-						<li><a href="#sec3">Example</a></li>
+						<li><a href="#overview">Overview</a></li>
+						<li><a href="#architecture">WrapRec Architecture</a></li>
+						<li><a href="#blocks">Building Blocks in WrapRec</a></li>
+						<li><a href="#config">Configuration File</a></li>
+						<li><a href="#extend">Extending WrapRec</a></li>
 					</ul>
 
 				</div>
@@ -69,99 +70,133 @@
 
 					<br>
 
-					<h2 id="sec0">WrapRec</h2>
-					WrapRec is an easy-to-use open-source toolkit, written in C#, that allows users to easily build a recommender model and evaluate it.
-
-					WrapRec is not about low-level RecSys algorithms, its instead a framework which Wrap several RecSys toolkits and make it possible to
-					evaluate several algorithms under same evaluation framewrok.
-
-
-					<br />
-					<br />
-
-					<h2 id="sec1">Features</h2>
+					<h2 id="overview">Overview</h2>
+					<p class="lead">
+						WrapRec is an open-source project, developed with C# which aims to simplify the evaluation of Recommender System algorithms.
+						WrapRec is a configuration-based tool.
+						All desing choices and parameters should be defined in a configuration file.
+					</p>
 					<p>
+						The easiest way to use WrapRec is to <a href="Download.html">download</a> the latest release, specify the details of experiments that you want
+						to perform within a configuration file and run the WrapRec executable.
+					</p>
+					
+					<h3>Get Started with a "Hello MovieLens" Example</h3>
+					<p>
+						<a href="http://grouplens.org/datasets/movielens/">MovieLens</a> is one of the most widely-used benchmark datasets in Recommeder Systems research.
+						Start to use WrapRec with a simple train-and-test scenario using the 100K version of this dataset.
+					</p>
+					<p>
+						To run the example Download the 
+						<a href="https://github.com/babakx/WrapRec/blob/master/examples/examples.rar?raw=true">Hello MovieLens exmaple</a>
+						and extract it in the same folder that contains WrapRec executable. Run the example by the following command. 
+						<br />
+						<em>
+							In Windows, you should have <a href="https://www.microsoft.com/en-us/download/details.aspx?id=17851">.Net Framework</a>,
+							and in Linux and Mac you should have <a href="http://www.mono-project.com/">.Net Mono</a> installed to run WrapRec.
+						</em>
+						<h4>Windows</h4>
+						<pre>wraprec.exe sample.xml</pre>
+						<h4>Linux and Mac</h4>
+						<pre>mono wraprec.exe sample.xml</pre>
+					</p>
+					<p>
+						The example performs four simple experiment with MoviLens 100K dataset. The result of experiments will be stored
+						in a folder <code>results</code> with csv format. Check <a href="#wraprec-results">WrapRec Outputs</a> to understand
+						more about the restuls and outputs of WrapRec.
+					</p>
+					<p>
+						You can start your experiments by modifying the sample configuration file.
+						The configuration file is rather intuitive and easy to understand.
+						Check <a href="#config">Configuration</a> section to undrestand the format of the configuration file in WrapRec.
+					</p>
+					<br />
+					<br />
+
+					<h2 id="architecture">WrapRec Architecture</h2>
+					<p class="lead">
+						WrapRec is designed based on the idea that for any evaluation experiment for Recommender Systems (and generally in Machine Learning),
+						three main components should be present
+
+						<dl class="dl-horizontal lead">
+							<dt><a href="#model">Model</a></dt>
+							<dd>Defines the algorithm that is used to train and evalute Recommender System</dd>
+							<dt><a href="#split">Split</a></dt>
+							<dd>Specifies the data sources and how the data should be splitted for training and evaluation</dd>
+							<dt><a href="#evalContext">Evaluation<br /> Context</a></dt>
+							<dd>Defines a set of evaluators to evaluate a trained model</dd>
+						</dl>
+					</p>
+				
+					<p>
+						The overal architecture of WrapRec is summerized in the Figure below. WrapRec is not about implementation of
+						actual algorithms for recommender systems. Instead, it provides functionalities to easily wrap exisiting algorithms
+						into framework, to be able to perform extensive evaluation experiments in single framework.
+						<br />
+						<br />
+						<img class="img-responsive" src="architecture.png" />
+					</p>
+					<br />
+
+					<h2 id="blocks">Building Blocks in WrapRec</h2>
+					To perform an evaluation experiment with WrapRec, three main building blocks are required. 
+
+					<h3 id="model">Model</h3>
+					<p class="lead">Defines the algorithm that is used to train and evalute Recommender System</p>
+					<p>
+						Currently WrapRec is able to wrap algorithms from two Recommender System toolkits:
+						<a href="http://www.mymedialite.net/">MyMediLite</a> and <a href="libfm.org">LibFm</a>.
+						You can also plug your own algorithm to this framework. Check <a href="#extend">How to Extend WrapRec</a>
+						to learn how to extend WrapRec with your own algorithm or third party implementations.
+					</p>
+
+					<h3 id="split">Split</h3>
+					<p class="lead">Specifies the data sources and how the data should be splitted for training and evaluation</p>
+					<p>
+						In WrapRec data will be loaded through <code>DataReader</code> components. You can define in the configuration file
+						what is the input data, what is the format and how it should be loaded.
+						The data will be store in a <code>DataContainer</code> object. 
+						An <code>Split</code> defines, how the data in DataContainer can be splited for training and evaluation.
+						WrapRec supports several splitting methods such as static, dynamic and Cross-Validation.
+					</p>
+
+					<h3 id="evalContext">Evaluation Context</h3>
+					<p class="lead">Defines a set of evaluators to evaluate a trained model</p>
+					<p>
+						Evaluation Context is a component is WrapRec that consists of several <code>Evaluators</code> and store the results
+						of evaluations that are done with <code>Evaluator</code> objects.
+					</p>
+
+					<br />
+					<h2 id="config">Configuration File</h2>
+					<p class="lead">
+						In WrapRec all the settings and desing choices are defined in a configuration file.
+					</p>
+					<p>
+						The overal format of the configuration file is defined as follow.
 						<ul>
 							<li>
-					<p>
-						<strong>Easy to use</strong>
-						The most important feature of this toolbox is to be able to run a recommender algorithm in a few clear steps.
-					</p></li>
-					<li>
-						<p>
-							<strong>Common interface for reading datasets with different format</strong>
-							The toolbox is customizable to read any data format.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Cross-Domain recommendation</strong>
-							The toolbox provide interfaces for Cross-Domain recommendation in a object-oriented manner.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Pipeline-based evaluation</strong>
-							Evaluation of different algorithms can be done in a pipeline-based-pattern mechanism. This allows to easily use different evaluators for an experiment.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Context-aware recommendation</strong>
-							The toolbox is highly customizable to handle context-aware recommendation algorithms.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Relational data interface</strong>
-							The toolbox provides an additional layer of data management which allows the consumers of data to not only read relational data, but also enables users to access flat data files with a relational data-access manner. This feature benefits from the advatages of the <a href="http://msdn.microsoft.com/en-us/data/ef.aspx">Micorsoft Entity Framework</a> as well as the .Net Language Intergrated Query (LINQ) to do data access in a felixible way.
-						</p>
-					</li>
-					<li>
-						<p>
-							<strong>Exetensions of existing libraries</strong>
-							The object model of WrapRec allows this toolbox to easily integrate existing toolboxes into the model and benefits from the existing code. Currently this toolbox has wrappers around <a href="http://www.mymedialite.net">MyMediaLite</a>, a recommendation framework wrriten in C#, and <a href="http://www.libfm.org">LibFM</a>, a library for factorization machines written in C++.
-						</p>
-					</li>
-					</ul>
-					</p>
-
-
-					<br />
-					<br />
-
-					<h2 id="sec2">How to Use</h2>
-					<p>
-						WrapRec can be simply used by running the executable application. All the settings and parameters should be defined in an xml-based
-						configuration file. Using WrapRec is as easy as running the following command:
-						<h3>Windows</h3>
-						<pre>wraprec.exe [config.xml]</pre>
-
-						<h3>Linux and Mac</h3>
-						In Linux and Mac you should have <a href="http://www.mono-project.com/">.Net Mono</a> installed and the WrapRec can be runned via:
-						<pre>mono wraprec.exe [config.xml]</pre>
+								Components in the configuration file are loaded via Reflection and the parameters are dynamic.
+								It means that you can specify the type of class and its properties and WrapRec creates the
+								objects during runtime.
+							</li>
+							<li>
+								Parameters can have multiple values. WrapRec detects all parameters with multiple values 
+								and run multiple experiments, as many times and the catesian product of all parameters.
+							</li>
+							<li>
+								The three main components of an experiments (Model, Split and Evaluation Context) should be defined in the configuration file.
+							</li>
+						</ul>
 
 					</p>
+					<pre id="confFomat" class="prettyprint"></pre>
 
-					<h3>Configuration File</h3>
-					In WrapRec all the desired settings and parameters are defined in a signle configuration file. With the configuration file
-					you shoud specify four main things:
-					<ul>
-						<li><h4>Models</h4> To specify the models that you use for training the recommender system</li>
-						<li><h4>Data</h4> To specify where the data is stored and how it should be loaded</li>
-						<li><h4>Splits</h4> To define how the data should be splited (for training and evaluation)</li>
-						<li><h4>Evaluation</h4> To specify the methods and metrics for evalution</li>
-					</ul>
-
-
-					Below is an example configuration file which performs a simple train and test with <a href="http://grouplens.org/datasets/movielens/100k/">MovieLens 100K</a>  dataset.
-					<pre id="xml1" class="prettyprint lang-xml">
-					</pre>
 					<br />
-					<br />
-
-					<h2 id="sec3">Example</h2>
-
+					<h2 id="extend">Extending WrapRec</h2>
+					<p class="lead">
+						To be completed.
+					</p>
 				</div>
 			</div>
 		</div>
