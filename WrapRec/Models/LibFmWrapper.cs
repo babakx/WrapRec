@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using WrapRec.Data;
 using WrapRec.Evaluation;
 using WrapRec.IO;
+using LinqLib.Sequence;
+using WrapRec.Core;
 
 namespace WrapRec.Models
 {
@@ -18,10 +20,15 @@ namespace WrapRec.Models
 		public FmFeatureBuilder FeatureBuilder { get; set; }
 
 		public List<string> LibFmArguments { get; private set; }
-
+        
 		float _trainRmse, _testRmse, _lowestTestRmse = float.MaxValue;
 		int _currentIter = 1, _lowestIter;
 		string _outputPath = "test.out";
+
+        float _minTarget, _maxTarget;
+
+        List<float> _w;
+        List<float[]> _v;
 
 		public override void Setup()
 		{
@@ -37,6 +44,10 @@ namespace WrapRec.Models
 			LibFmArguments = SetupParameters.Where(kv => kv.Key.ToLower() != "libfmpath")
 				.ToDictionary(kv => "-" + kv.Key, kv => kv.Value)
 				.SelectMany(kv => new string[] { kv.Key, kv.Value }).ToList();
+
+			if (!SetupParameters.ContainsKey("save_model"))
+				LibFmArguments.Add("-save_model train.model");
+
 
 			// default data type
 			DataType = DataType.Ratings;
@@ -101,9 +112,30 @@ namespace WrapRec.Models
 				libFm.BeginOutputReadLine();
 				libFm.WaitForExit();
 			}).TotalMilliseconds;
+
+            LoadFmModel();
+            _minTarget = split.Container.MinTarget;
+            _maxTarget = split.Container.MaxTarget;
 		}
 
-		private void OnLibFmOutput(object sender, DataReceivedEventArgs dataLine)
+        private void LoadFmModel()
+        {
+            string modelFile = SetupParameters.ContainsKey("save_model") ?
+                SetupParameters["save_model"] : "train.model";
+
+            modelFile = modelFile.Replace("\"", "");
+
+            var lines = File.ReadAllLines(modelFile);
+
+            float w0 = float.Parse(lines.Skip(1).First());
+            _w = new float[] { w0 }.Concat(
+                lines.Skip(3).TakeWhile(l => !l.StartsWith("#")).Select(l => float.Parse(l))).ToList();
+
+            _v = lines.Skip(_w.Count + 3)
+                .Select(l => l.Split(' ').Select(v => float.Parse(v)).ToArray()).ToList();
+        }
+
+        private void OnLibFmOutput(object sender, DataReceivedEventArgs dataLine)
 		{
 			var data = dataLine.Data;
 
@@ -146,22 +178,73 @@ namespace WrapRec.Models
 				List<float> testPredictions = File.ReadAllLines(_outputPath).Select(l => float.Parse(l)).ToList();
 				int i = 0;
 				foreach (var feedback in split.Test)
+					// no need to call Predict(feedback) becuase the predictions are already saved in the output file
 					context.PredictedScores.Add(feedback, testPredictions[i++]);
-			}
+                    
+            }
 			
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
 			{	
-				// TODO: make sure that the evaluators that require model.Predict is not used for this model
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
 		}
 
 		public override float Predict(string userId, string itemId)
 		{
-			throw new NotSupportedException("Rating prediction is not supported with LibFmWrapper class. Use LibFmRecommender instead.");
-		}
+            return Predict(FeatureBuilder.GetLibFmFeatureVector(userId, itemId));
+        }
 
-		public override void Clear()
+        public virtual float Predict(Feedback feedback)
+        {
+            return Predict(FeatureBuilder.GetLibFmFeatureVector(feedback));
+        }
+
+        public virtual float Predict(string featureVector)
+        {
+            var featIds = new List<int>();
+            var featValues = new List<float>();
+
+            foreach (string feat in featureVector.Split(' '))
+            {
+                var parts = feat.Split(':');
+
+                // if feedback is rating the first part of split is rating (format is 5 0:1 1:1)
+                if (parts.Count() < 2)
+                    continue;
+
+                featIds.Add(int.Parse(parts[0]));
+                featValues.Add(float.Parse(parts[1]));
+            }
+
+            int k = _v[0].Count();
+            float p = _w[0];
+
+            // Check LibFM paper eq. (5)
+            for (int f = 0; f < k; f++)
+            {
+				float sum = 0, sumSqr = 0;
+				for (int i = 0; i < featIds.Count; i++)
+                {
+                    if (featIds[i] < _v.Count)
+                    {
+                        float t = _v[featIds[i]][f] * featValues[i];
+                        sum += t;
+                        sumSqr += t * t;
+
+                        if (f == 0)
+                            p += _w[featIds[i] + 1] * featValues[i];
+                    }
+				}
+				p += 0.5f * (sum * sum - sumSqr);
+			}
+
+            p = Math.Min(p, _maxTarget);
+            p = Math.Max(p, _minTarget);
+
+            return p;
+        }
+
+        public override void Clear()
 		{
 			FeatureBuilder.RestartNumValues();
 			FeatureBuilder.Mapper = new Mapping();
