@@ -22,11 +22,22 @@
 }
 
 #masthead #headbuttons {
-	margin-top:20%;
+	margin-top:20px;
 }
 
-#masthead button {
-	margin: 10px;	
+#masthead #git-buttons {
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+#masthead #twitter-button {
+	margin-top: 20px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+}
+
+#headbuttons a {
+	margin: 10px;
 }
 .icon-bar {
 	background-color:#fff;
@@ -47,7 +58,7 @@
 }
   
 .navbar-bright a, #masthead a, #masthead .lead {
-  	color:#aaaacc;
+  	color:#D8D8E4;
 }
 
 .navbar-bright li > a:hover {
@@ -90,7 +101,6 @@
 
 h1 .lead {
 	margin-top: 10px;
-	font-weight: bold;
 }
 
 #mainCol pre {
@@ -99,4 +109,8 @@ h1 .lead {
 
 #leftCol {
 	border-width: 1px;
+}
+
+.container #logos img{
+	vertical-align: middle;
 }
