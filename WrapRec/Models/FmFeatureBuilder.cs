@@ -35,13 +35,13 @@ namespace WrapRec.Models
 			return string.Format("{0}:1 {1}:1", userMappedId, itemMappedId);
 		}
 		
-		public virtual string GetLibFmFeatureVector(Feedback feedback)
+		public virtual string GetLibFmFeatureVector(Feedback feedback, int feedbackValue = 1)
         {
             string featVector;
 			if (feedback is Rating)
 				featVector = ((Rating)feedback).Value + " " + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
 			else
-				featVector = GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
+				featVector = feedbackValue + " " + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
 
 			_numValues += 2;
 

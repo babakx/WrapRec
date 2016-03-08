@@ -61,12 +61,12 @@ namespace WrapRec.Models
 			return Predict(FeatureBuilder.GetLibFmFeatureVector(userId, itemId));
 		}
 
-		public float Predict(Feedback feedback)
+		public override float Predict(Feedback feedback)
 		{
 			return Predict(FeatureBuilder.GetLibFmFeatureVector(feedback));
 		}
 
-		public float Predict(string featureVector)
+		public override float Predict(string featureVector)
 		{
 			var featIds = new List<int>();
 			var featValues = new List<float>();

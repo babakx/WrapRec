@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WrapRec.Core;
 using WrapRec.IO;
+using LinqLib.Sequence;
 
 namespace WrapRec.Data
 {
@@ -52,6 +53,43 @@ namespace WrapRec.Data
             foreach (Feedback f in Test)
                 f.SliceType = FeedbackSlice.TEST;
         }
+
+		public IEnumerable<Feedback> SampleNegativeFeedback(int count)
+		{
+			UpdateFeedbackSlices();
+
+			var users = Container.Users.Keys.ToList();
+			var items = Container.Items.Keys.ToList();
+
+			var rand = new Random();
+
+			int i = 0;
+			while (i < count)
+			{
+				var user = SampleUser(users);
+				var item = SampleItem(items);
+
+				var userTrainItemIds = user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TRAIN).Select(f => f.Item.Id);
+
+				if (!userTrainItemIds.Contains(item.Id))
+				{
+					i++;
+					yield return new Feedback(user, item);
+				}
+			}
+		}
+
+		private User SampleUser(List<string> allUserIds)
+		{
+			int rndIndex = (new Random()).Next(allUserIds.Count);
+			return Container.Users[allUserIds[rndIndex]];
+		}
+
+		private Item SampleItem(List<string> allItemIds)
+		{
+			int rndIndex = (new Random()).Next(allItemIds.Count);
+			return Container.Items[allItemIds[rndIndex]];
+		}
 
         public Dictionary<string, string> GetStatistics()
         {
