@@ -48,7 +48,6 @@ namespace WrapRec.Models
 			if (!SetupParameters.ContainsKey("save_model"))
 				LibFmArguments.Add("-save_model train.model");
 
-
 			// default data type
 			DataType = DataType.Ratings;
 
@@ -74,10 +73,22 @@ namespace WrapRec.Models
 		{
 			UpdateFeatureBuilder(split);
 			
+			Logger.Current.Info("Creating LibFm train and test files...");
+
 			var train = split.Train.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 			var test = split.Test.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 
-			Logger.Current.Info("Creating LibFm train and test files...");
+			// infer dataType
+			if (split.Container.DataReaders.Select(dr => dr.DataType).Contains(IO.DataType.PosFeedback))
+				this.DataType = IO.DataType.PosFeedback;
+
+			// add negative samples in case of posFeedback data
+			if (DataType == IO.DataType.PosFeedback)
+			{
+				var negFeedback = split.SampleNegativeFeedback((int)(train.Count()))
+					.Select(f => FeatureBuilder.GetLibFmFeatureVector(f, -1));
+				train = train.Concat(negFeedback).Shuffle();
+			}
 
 			string trainPath = "train.libfm";
 			string testPath = "test.libfm";
@@ -164,23 +175,22 @@ namespace WrapRec.Models
 
 		public override void Evaluate(Split split, EvaluationContext context)
 		{
-			var results = new Dictionary<string, string>();
-			results.Add("LibFmTrainRMSE", string.Format("{0:0.0000}", _trainRmse));
-			results.Add("LibFmTestRMSE", string.Format("{0:0.0000}", _testRmse));
-			results.Add("LibFmLowestRMSE", string.Format("{0:0.0000}", _lowestTestRmse));
-			results.Add("LowestIteration", _lowestIter.ToString());
-
-			context.AddResultsSet("libfm", results);
-
 			if (DataType == DataType.Ratings)
 			{
+				var results = new Dictionary<string, string>();
+				results.Add("LibFmTrainRMSE", string.Format("{0:0.0000}", _trainRmse));
+				results.Add("LibFmTestRMSE", string.Format("{0:0.0000}", _testRmse));
+				results.Add("LibFmLowestRMSE", string.Format("{0:0.0000}", _lowestTestRmse));
+				results.Add("LowestIteration", _lowestIter.ToString());
+
+				context.AddResultsSet("libfm", results);
+	
 				// test split and tested predictions (in the file) have the same order
 				List<float> testPredictions = File.ReadAllLines(_outputPath).Select(l => float.Parse(l)).ToList();
 				int i = 0;
 				foreach (var feedback in split.Test)
 					// no need to call Predict(feedback) becuase the predictions are already saved in the output file
 					context.PredictedScores.Add(feedback, testPredictions[i++]);
-                    
             }
 			
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
@@ -238,8 +248,11 @@ namespace WrapRec.Models
 				p += 0.5f * (sum * sum - sumSqr);
 			}
 
-            p = Math.Min(p, _maxTarget);
-            p = Math.Max(p, _minTarget);
+			if (DataType == IO.DataType.Ratings)
+			{
+				p = Math.Min(p, _maxTarget);
+				p = Math.Max(p, _minTarget);
+			}
 
             return p;
         }
