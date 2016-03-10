@@ -109,5 +109,25 @@ namespace WrapRec.Utils
 				yield return item;
 		}
 
+		public static IEnumerable<Dictionary<string, string>> JoinDictionaries(this IEnumerable<Dictionary<string, string>> source)
+		{
+			var joinedFields = source.SelectMany(dic => dic.Keys).Distinct().ToList();
+
+			foreach (Dictionary<string, string> sourceDic in source)
+			{
+				var joinedDic = new Dictionary<string, string>();
+
+				for (int i = 0; i < joinedFields.Count; i++)
+				{
+					if (sourceDic.ContainsKey(joinedFields[i]))
+						joinedDic.Add(joinedFields[i], sourceDic[joinedFields[i]]);
+					else
+						joinedDic.Add(joinedFields[i], "NA");
+				}
+
+				yield return joinedDic;
+			}
+		}
+
 	}
 }

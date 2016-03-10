@@ -62,18 +62,30 @@ namespace WrapRec.Core
 				{
 					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
 					e.Setup();
-					LogExperimentInfo(e);
-                    WriteSplitInfo(e);
-                    e.Run();
-					LogExperimentResults(e);
-					WriteResultsToFile(e);
-					e.Clear();
+
+					if (e.Type == ExperimentType.Evaluation)
+					{
+						LogExperimentInfo(e);
+						WriteSplitInfo(e);
+						e.Run();
+						LogExperimentResults(e);
+						WriteResultsToFile(e);
+						e.Clear();
+					}
+					else
+					{
+						e.Run();
+					}
 					numSuccess++;
 				}
 				catch (Exception ex)
 				{
-					Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}", 
-						e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+					if (e.Type == ExperimentType.Evaluation)
+						Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
+							e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+					else
+						Logger.Current.Error("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+
 					numFails++;
 				}
 			}
@@ -146,14 +158,28 @@ namespace WrapRec.Core
 			else
 				expType = typeof(Experiment);
 
+			if (expEl.Attribute("type") != null && expEl.Attribute("type").Value == "other")
+			{
+				var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+				exp.ExperimentManager = this;
+				exp.Id = expId;
+				exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+				exp.Type = ExperimentType.Other;
+
+				yield return exp;
+			}
+
 			// one modelId might map to multiple models (if multiple values are used for parameters)
-			IEnumerable<Model> models = expEl.Attribute("models").Value.Split(',')
-				.SelectMany(mId => ParseModelsSet(mId));
+			IEnumerable<Model> models = expEl.Attribute("models") != null
+				 ? expEl.Attribute("models").Value.Split(',').SelectMany(mId => ParseModelsSet(mId))
+				 : Enumerable.Empty<Model>();
 
 			// one splitId always map to one split
-			IEnumerable<Split> splits = expEl.Attribute("splits").Value.Split(',')
-				.Select(sId => ParseSplit(sId));
-
+			IEnumerable<Split> splits = expEl.Attribute("splits") != null
+				? expEl.Attribute("splits").Value.Split(',').Select(sId => ParseSplit(sId))
+				: Enumerable.Empty<Split>();
+			
 			foreach (Split s in splits)
 			{
 				foreach (Model m in models)
@@ -165,11 +191,14 @@ namespace WrapRec.Core
                         {
                             var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
+							exp.ExperimentManager = this;
                             exp.Model = m;
 							exp.Split = ss;
-                            exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
                             exp.Id = expId;
-
+							exp.Type = ExperimentType.Evaluation;
+							if (expEl.Attribute("evalContext") != null)
+								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+                            
 							yield return exp;
                         }
                     }
@@ -177,11 +206,14 @@ namespace WrapRec.Core
                     {
                         var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
+						exp.ExperimentManager = this;
                         exp.Model = m;
                         exp.Split = s;
-                        exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-                        exp.Id = expId;
-
+						exp.Id = expId;
+						exp.Type = ExperimentType.Evaluation;
+						if (expEl.Attribute("evalContext") != null)
+							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+						
 						yield return exp;
                     }
 				}

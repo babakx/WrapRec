@@ -138,6 +138,7 @@ namespace WrapRec.Models
 
             var lines = File.ReadAllLines(modelFile);
 
+			// TODO: if dim is 0,0,x w0 and w would be 0 and the format of the file would be different
             float w0 = float.Parse(lines.Skip(1).First());
             _w = new float[] { w0 }.Concat(
                 lines.Skip(3).TakeWhile(l => !l.StartsWith("#")).Select(l => float.Parse(l))).ToList();

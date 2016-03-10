@@ -61,6 +61,11 @@ namespace WrapRec.Data
 			var users = Container.Users.Keys.ToList();
 			var items = Container.Items.Keys.ToList();
 
+			// real-valued attributes can be added to negative feedbacks with value of 0
+			var rAttrs = Container.Feedbacks.First().Attributes
+				.Where(a => a.Type == AttributeType.RealValued)
+				.Select(a => new Core.Attribute() { Name = a.Name, Type = AttributeType.RealValued, Value = "0" });
+
 			var rand = new Random();
 
 			int i = 0;
@@ -74,7 +79,12 @@ namespace WrapRec.Data
 				if (!userTrainItemIds.Contains(item.Id))
 				{
 					i++;
-					yield return new Feedback(user, item);
+					var f = new Feedback(user, item);
+					
+					foreach (var attr in rAttrs)
+						f.Attributes.Add(attr);
+
+					yield return f;
 				}
 			}
 		}

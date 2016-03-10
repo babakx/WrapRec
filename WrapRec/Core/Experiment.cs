@@ -10,6 +10,12 @@ using MyMediaLite;
 
 namespace WrapRec.Core
 {
+	public enum ExperimentType
+	{
+ 		Evaluation,
+		Other
+	}
+
 	public class Experiment
 	{
 		public string Id { get; set; }
@@ -18,8 +24,11 @@ namespace WrapRec.Core
 		public EvaluationContext EvaluationContext { get; set; }
 		public int TrainTime { get; private set; }
 		public int EvaluationTime { get; private set; }
+		public ExperimentManager ExperimentManager { get; set; }
+		public Dictionary<string, string> SetupParameters { get; set; }
+		public ExperimentType Type { get; set; }
 
-		public void Setup()
+		public virtual void Setup()
 		{
 			if (!Split.Container.IsLoaded)
 			{
@@ -35,7 +44,7 @@ namespace WrapRec.Core
 			}
 		}
 		
-		public void Run()
+		public virtual void Run()
 		{
 			Logger.Current.Info("Training...");
             TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;
@@ -43,7 +52,7 @@ namespace WrapRec.Core
             EvaluationTime = (int)Wrap.MeasureTime(delegate() { Model.Evaluate(Split, EvaluationContext); }).TotalMilliseconds;
 		}
 
-        public void Clear()
+        public virtual void Clear()
         {
 			Model.Clear();
             EvaluationContext.Clear();
