@@ -19,6 +19,7 @@ namespace WrapRec.Data
 		public Dictionary<string, User> Users { get; private set; }
         public Dictionary<string, Item> Items { get; private set; }
         public HashSet<Feedback> Feedbacks { get; private set; }
+		public MultiKeyDictionary<string, string, Feedback> FeedbacksDic { get; private set; }
 
         protected Dictionary<string, string> _statistics;
 
@@ -30,6 +31,7 @@ namespace WrapRec.Data
 			Users = new Dictionary<string, User>();
             Items = new Dictionary<string, Item>();
             Feedbacks = new HashSet<Feedback>();
+			FeedbacksDic = new MultiKeyDictionary<string, string, Feedback>();
         }
 
 		public void Load()
@@ -52,14 +54,24 @@ namespace WrapRec.Data
 
         public Feedback AddFeedback(string userId, string itemId)
         {
+			Feedback feedback;
+
+			if (FeedbacksDic.ContainsKey(userId, itemId))
+			{
+				feedback = FeedbacksDic[userId, itemId];
+				return feedback;
+			}
+
 			User u = AddUser(userId);
             Item i = AddItem(itemId);
 
-            var feedback = new Feedback(u, i);
+            feedback = new Feedback(u, i);
 
 			Feedbacks.Add(feedback);
 			u.Feedbacks.Add(feedback);
 			i.Feedbacks.Add(feedback);
+			
+			FeedbacksDic.Add(userId, itemId, feedback);
 
 			return feedback;
         }
@@ -70,6 +82,7 @@ namespace WrapRec.Data
 			f.Item.Feedbacks.Remove(f);
 
 			Feedbacks.Remove(f);
+			FeedbacksDic[f.User.Id].Remove(f.Item.Id);
 
 			if (f.User.Feedbacks.Count == 0)
 				Users.Remove(f.User.Id);
@@ -95,27 +108,10 @@ namespace WrapRec.Data
             u.Feedbacks.Add(r);
             i.Feedbacks.Add(r);
 
+			FeedbacksDic.Add(userId, itemId, r);
+
             return r;
         }
-
-		private Feedback GetFeedbackIfExist(string userId, string itemId)
-		{
-			var feedback = Feedbacks.FirstOrDefault(f => f.User.Id == userId && f.Item.Id == itemId);
-
-			if (feedback != null)
-			{
-				var attr = feedback.GetOrCreateAttribute(Constants.FeedbackRepeatAttribute);
-				if (attr.Value != null)
-					attr.Value = (int.Parse(attr.Value) + 1).ToString();
-				else
-				{
-					attr.Value = "1";
-					attr.Type = AttributeType.RealValued;
-				}
-			}
-
-			return feedback;
-		}
 
         public User AddUser(string userId)
         {

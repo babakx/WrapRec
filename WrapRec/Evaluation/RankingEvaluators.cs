@@ -131,7 +131,6 @@ namespace WrapRec.Evaluation
 			var ndcg = new MultiKeyDictionary<int, int, double>();
 			var mrrs = new MultiKeyDictionary<int, int, double>();
 			var maps = new MultiKeyDictionary<int, int, double>();
-			// TODO: calculate % of coverage
 			var distinctItems = new MultiKeyDictionary<int, int, List<string>>();
 
 
@@ -225,6 +224,7 @@ namespace WrapRec.Evaluation
 					if (CandidateItemsMode == CandidateItems.EXPLICIT)
 						results.Add("CandidatesFile", CandidateItemsFile.Substring(CandidateItemsFile.LastIndexOf('\\') + 1));
 					results.Add("NumCandidates", maxCand == int.MaxValue ? "max" : maxCand.ToString());
+					results.Add("AllCandidates", _allCandidateItems.Count.ToString());
 					results.Add("CutOff", k.ToString());
 					results.Add("Precision", string.Format("{0:0.0000}", precision[maxCand, k]));
 					results.Add("Recall", string.Format("{0:0.0000}", recall[maxCand, k]));
@@ -232,6 +232,8 @@ namespace WrapRec.Evaluation
 					results.Add("MRR", string.Format("{0:0.0000}", mrrs[maxCand, k]));
 					results.Add("NDCG", string.Format("{0:0.0000}", ndcg[maxCand, k]));
 					results.Add("TotalRecomItems", distinctItems[maxCand, k].Count.ToString());
+					results.Add("%Coverage", string.Format("{0:0.00}", 
+						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count).ToString()));
 					results.Add("EvalMethod", "UserBased");
 
 					context.AddResultsSet("rankingMeasures", results);

@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace WrapRec.Core
 {
-    public class Feedback : Entity
+	public enum FeedbackType
+	{
+		Positive,
+		Negative
+	}
+
+	public class Feedback : Entity
     {
         public User User { get; set; }
         public Item Item { get; set; }
         public FeedbackSlice SliceType { get; set; }
+		public FeedbackType FeedbackType { get; set; }
 
         public Feedback(User user, Item item)
             : base()
@@ -18,6 +25,8 @@ namespace WrapRec.Core
             User = user;
             Item = item;
             SliceType = FeedbackSlice.NOT_APPLICABLE;
+			// By default a feedback is a positive Feedback
+			FeedbackType = FeedbackType.Positive;
         }
 
 

@@ -75,20 +75,17 @@ namespace WrapRec.Models
 			
 			Logger.Current.Info("Creating LibFm train and test files...");
 
-			var train = split.Train.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
-			var test = split.Test.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 
-			// infer dataType
+			// infer dataType and add negative samples in case of posFeedback data
+			IEnumerable<Feedback> negFeedback = Enumerable.Empty<Feedback>();
 			if (split.Container.DataReaders.Select(dr => dr.DataType).Contains(IO.DataType.PosFeedback))
-				this.DataType = IO.DataType.PosFeedback;
-
-			// add negative samples in case of posFeedback data
-			if (DataType == IO.DataType.PosFeedback)
 			{
-				var negFeedback = split.SampleNegativeFeedback((int)(train.Count()))
-					.Select(f => FeatureBuilder.GetLibFmFeatureVector(f, -1));
-				train = train.Concat(negFeedback).Shuffle();
+				this.DataType = IO.DataType.PosFeedback;
+				negFeedback = split.SampleNegativeFeedback((int)(split.Train.Count()));
 			}
+
+			var train = split.Train.Concat(negFeedback).Shuffle().Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
+			var test = split.Test.Select(f => FeatureBuilder.GetLibFmFeatureVector(f));
 
 			string trainPath = "train.libfm";
 			string testPath = "test.libfm";

@@ -62,11 +62,10 @@ namespace WrapRec.Data
 			var items = Container.Items.Keys.ToList();
 
 			// real-valued attributes can be added to negative feedbacks with value of 0
+			// here we assume that first feedback has all attributes
 			var rAttrs = Container.Feedbacks.First().Attributes
 				.Where(a => a.Type == AttributeType.RealValued)
 				.Select(a => new Core.Attribute() { Name = a.Name, Type = AttributeType.RealValued, Value = "0" });
-
-			var rand = new Random();
 
 			int i = 0;
 			while (i < count)
@@ -80,7 +79,8 @@ namespace WrapRec.Data
 				{
 					i++;
 					var f = new Feedback(user, item);
-					
+					f.FeedbackType = FeedbackType.Negative;
+
 					foreach (var attr in rAttrs)
 						f.Attributes.Add(attr);
 
