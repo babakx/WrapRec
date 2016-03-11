@@ -7,6 +7,7 @@ using WrapRec.Core;
 using LinqLib.Sequence;
 using System.IO;
 using WrapRec.IO;
+using WrapRec.Utils;
 
 namespace WrapRec.Data
 {
@@ -51,16 +52,16 @@ namespace WrapRec.Data
 
         public Feedback AddFeedback(string userId, string itemId)
         {
-            User u = AddUser(userId);
+			User u = AddUser(userId);
             Item i = AddItem(itemId);
 
-            var f = new Feedback(u, i);
+            var feedback = new Feedback(u, i);
 
-            Feedbacks.Add(f);
-            u.Feedbacks.Add(f);
-            i.Feedbacks.Add(f);
+			Feedbacks.Add(feedback);
+			u.Feedbacks.Add(feedback);
+			i.Feedbacks.Add(feedback);
 
-            return f;
+			return feedback;
         }
 
 		public void RemoveFeedback(Feedback f)
@@ -96,6 +97,25 @@ namespace WrapRec.Data
 
             return r;
         }
+
+		private Feedback GetFeedbackIfExist(string userId, string itemId)
+		{
+			var feedback = Feedbacks.FirstOrDefault(f => f.User.Id == userId && f.Item.Id == itemId);
+
+			if (feedback != null)
+			{
+				var attr = feedback.GetOrCreateAttribute(Constants.FeedbackRepeatAttribute);
+				if (attr.Value != null)
+					attr.Value = (int.Parse(attr.Value) + 1).ToString();
+				else
+				{
+					attr.Value = "1";
+					attr.Type = AttributeType.RealValued;
+				}
+			}
+
+			return feedback;
+		}
 
         public User AddUser(string userId)
         {

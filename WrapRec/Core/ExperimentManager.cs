@@ -409,7 +409,8 @@ Model Parameteres:
 
 			// write a header to the csv file if the model is changed (different models have different parameters)
 			// assuming one evaluation context is beeing used for all experiments
-            if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
+            // TODO: if model is used in multiple splits, the header will not be written for the new splits
+			if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
 				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))

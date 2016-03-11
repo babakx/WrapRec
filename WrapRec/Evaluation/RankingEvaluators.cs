@@ -131,6 +131,7 @@ namespace WrapRec.Evaluation
 			var ndcg = new MultiKeyDictionary<int, int, double>();
 			var mrrs = new MultiKeyDictionary<int, int, double>();
 			var maps = new MultiKeyDictionary<int, int, double>();
+			// TODO: calculate % of coverage
 			var distinctItems = new MultiKeyDictionary<int, int, List<string>>();
 
 
@@ -153,6 +154,8 @@ namespace WrapRec.Evaluation
 				}
 			}
 
+			// TODO: fix problem with parallelization 
+			// workaroung: make sure test users and items are defined in MML Mapping before this call
 			Parallel.ForEach(testUsers, u =>
 			{
 				testedUsersCount++;

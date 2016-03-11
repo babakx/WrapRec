@@ -10,6 +10,7 @@ namespace WrapRec
 	{
 		// Log levels
 		// Trace, Debug, Info, Warn, Error, Fatal
+		// TODO: log a copy to a file
 		public static NLog.Logger Current = NLog.LogManager.GetLogger("infoLogger");
 	}
 }
