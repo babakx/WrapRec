@@ -202,7 +202,7 @@ namespace WrapRec.Models
             return Predict(FeatureBuilder.GetLibFmFeatureVector(userId, itemId));
         }
 
-        public virtual float Predict(Feedback feedback)
+        public override float Predict(Feedback feedback)
         {
             return Predict(FeatureBuilder.GetLibFmFeatureVector(feedback));
         }

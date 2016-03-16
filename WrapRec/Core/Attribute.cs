@@ -20,5 +20,7 @@ namespace WrapRec.Core
 		public string Value { get; set; }
 
 		public AttributeType Type { get; set; }
+
+		public Tuple<int, float> Translation { get; set; }
 	}
 }
