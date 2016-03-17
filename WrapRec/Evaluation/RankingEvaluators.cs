@@ -233,7 +233,7 @@ namespace WrapRec.Evaluation
 					results.Add("NDCG", string.Format("{0:0.0000}", ndcg[maxCand, k]));
 					results.Add("TotalRecomItems", distinctItems[maxCand, k].Count.ToString());
 					results.Add("%Coverage", string.Format("{0:0.00}", 
-						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count).ToString()));
+						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count)));
 					results.Add("EvalMethod", "UserBased");
 
 					context.AddResultsSet("rankingMeasures", results);
