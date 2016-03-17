@@ -24,6 +24,8 @@ namespace WrapRec.Core
 		public Dictionary<string, EvaluationContext> EvaluationContexts { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
+		public string JointFile { get; set; }
+		public string[] ExperimentIds { get; private set; }
 
         Dictionary<string, StreamWriter> _statWriters;
         Dictionary<string, StreamWriter> _resultWriters;
@@ -96,6 +98,29 @@ namespace WrapRec.Core
             foreach (StreamWriter w in _statWriters.Values)
                 w.Close();
 
+			try
+			{
+				if (!string.IsNullOrEmpty(JointFile))
+				{
+					Logger.Current.Info("Joining the results...");
+					
+					var jr = new JoinResults();
+					var param = new Dictionary<string, string>();
+					param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
+					param.Add("outputFile", JointFile);
+					param.Add("delimiter", ResultSeparator);
+					
+					jr.ExperimentManager = this;
+					jr.SetupParameters = param;
+					jr.Setup();
+					jr.Run();
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
+			}
+
             Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
 				numSuccess, numFails, ResultsFolder);
 		}
@@ -117,6 +142,8 @@ namespace WrapRec.Core
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
 					: Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				ResultsFolder = Directory.CreateDirectory(Path.Combine(rootPath, expFolder)).FullName;
+				JointFile = allExpEl.Attribute("jointResults") != null ?
+					Path.Combine(ResultsFolder, allExpEl.Attribute("jointResults").Value) : "";
 
 				XAttribute runAttr = allExpEl.Attribute("run");
 
@@ -131,6 +158,7 @@ namespace WrapRec.Core
                     _loggedModels = expIds.ToDictionary(eId => eId, eId => new List<string>());
 
                     expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
+					ExperimentIds = expEls.Select(el => el.Attribute("id").Value).ToArray();
 				}
 
 				Logger.Current.Info("Resolving experiments...");
