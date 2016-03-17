@@ -61,7 +61,17 @@
 						<li><a href="#overview">Overview</a></li>
 						<li><a href="#architecture">WrapRec Architecture</a></li>
 						<li><a href="#blocks">Building Blocks in WrapRec</a></li>
-						<li><a href="#config">Configuration File</a></li>
+						<li>
+                            <a href="#config">Configuration File</a>
+                            <ul id="subConf" class="nav nav-stacked small">
+                                <li><a href="#exp">Experiment</a></li>
+                                <li><a href="#output">WrapRec Output</a></li>
+                                <li><a href="#modelConf">Model</a></li>
+                                <li><a href="#splitConf">Split</a></li>
+                                <li><a href="#dataConf">Data</a></li>
+                                <li><a href="#evalConf">Evaluation Context</a></li>
+                            </ul>
+                        </li>
 						<li><a href="#extend">Extending WrapRec</a></li>
 					</ul>
 
@@ -110,7 +120,6 @@
 						The configuration file is rather intuitive and easy to understand.
 						Check <a href="#config">Configuration</a> section to undrestand the format of the configuration file in WrapRec.
 					</p>
-					<br />
 					<br />
 
 					<h2 id="architecture">WrapRec Architecture</h2>
@@ -191,12 +200,168 @@
 
 					</p>
 					<pre id="confFomat" class="prettyprint"></pre>
+                    
+                    <h3 id="exp">Experiment</h3>
+                    <p>
+                        In WrapRec evaluation experiments are defined in an experiment object.
+                        In the configuration file an experiment is defined in an <code>experiment</code>
+                        element. 
+                        <pre id="expEl" class="prettyprint"></pre>
+                    
+                        You can specify as many models and splits as you want in the experiment element.
+                        For each combination of models and split WrapRec runs an evaluation experiment.
+                        Models, Splits and EvalationContexts should be defined by their own elements.
 
-					<br />
+                        In the <code>experiments</code> element, you can define as many experiment as you want.
+                        <code>experiments</code> element is the starting point of parsing the configuration file
+                        and runnig the experiments. You can specify which experiment(s) you want to run
+                        using <code>run</code> attribute.
+                    </p>
+                    <h3 id="output">WrapRec Output</h3>
+                    <p>
+                        For each experiment that you run with WrapRec, two csv files will be generated.
+                        The name of the files are <code>[experimentId].csv</code> and <code>[experimentId].splits.csv</code>.
+                        The first file contains the results of experiment (in tab separated by default)
+                        and the second file contains some statistics about the dataset and splits that is
+                        used for that experiment. These two files are stored in the path that are specified
+                        by the attribute <code>resultsFolder</code>. You can change the delimiter of the 
+                        generated csv files using attribute <code>delimiter="[delimiter]"</code>.
+
+                        WrapRec log some information when the experiments are running. You can change
+                        the verbosity of experiments using the attribute <code>verbosity</code>. The values 
+                        can be <code>trace</code> (which log more details) and <code>info</code>.
+                    </p>
+
+                    <h3 id="modelConf">Model</h3>
+                    A model is defined with a <code>model</code> element. There are two obligatory attributes
+                    for a model element: <code>id</code> which is a name or id that you define for the model
+                    , and <code>class</code> which is a full type name (including namespace) of the model class. 
+                    <p>
+                        <em>Advanced hint: If the class is defined in another assembly, the path
+                        of the assembly should be prefix in the attribute class with a colon, that is,
+                        <code>[path to assmebly]:[full type name]</code></em>
+                    </p>
+                    In addition you can define the propeties of the model class in the sub-element <code>parameters</code>.
+                    Here is an example of a model definition:
+
+                    <pre id="modelEl" class="prettyprint"></pre>
+
+                    The class specifies WrapRec wrapper class and the parameters specify the 
+                    properties of the model. 
+                    See detailed <a href="Documentation.html">Documentation</a> to see possible parameters
+                    for different WrapRec models. 
+
+                    <br />
+                    All parameters can have multiple values separated by comma. For each combinatio of 
+                    parameters WrapRec creates an instance of the model object.
+                    <p>
+                        <em>
+                            Hint: when you use a modelId in an experiment, for each combinatio of parameters
+                            one model instance will be used.
+                        </em>
+                    </p>
+                    <h3 id="splitConf">Split</h3>
+                    <p>
+                        An split is defined with an <code>split</code> element. With an split object
+                        you specify what is the source of data and how should the data be splitted into
+                        train and test sets. Using the attribute <code>dataContainer</code> you should specify
+                        what is the data source of the split.
+
+                        <pre id="splitEl" class="prettyprint"></pre>
+
+                        An split can have four different types:
+                        <ul>
+                            <li>Static</li>
+                            <li>Dynamic</li>
+                            <li>Cross-validation (cv)</li>
+                            <li>Custom</li>
+                        </ul>
+
+                        By defualt the splits are created using the <code>FeedbackSimpleSplit</code>
+                        class. You can make your own split logic by defining your own custom class and use
+                        the type name in the parameter <code>class</code>.
+                        Your custom split class should extend class <code>WrapRec.Data.Split</code>.
+                        Check <a href="#extend">extending WrapRec</a> to see how you can defined your ownd
+                        types.
+                        <br />
+                        The attributes <code>trainRatios</code> and <code>numFolds</code> can have multiple
+                        values (comma separated). This means that the for each combination of parameters one
+                        split object would be created.
+                    </p>
+
+                    <h3 id="dataConf">Data</h3>
+                    <p>
+                        In WrapRec data are stored in a <code>DataContainer</code> object. The data is loaded
+                        into the DataContainer object via <code>DataReader</code> objects.
+                        A DataContainer should specify which DataReaders should be used to load data into
+                        it. DataReaders specify how data should be loaded.
+
+                        <pre id="containerEl" class="prettyprint"></pre>
+                        <pre id="readerEl" class="prettyprint"></pre>
+
+                        You can use the default reader class <code>WrapRec.IO.CsvReader</code>
+                        to read csv data. If you are using this class there are few more parameters namely
+                        <code>hasHeader=[true|false]</code> to indicate whether the csv has header or not
+                        , <code>delimiter=[delimiter]</code> to specify delimiter in the csv file.
+                        In addition you can specify the format of the csv file using the <code>header=[comma separated fields]</code> attribute.
+
+                    </p>
+
+                    <h3 id="evalConf">Evaluation Context</h3>
+                    <p>
+                        An Evaluation Context is defined with a <code>evalContext</code> element.
+                        An EvaluationContext object can have multiple evaluator objects that evaluate
+                        a trained model. Evaluators are defined with an <code>evaluator</code> element.
+                        Here is the fomrat of the <code>evalContext</code> element:
+
+                        <pre id="evalEl" class="prettyprint"></pre>
+
+                        You can use multiple Evaluators in an evaluation context. <code>evaluator</code>
+                        element has an obligatory attribute <code>class</code> that specifies
+                        the evaluator class. Depending on the evaluator class, more parameters
+                        can be used. Here is an example of an evaluation context with multiple evaluators:
+                        
+                        <pre id="evalElExample" class="prettyprint"></pre>
+
+                        Here three evaluators are used. The firs two are simple RMSE ane MAE evalutors.
+                        If you want to use ranking-based evaluators, you can use class
+                        <code>WrapRec.Evaluation.RankingEvaluators</code>. Here you can specify
+                        more parameters. This evaluator measures the following metrics:
+
+                        <ul>
+                            <li>Precision</li>
+                            <li>Recall</li>
+                            <li>MAP</li>
+                            <li>MRR</li>
+                            <li>NDCG</li>
+                            <li>% of item coverage</li>
+                        </ul>
+
+                        You can specify what would be the source of candidate items (to generate ranked list)
+                        using the attribute <code>candidateItemsMode</code>. It can have one of the following values:
+
+                        <ul>
+                            <li>training</li>
+                            <li>test</li>
+                            <li>union</li>
+                            <li>overlap</li>
+                            <li>explicit</li>
+                        </ul>
+                    </p>
+
 					<h2 id="extend">Extending WrapRec</h2>
-					<p class="lead">
-						To be completed.
-					</p>
+					<p>
+						You can add your own logic to WrapRec or wrap other toolkits to it.
+                        Currently WrapRec wraps two recommmender systems frameworks of 
+                        <a href="http://libfm.org">LibFm</a> and <a href="http://mymedialite.net">MyMediaLite</a>.
+					    If you want to contribute on WrapRec, feel free to fork the 
+                        <a href="https://github.com/babakx/WrapRec">WrapRec github repository</a> and
+                        make a pull request.
+                        <br />
+                        You can also create your custom Experiment, Model, Split, DataReader and Evaluator
+                        in a different assembly and use them in the configuration file.
+                    </p>
+
 				</div>
 			</div>
 		</div>

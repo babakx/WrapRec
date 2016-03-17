@@ -99,6 +99,12 @@
 	font-weight: bold;
 }
 
+#mainCol h3 {
+	padding-top: 55px;
+    margin-top: -55px;
+	font-weight: bold;
+}
+
 h1 .lead {
 	margin-top: 10px;
 }
@@ -114,3 +120,10 @@ h1 .lead {
 .container #logos img{
 	vertical-align: middle;
 }
+
+#subConf a {
+    padding-top:0px;
+    padding-left: 25px;
+}
+
+

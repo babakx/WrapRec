@@ -81,9 +81,48 @@ var confFomat = ['<wraprec>',
 '  </experiments>',
 '</wraprec>'].join('\n');
 
+var expEl = ['<experiment id="[experimentId]" models="[list of models comma seperated]"',
+    '   splits="[list of splits comma separated]" evalContext="[evalContextId]" />'].join('\n');
+
+var modelEl = ['<model id="mf" class="WrapRec.Models.MmlRecommender">',
+'   <parameters ml-class="MyMediaLite.dll:MyMediaLite.RatingPrediction.MatrixFactorization"',
+'       NumFactors="10,20" NumIter="30,50" />',
+'</model>'
+].join('\n');
+
+var splitEl = ['<split id="[splitId]" type="[static|dynamic|cv|custom]" dataContainer="[containerId]"', 
+    '   trainRatios="[a value between 0 and 1]" numFolds="[num folds for cv type]"',
+    '   class="[type name for custom split]" other-parameters />'].join('\n');
+
+var containerEl = '<dataContainer id="[containerId]" dataReaders="[comma separated list of reader ids]" other-parameters />';
+
+var readerEl = ['<reader id="[readerId]" path="[path to the dataset]" sliceType="[train|test|other]"',
+    '   dataType="[posFeedback|ratings]" class="[reader class]" other-parameters />'].join('\n');
+
+var evalEl = ['<evalContext id="[evalContextId]">',
+'   <evaluator class="[type of evaluator class]" other-parameters />',
+'</evalContext>',
+].join('\n');
+
+var evalElExample = ['<evalContext id="eval">',
+'   <evaluator class="WrapRec.Evaluation.RMSE" />',
+'   <evaluator class="WrapRec.Evaluation.MAE" />',
+'   <evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training"', 
+'       numCandidates="1000" cutOffs="5,10,20" />',
+'</evalContext>', ].join('\n');
+
 
 $('#xml1').text(xml1);
 $('#confFomat').text(confFomat);
+$('#expEl').text(expEl);
+$('#modelEl').text(modelEl);
+$('#splitEl').text(splitEl);
+$('#containerEl').text(containerEl);
+$('#readerEl').text(readerEl);
+$('#evalEl').text(evalEl);
+$('#evalElExample').text(evalElExample);
+
+
 
 
 
