@@ -58,12 +58,17 @@
 				<div class="col-md-3" id="leftCol">
 
 					<ul class="nav nav-stacked" id="sidebar">
-						<li><a href="#overview">Overview</a></li>
+						<li>
+                            <a href="#overview">Overview</a>
+                            <ul class="nav nav-stacked nav-sub small">
+                                <li><a href="#example">Example</a></li>
+                            </ul>
+                        </li>
 						<li><a href="#architecture">WrapRec Architecture</a></li>
 						<li><a href="#blocks">Building Blocks in WrapRec</a></li>
 						<li>
                             <a href="#config">Configuration File</a>
-                            <ul id="subConf" class="nav nav-stacked small">
+                            <ul class="nav nav-stacked nav-sub small">
                                 <li><a href="#exp">Experiment</a></li>
                                 <li><a href="#output">WrapRec Output</a></li>
                                 <li><a href="#modelConf">Model</a></li>
@@ -91,7 +96,7 @@
 						to perform within a configuration file and run the WrapRec executable.
 					</p>
 					
-					<h3>Get Started with a "Hello MovieLens" Example</h3>
+					<h3 id="example">Get Started with a "Hello MovieLens" Example</h3>
 					<p>
 						<a href="http://grouplens.org/datasets/movielens/">MovieLens</a> is one of the most widely-used benchmark datasets in Recommeder Systems research.
 						Start to use WrapRec with a simple train-and-test scenario using the 100K version of this dataset.

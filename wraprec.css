@@ -121,7 +121,7 @@ h1 .lead {
 	vertical-align: middle;
 }
 
-#subConf a {
+.nav-sub>li>a {
     padding-top:0px;
     padding-left: 25px;
 }
