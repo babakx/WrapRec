@@ -153,6 +153,8 @@ namespace WrapRec.Evaluation
 				}
 			}
 
+			// TODO: fix problem with parallelization 
+			// workaroung: make sure test users and items are defined in MML Mapping before this call
 			Parallel.ForEach(testUsers, u =>
 			{
 				testedUsersCount++;
@@ -222,6 +224,7 @@ namespace WrapRec.Evaluation
 					if (CandidateItemsMode == CandidateItems.EXPLICIT)
 						results.Add("CandidatesFile", CandidateItemsFile.Substring(CandidateItemsFile.LastIndexOf('\\') + 1));
 					results.Add("NumCandidates", maxCand == int.MaxValue ? "max" : maxCand.ToString());
+					results.Add("AllCandidates", _allCandidateItems.Count.ToString());
 					results.Add("CutOff", k.ToString());
 					results.Add("Precision", string.Format("{0:0.0000}", precision[maxCand, k]));
 					results.Add("Recall", string.Format("{0:0.0000}", recall[maxCand, k]));
@@ -229,6 +232,8 @@ namespace WrapRec.Evaluation
 					results.Add("MRR", string.Format("{0:0.0000}", mrrs[maxCand, k]));
 					results.Add("NDCG", string.Format("{0:0.0000}", ndcg[maxCand, k]));
 					results.Add("TotalRecomItems", distinctItems[maxCand, k].Count.ToString());
+					results.Add("%Coverage", string.Format("{0:0.00}", 
+						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count)));
 					results.Add("EvalMethod", "UserBased");
 
 					context.AddResultsSet("rankingMeasures", results);

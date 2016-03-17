@@ -22,7 +22,19 @@ namespace WrapRec.Core
         {
             Id = id;
         }
-        
+
+		public Attribute GetOrCreateAttribute(string name)
+		{
+			var attr = Attributes.FirstOrDefault(a => a.Name == name);
+
+			if (attr != null)
+				return attr;
+			
+			attr = new Attribute() { Name = name };
+			Attributes.Add(attr);
+			return attr;
+		}
+
         public override string ToString()
         {
             string attributes = Attributes.Count > 0 ? Attributes.Select(a => a.Name + ":" + a.Value)

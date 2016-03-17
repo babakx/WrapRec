@@ -24,6 +24,8 @@ namespace WrapRec.Core
 		public Dictionary<string, EvaluationContext> EvaluationContexts { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
+		public string JointFile { get; set; }
+		public string[] ExperimentIds { get; private set; }
 
         Dictionary<string, StreamWriter> _statWriters;
         Dictionary<string, StreamWriter> _resultWriters;
@@ -62,18 +64,30 @@ namespace WrapRec.Core
 				{
 					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
 					e.Setup();
-					LogExperimentInfo(e);
-                    WriteSplitInfo(e);
-                    e.Run();
-					LogExperimentResults(e);
-					WriteResultsToFile(e);
-					e.Clear();
+
+					if (e.Type == ExperimentType.Evaluation)
+					{
+						LogExperimentInfo(e);
+						WriteSplitInfo(e);
+						e.Run();
+						LogExperimentResults(e);
+						WriteResultsToFile(e);
+						e.Clear();
+					}
+					else
+					{
+						e.Run();
+					}
 					numSuccess++;
 				}
 				catch (Exception ex)
 				{
-					Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}", 
-						e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+					if (e.Type == ExperimentType.Evaluation)
+						Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
+							e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+					else
+						Logger.Current.Error("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+
 					numFails++;
 				}
 			}
@@ -83,6 +97,29 @@ namespace WrapRec.Core
 
             foreach (StreamWriter w in _statWriters.Values)
                 w.Close();
+
+			try
+			{
+				if (!string.IsNullOrEmpty(JointFile))
+				{
+					Logger.Current.Info("Joining the results...");
+					
+					var jr = new JoinResults();
+					var param = new Dictionary<string, string>();
+					param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
+					param.Add("outputFile", JointFile);
+					param.Add("delimiter", ResultSeparator);
+					
+					jr.ExperimentManager = this;
+					jr.SetupParameters = param;
+					jr.Setup();
+					jr.Run();
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
+			}
 
             Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
 				numSuccess, numFails, ResultsFolder);
@@ -105,6 +142,8 @@ namespace WrapRec.Core
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
 					: Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				ResultsFolder = Directory.CreateDirectory(Path.Combine(rootPath, expFolder)).FullName;
+				JointFile = allExpEl.Attribute("jointResults") != null ?
+					Path.Combine(ResultsFolder, allExpEl.Attribute("jointResults").Value) : "";
 
 				XAttribute runAttr = allExpEl.Attribute("run");
 
@@ -119,6 +158,7 @@ namespace WrapRec.Core
                     _loggedModels = expIds.ToDictionary(eId => eId, eId => new List<string>());
 
                     expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
+					ExperimentIds = expEls.Select(el => el.Attribute("id").Value).ToArray();
 				}
 
 				Logger.Current.Info("Resolving experiments...");
@@ -146,14 +186,28 @@ namespace WrapRec.Core
 			else
 				expType = typeof(Experiment);
 
+			if (expEl.Attribute("type") != null && expEl.Attribute("type").Value == "other")
+			{
+				var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+				exp.ExperimentManager = this;
+				exp.Id = expId;
+				exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+				exp.Type = ExperimentType.Other;
+
+				yield return exp;
+			}
+
 			// one modelId might map to multiple models (if multiple values are used for parameters)
-			IEnumerable<Model> models = expEl.Attribute("models").Value.Split(',')
-				.SelectMany(mId => ParseModelsSet(mId));
+			IEnumerable<Model> models = expEl.Attribute("models") != null
+				 ? expEl.Attribute("models").Value.Split(',').SelectMany(mId => ParseModelsSet(mId))
+				 : Enumerable.Empty<Model>();
 
 			// one splitId always map to one split
-			IEnumerable<Split> splits = expEl.Attribute("splits").Value.Split(',')
-				.Select(sId => ParseSplit(sId));
-
+			IEnumerable<Split> splits = expEl.Attribute("splits") != null
+				? expEl.Attribute("splits").Value.Split(',').Select(sId => ParseSplit(sId))
+				: Enumerable.Empty<Split>();
+			
 			foreach (Split s in splits)
 			{
 				foreach (Model m in models)
@@ -165,11 +219,14 @@ namespace WrapRec.Core
                         {
                             var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
+							exp.ExperimentManager = this;
                             exp.Model = m;
 							exp.Split = ss;
-                            exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
                             exp.Id = expId;
-
+							exp.Type = ExperimentType.Evaluation;
+							if (expEl.Attribute("evalContext") != null)
+								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+                            
 							yield return exp;
                         }
                     }
@@ -177,11 +234,14 @@ namespace WrapRec.Core
                     {
                         var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
+						exp.ExperimentManager = this;
                         exp.Model = m;
                         exp.Split = s;
-                        exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-                        exp.Id = expId;
-
+						exp.Id = expId;
+						exp.Type = ExperimentType.Evaluation;
+						if (expEl.Attribute("evalContext") != null)
+							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+						
 						yield return exp;
                     }
 				}
@@ -377,7 +437,8 @@ Model Parameteres:
 
 			// write a header to the csv file if the model is changed (different models have different parameters)
 			// assuming one evaluation context is beeing used for all experiments
-            if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
+            // TODO: if model is used in multiple splits, the header will not be written for the new splits
+			if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
 				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))

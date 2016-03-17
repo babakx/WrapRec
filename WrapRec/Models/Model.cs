@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WrapRec.Core;
 using WrapRec.Data;
 using WrapRec.Evaluation;
 using WrapRec.IO;
@@ -20,6 +21,7 @@ namespace WrapRec.Models
 		public abstract void Train(Split split);
 		public abstract void Evaluate(Split split, EvaluationContext context);
         public abstract float Predict(string userId, string itemId);
+		public abstract float Predict(Feedback feedback);
         public abstract void Clear();
 		public abstract Dictionary<string, string> GetModelParameters();
 	}

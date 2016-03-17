@@ -35,13 +35,13 @@ namespace WrapRec.Models
 			return string.Format("{0}:1 {1}:1", userMappedId, itemMappedId);
 		}
 		
-		public virtual string GetLibFmFeatureVector(Feedback feedback, int feedbackValue = 1)
+		public virtual string GetLibFmFeatureVector(Feedback feedback)
         {
             string featVector;
 			if (feedback is Rating)
 				featVector = ((Rating)feedback).Value + " " + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
 			else
-				featVector = feedbackValue + " " + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
+				featVector = (feedback.FeedbackType == FeedbackType.Positive ? "1 " : "-1 ") + GetLibFmFeatureVector(feedback.User.Id, feedback.Item.Id);
 
 			_numValues += 2;
 
@@ -51,10 +51,10 @@ namespace WrapRec.Models
 
 			foreach (var attr in feedbackAttrs.Union(userAttrs).Union(itemAttrs))
 			{
-				string trans = TranslateAttribute(attr);
-				if (!string.IsNullOrEmpty(trans))
+				var feat = TranslateAttribute(attr);
+				if (feat != null)
 				{
-					featVector += " " + trans;
+					featVector += string.Format(" {0}:{1}", feat.Item1, feat.Item2);
 					_numValues++;
 				}
 			}
@@ -62,18 +62,16 @@ namespace WrapRec.Models
             return featVector;
         }
 
-		protected string TranslateAttribute(WrapRec.Core.Attribute attr)
+		public Tuple<int, float> TranslateAttribute(WrapRec.Core.Attribute attr)
 		{
-			string trans = "";
-			
 			if (attr.Type == AttributeType.Binary && (attr.Value == "1" || attr.Value == "true"))
-				trans = string.Format("{0}:1", Mapper.ToInternalID(attr.Name));
+				return new Tuple<int, float>(Mapper.ToInternalID(attr.Name), 1);
 			else if (attr.Type == AttributeType.Discrete)
-				trans = string.Format("{0}:1", Mapper.ToInternalID(attr.Value));
+				return new Tuple<int, float>(Mapper.ToInternalID(attr.Value), 1);
 			else if (attr.Type == AttributeType.RealValued)
-				trans = string.Format("{0}:{1}", Mapper.ToInternalID(attr.Name), attr.Value);
+				return new Tuple<int,float>(Mapper.ToInternalID(attr.Name), float.Parse(attr.Value));
 
-			return trans;
+			return null;
 		}
 
 		public void RestartNumValues()

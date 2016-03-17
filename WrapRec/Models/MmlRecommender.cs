@@ -19,15 +19,14 @@ namespace WrapRec.Models
 {
 	public class MmlRecommender : Model
 	{
-		Mapping _usersMap;
-		Mapping _itemsMap;
-		Type _mmlRecommenderType;
-		IRecommender _mmlRecommenderInstance;
+		public Mapping UsersMap { get; protected set; }
+		public Mapping ItemsMap { get; protected set; }
+		public IRecommender MmlRecommenderInstance { get; protected set; }
 
 		public MmlRecommender()
         {
-            _usersMap = new Mapping();
-            _itemsMap = new Mapping();
+            UsersMap = new Mapping();
+            ItemsMap = new Mapping();
         }
 
 		public override void Setup()
@@ -35,12 +34,12 @@ namespace WrapRec.Models
 			try
 			{
 				// build recommender object
-				_mmlRecommenderType = Helpers.ResolveType(SetupParameters["ml-class"]);
-				_mmlRecommenderInstance = (IRecommender)_mmlRecommenderType.GetConstructor(Type.EmptyTypes).Invoke(null);
+				Type mmlRecommenderType = Helpers.ResolveType(SetupParameters["ml-class"]);
+				MmlRecommenderInstance = (IRecommender)mmlRecommenderType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
-				if (typeof(IRatingPredictor).IsAssignableFrom(_mmlRecommenderType))
+				if (typeof(IRatingPredictor).IsAssignableFrom(mmlRecommenderType))
 					DataType = DataType.Ratings;
-				else if (typeof(ItemRecommender).IsAssignableFrom(_mmlRecommenderType))
+				else if (typeof(ItemRecommender).IsAssignableFrom(mmlRecommenderType))
 					DataType = DataType.PosFeedback;
 				else
 					throw new WrapRecException(string.Format("Unknown MmlRecommender class: {0}", SetupParameters["ml-class"]));
@@ -48,8 +47,8 @@ namespace WrapRec.Models
 				// Set properties
 				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
 				{
-					PropertyInfo pi = _mmlRecommenderInstance.GetType().GetProperty(param.Key);
-					pi.SetValue(_mmlRecommenderInstance, Convert.ChangeType(param.Value, pi.PropertyType));
+					PropertyInfo pi = MmlRecommenderInstance.GetType().GetProperty(param.Key);
+					pi.SetValue(MmlRecommenderInstance, Convert.ChangeType(param.Value, pi.PropertyType));
 				}
 			}
 			catch (Exception ex)
@@ -67,22 +66,22 @@ namespace WrapRec.Models
 				foreach (var feedback in split.Train)
 				{
 					var rating = (Rating)feedback;
-					mmlFeedback.Add(_usersMap.ToInternalID(rating.User.Id), _itemsMap.ToInternalID(rating.Item.Id), rating.Value);
+					mmlFeedback.Add(UsersMap.ToInternalID(rating.User.Id), ItemsMap.ToInternalID(rating.Item.Id), rating.Value);
 				}
-				((IRatingPredictor)_mmlRecommenderInstance).Ratings = mmlFeedback;
+				((IRatingPredictor)MmlRecommenderInstance).Ratings = mmlFeedback;
 			}
 			else
 			{
 				var mmlFeedback = new PosOnlyFeedback<SparseBooleanMatrix>();
 				foreach (var feedback in split.Train)
 				{
-					mmlFeedback.Add(_usersMap.ToInternalID(feedback.User.Id), _itemsMap.ToInternalID(feedback.Item.Id));
+					mmlFeedback.Add(UsersMap.ToInternalID(feedback.User.Id), ItemsMap.ToInternalID(feedback.Item.Id));
 				}
-				((ItemRecommender)_mmlRecommenderInstance).Feedback = mmlFeedback;
+				((ItemRecommender)MmlRecommenderInstance).Feedback = mmlFeedback;
 			}
 
-			Logger.Current.Trace("Training with MyMediaLite recommender...");
-			PureTrainTime = (int)Wrap.MeasureTime(delegate() { _mmlRecommenderInstance.Train(); }).TotalMilliseconds;
+            Logger.Current.Trace("Training with MyMediaLite recommender...");
+			PureTrainTime = (int)Wrap.MeasureTime(delegate() { MmlRecommenderInstance.Train(); }).TotalMilliseconds;
 		}
 
 		public override void Evaluate(Split split, EvaluationContext context)
@@ -91,7 +90,7 @@ namespace WrapRec.Models
 			{
 				if (DataType == DataType.Ratings)
 					foreach (var feedback in split.Test)
-						context.PredictedScores.Add(feedback, Predict(feedback.User.Id, feedback.Item.Id));
+						context.PredictedScores.Add(feedback, Predict(feedback));
 	
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
@@ -99,13 +98,18 @@ namespace WrapRec.Models
 
 		public override void Clear()
 		{
-			_usersMap = new Mapping();
-			_itemsMap = new Mapping();
+			UsersMap = new Mapping();
+			ItemsMap = new Mapping();
 		}
 
 		public override float Predict(string userId, string itemId)
 		{
-			return _mmlRecommenderInstance.Predict(_usersMap.ToInternalID(userId), _itemsMap.ToInternalID(itemId));
+			return MmlRecommenderInstance.Predict(UsersMap.ToInternalID(userId), ItemsMap.ToInternalID(itemId));
+		}
+
+		public override float Predict(Feedback feedback)
+		{
+			return Predict(feedback.User.Id, feedback.Item.Id);
 		}
 
 		public override Dictionary<string, string> GetModelParameters()
@@ -119,14 +123,5 @@ namespace WrapRec.Models
 			}).ToDictionary(kv => kv.Key, kv => kv.Value);
 		}
 
-        public Mapping UsersMap
-        {
-            get { return _usersMap; }
-        }
-
-        public Mapping ItemsMap
-        {
-            get { return _itemsMap; }
-        }
 	}
 }
