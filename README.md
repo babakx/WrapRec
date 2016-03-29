@@ -1,5 +1,4 @@
-WrapRec
-=========================
+<img src='http://babakx.github.io/WrapRec/logo.png' height='100' />
 
 WrapRec is an open-source project, developed with C# which aims to simplify the evaluation of Recommender System algorithms. WrapRec is a configuration-based tool. All desing choices and parameters should be defined in a configuration file.
 
