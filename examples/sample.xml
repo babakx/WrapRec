@@ -17,7 +17,7 @@
     </dataContainers>
   </data>
   <splits>
-    <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatios="0.75" />
+    <split id="ml100k-cv" type="crossValidation" dataContainer="ml100k" numFolds="4" />
   </splits>
   <evalContexts>
     <evalContext id="eval">
@@ -27,6 +27,6 @@
     </evalContext>
   </evalContexts>
   <experiments run="ml100k" resultsFolder="results" separator="\t" verbosity="info">
-    <experiment id="ml100k" models="mf,bmf" splits="ml100k-dynamic" evalContext="eval" />
+    <experiment id="ml100k" models="mf,bmf" splits="ml100k-cv" evalContext="eval" />
   </experiments>
 </wraprec>
