@@ -119,6 +119,16 @@ namespace WrapRec.Evaluation
 				.Select(f => f.Item.Id).Distinct();
 		}
 
+		protected virtual IEnumerable<Tuple<string, float>> GetScoredRelevantItems(Model model, Split split, User user)
+		{
+			return GetRelevantItems(split, user).Select(i => new Tuple<string, float>(i, model.Predict(user.Id, i)));
+		}
+
+		protected virtual IEnumerable<Tuple<string, float>> GetScoredCandidateItems(Model model, Split split, User user)
+		{
+			return GetCandidateItems(split, user).Select(i => new Tuple<string, float>(i, model.Predict(user.Id, i)));
+		}
+
 		public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
 			split.UpdateFeedbackSlices();
@@ -158,11 +168,10 @@ namespace WrapRec.Evaluation
 			Parallel.ForEach(testUsers, u =>
 			{
 				testedUsersCount++;
-				var candidateItems = GetCandidateItems(split, u);
 
 				// the followings are heavy processes, the results are stored in lists to prevent over computing
-				var scoredRelevantItems = GetRelevantItems(split, u).Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
-				var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
+				var scoredRelevantItems = GetScoredRelevantItems(model, split, u).ToList();
+				var scoredCandidateItems = GetScoredCandidateItems(model, split, u).ToList();
 
 				testedCases += scoredRelevantItems.Count;
 
@@ -242,29 +251,6 @@ namespace WrapRec.Evaluation
 
 		}
 
-		protected int IndexOfNewItem(IList<Tuple<string, double>> descSortedList, double newItemScore)
-		{
-			int startIndex = 0, endIndex = descSortedList.Count - 1;
-
-			while (startIndex + 1 < endIndex)
-			{
-				int index = (startIndex + endIndex) / 2;
-
-				if (newItemScore == descSortedList[index].Item2)
-					return index;
-				else if (newItemScore < descSortedList[index].Item2)
-					startIndex = index;
-				else
-					endIndex = index;
-			}
-
-			if (newItemScore >= descSortedList[startIndex].Item2)
-				return startIndex;
-			else if (newItemScore < descSortedList[endIndex].Item2)
-				return endIndex + 1;
-			else
-				return endIndex;
-		}
 	}
 
 }

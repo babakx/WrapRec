@@ -38,8 +38,7 @@ namespace WrapRec.Evaluation
 
             Parallel.ForEach(candidateUsers, u =>
             {
-                var candidateItems = GetCandidateItems(split, u);
-                var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, float>(i, model.Predict(u.Id, i)));
+                var scoredCandidateItems = GetScoredCandidateItems(model, split, u);
 
                 // for this evaluator only max of NumCandidate and CutOff is considered
                 var rankedList = scoredCandidateItems.OrderByDescending(i => i.Item2).Take(maxCutOff);

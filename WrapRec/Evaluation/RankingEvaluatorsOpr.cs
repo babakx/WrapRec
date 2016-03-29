@@ -40,11 +40,9 @@ namespace WrapRec.Evaluation
 
 			Parallel.ForEach(testUsers, u => 
             {
-				var candidateItems = GetCandidateItems(split, u);
-			
 				// the followings are heavy processes, the results are stored in lists to prevent over computing
-				var scoredRelevantItems = GetRelevantItems(split, u).Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
-                var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
+				var scoredRelevantItems = GetScoredRelevantItems(model, split, u).ToList();
+                var scoredCandidateItems = GetScoredCandidateItems(model, split, u).ToList();
 
                 testedCases += scoredRelevantItems.Count;
 
@@ -54,7 +52,7 @@ namespace WrapRec.Evaluation
 					var candidatesRankedList = scoredCandidateItems.Take(maxCand).OrderByDescending(i => i.Item2).ToList();
 
                     // Calculate recall with One-plus-random method
-                    foreach (Tuple<string, double> item in scoredRelevantItems)
+                    foreach (Tuple<string, float> item in scoredRelevantItems)
                     {
                         int rank = IndexOfNewItem(candidatesRankedList, item.Item2);
 						foreach (int k in CutOffs)
@@ -97,6 +95,30 @@ namespace WrapRec.Evaluation
 				}				
 			}
 		}
-    }
 
+		protected int IndexOfNewItem(IList<Tuple<string, float>> descSortedList, double newItemScore)
+		{
+			int startIndex = 0, endIndex = descSortedList.Count - 1;
+
+			while (startIndex + 1 < endIndex)
+			{
+				int index = (startIndex + endIndex) / 2;
+
+				if (newItemScore == descSortedList[index].Item2)
+					return index;
+				else if (newItemScore < descSortedList[index].Item2)
+					startIndex = index;
+				else
+					endIndex = index;
+			}
+
+			if (newItemScore >= descSortedList[startIndex].Item2)
+				return startIndex;
+			else if (newItemScore < descSortedList[endIndex].Item2)
+				return endIndex + 1;
+			else
+				return endIndex;
+		}
+
+    }
 }
