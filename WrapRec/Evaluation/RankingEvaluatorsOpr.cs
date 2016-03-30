@@ -89,7 +89,7 @@ namespace WrapRec.Evaluation
 					results.Add("Recall", string.Format("{0:0.0000}", recallsOpr[maxCand, k]));
 					results.Add("MRR", string.Format("{0:0.0000}", mrrOpr[maxCand, k]));
 					results.Add("NDCG", string.Format("{0:0.0000}", ndcgOpr[maxCand, k]));
-					results.Add("EvalMethod", "OPR");
+					results.Add("EvalMethod", GetEvaluatorName());
 
 					context.AddResultsSet("rankingMeasures", results);
 				}				
@@ -120,5 +120,9 @@ namespace WrapRec.Evaluation
 				return endIndex;
 		}
 
+		protected override string GetEvaluatorName()
+		{
+			return "OPR";
+		}
     }
 }

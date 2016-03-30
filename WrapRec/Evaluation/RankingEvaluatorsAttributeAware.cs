@@ -32,5 +32,10 @@ namespace WrapRec.Evaluation
 			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST)
 				.Select(f => new Tuple<string, float>(f.Item.Id, model.Predict(f)));
 		}
+
+		protected override string GetEvaluatorName()
+		{
+			return "AttrBased";
+		}
 	}
 }

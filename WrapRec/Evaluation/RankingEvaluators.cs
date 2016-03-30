@@ -243,14 +243,17 @@ namespace WrapRec.Evaluation
 					results.Add("TotalRecomItems", distinctItems[maxCand, k].Count.ToString());
 					results.Add("%Coverage", string.Format("{0:0.00}", 
 						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count)));
-					results.Add("EvalMethod", "UserBased");
+					results.Add("EvalMethod", GetEvaluatorName());
 
 					context.AddResultsSet("rankingMeasures", results);
 				}
 			}
-
 		}
 
+		protected virtual string GetEvaluatorName()
+		{
+			return "UserBased";
+		}
 	}
 
 }
