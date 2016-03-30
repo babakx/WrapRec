@@ -29,6 +29,10 @@ namespace WrapRec.Core
 			FeedbackType = FeedbackType.Positive;
         }
 
+		public IEnumerable<Attribute> GetAllAttributes()
+		{
+			return Attributes.Concat(User.Attributes).Concat(Item.Attributes);
+		}
 
         public override string ToString()
         {

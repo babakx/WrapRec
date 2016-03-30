@@ -93,7 +93,7 @@ namespace WrapRec.IO
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Binary };
 			else if (header.Value == "n")
 				yield break;
-			else // by default attributes are considered as discrete
+			else // by default attributes are considered as discrete (d)
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Discrete };
 		}
 
