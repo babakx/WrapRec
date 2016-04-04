@@ -20,6 +20,7 @@ namespace WrapRec.Data
         public Dictionary<string, Item> Items { get; private set; }
         public HashSet<Feedback> Feedbacks { get; private set; }
 		public MultiKeyDictionary<string, string, Feedback> FeedbacksDic { get; private set; }
+		public bool AllowDuplicates { get; set; }
 
         protected Dictionary<string, string> _statistics;
 
@@ -56,7 +57,7 @@ namespace WrapRec.Data
         {
 			Feedback feedback;
 
-			if (FeedbacksDic.ContainsKey(userId, itemId))
+			if (!AllowDuplicates && FeedbacksDic.ContainsKey(userId, itemId))
 			{
 				feedback = FeedbacksDic[userId, itemId];
 				return feedback;

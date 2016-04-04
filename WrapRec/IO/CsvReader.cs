@@ -97,7 +97,12 @@ namespace WrapRec.IO
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Discrete };
 		}
 
-		private void LoadPosFeedback(DataContainer container)
+		protected virtual void EnrichFeedback(Feedback feedback)
+		{ 
+			// empty body
+		}
+		
+		protected virtual void LoadPosFeedback(DataContainer container)
 		{
 			// Assuming the format: userId,itemId[,attributes]
 			do
@@ -110,11 +115,13 @@ namespace WrapRec.IO
 					foreach (var h in Header.Skip(2))
 						foreach (var attr in GetAttributes(h))
 							feedback.Attributes.Add(attr);
+				
+				EnrichFeedback(feedback);
 			}
 			while (Reader.Read());
 		}
 
-		private void LoadRatings(DataContainer container)
+		protected virtual void LoadRatings(DataContainer container)
 		{
 			// Assuming the format: userId,itemId,rating[,attributes]
 			do
@@ -127,12 +134,14 @@ namespace WrapRec.IO
 					foreach (var h in Header.Skip(3))
 						foreach (var attr in GetAttributes(h))
 							rating.Attributes.Add(attr);
+
+				EnrichFeedback(rating);
 			}
 			while (Reader.Read());
 
 		}
 
-		private void LoadUserContext(DataContainer container)
+		protected virtual void LoadUserContext(DataContainer container)
 		{
 			if (Header == null)
 				throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));
@@ -150,7 +159,7 @@ namespace WrapRec.IO
 
 		}
 
-		private void LoadItemContext(DataContainer container)
+		protected virtual void LoadItemContext(DataContainer container)
 		{
 			if (Header == null)
 				throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));

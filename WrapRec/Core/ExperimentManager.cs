@@ -318,7 +318,11 @@ namespace WrapRec.Core
 			XElement dcEl = ConfigRoot.Descendants("dataContainer")
 				.Where(el => el.Attribute("id").Value == containerId).Single();
 
-			var container = new DataContainer();
+			bool allowDup = false;
+			if (dcEl.Attribute("allowDuplicates") != null && dcEl.Attribute("allowDuplicates").Value == "true")
+				allowDup = true;
+
+			var container = new DataContainer() { AllowDuplicates = allowDup };
 			container.Id = containerId;
 			foreach (string readerId in dcEl.Attribute("dataReaders").Value.Split(','))
 			{
@@ -440,7 +444,7 @@ Model Parameteres:
             // TODO: if model is used in multiple splits, the header will not be written for the new splits
 			if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
-				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId" }
+				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Aggregate((a, b) => a + ResultSeparator + b);
@@ -451,7 +455,7 @@ Model Parameteres:
                 _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
-			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id }
+			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id, exp.Split.Container.AllowDuplicates.ToString() }
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
