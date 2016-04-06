@@ -25,7 +25,7 @@ namespace WrapRec.Evaluation
         public override void Evaluate(EvaluationContext context, Model model, Split split)
         {
             split.UpdateFeedbackSlices();
-            InitializeCandidateItems(split);
+            Initialize(split);
 
             var candidateUsers = GetCandidateUsers(split);
             var output = new List<string>();
@@ -33,6 +33,7 @@ namespace WrapRec.Evaluation
 
             // this will make sure that all candidate items are already in the mapping object
             // this is a workaroud to prevent cross-thread access to ItemMap
+			// TODO, do this for other evaluators
             if (model is MmlRecommender)
                 _allCandidateItems.Select(i => ((MmlRecommender)model).ItemsMap.ToInternalID(i)).ToList();
 

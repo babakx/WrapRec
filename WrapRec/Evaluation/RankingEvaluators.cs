@@ -86,7 +86,7 @@ namespace WrapRec.Evaluation
 
         }
 
-        public void InitializeCandidateItems(Split split)
+        protected virtual void Initialize(Split split)
 		{
 			if (CandidateItemsMode == CandidateItems.TRAINING)
 				_allCandidateItems = split.Train.Select(f => f.Item.Id).Distinct().ToList();
@@ -107,13 +107,13 @@ namespace WrapRec.Evaluation
 			}
 		}
 
-		public IEnumerable<string> GetCandidateItems(Split split, User u)
+		public virtual IEnumerable<string> GetCandidateItems(Split split, User u)
 		{
 			var userItems = u.Feedbacks.Select(f => f.Item.Id);
 			return _allCandidateItems.Except(userItems).Take(_maxNumCandidates);
 		}
 
-		public IEnumerable<string> GetRelevantItems(Split split, User user)
+		public virtual IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
 			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST)
 				.Select(f => f.Item.Id).Distinct();
@@ -132,7 +132,7 @@ namespace WrapRec.Evaluation
 		public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
 			split.UpdateFeedbackSlices();
-			InitializeCandidateItems(split);
+			Initialize(split);
 
             var testUsers = GetCandidateUsers(split);
 			int testedUsersCount = 0, testedCases = 0;

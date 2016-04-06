@@ -19,7 +19,7 @@ namespace WrapRec.Evaluation
         public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
             split.UpdateFeedbackSlices();
-            InitializeCandidateItems(split);
+            Initialize(split);
 
             var testUsers = split.Test.Select(f => f.User).Distinct();
             int testedCases = 0;
