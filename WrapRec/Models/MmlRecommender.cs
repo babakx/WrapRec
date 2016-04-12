@@ -48,7 +48,19 @@ namespace WrapRec.Models
 				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
 				{
 					PropertyInfo pi = MmlRecommenderInstance.GetType().GetProperty(param.Key);
-					pi.SetValue(MmlRecommenderInstance, Convert.ChangeType(param.Value, pi.PropertyType));
+
+					// in case the value of attribute is empty ignore
+					// empty attributes are only used for logging purposes
+					if (String.IsNullOrEmpty(param.Value))
+						continue;
+					
+					object paramVal;
+                    if (pi.PropertyType.IsEnum)
+                        paramVal = Enum.Parse(pi.PropertyType, param.Value);
+                    else
+                        paramVal = param.Value;
+
+                    pi.SetValue(MmlRecommenderInstance, Convert.ChangeType(paramVal, pi.PropertyType));
 				}
 			}
 			catch (Exception ex)
@@ -119,6 +131,11 @@ namespace WrapRec.Models
 			{
 				if (kv.Key == "ml-class")
 					return new KeyValuePair<string, string>("ml-class", mlClass);
+
+				if (string.IsNullOrEmpty(kv.Value))
+					return new KeyValuePair<string, string>(kv.Key,
+						MmlRecommenderInstance.GetType().GetProperty(kv.Key).GetValue(MmlRecommenderInstance).ToString());
+
 				return kv;
 			}).ToDictionary(kv => kv.Key, kv => kv.Value);
 		}
