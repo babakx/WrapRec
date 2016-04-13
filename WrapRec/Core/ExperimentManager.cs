@@ -29,7 +29,8 @@ namespace WrapRec.Core
 
         Dictionary<string, StreamWriter> _statWriters;
         Dictionary<string, StreamWriter> _resultWriters;
-        Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
+		Dictionary<string, StreamWriter> _errorWriters;
+		Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
         Dictionary<string, List<string>> _loggedModels = new Dictionary<string, List<string>>();
 
         public ExperimentManager(string configFile)
@@ -82,11 +83,16 @@ namespace WrapRec.Core
 				}
 				catch (Exception ex)
 				{
+					string err;
 					if (e.Type == ExperimentType.Evaluation)
-						Logger.Current.Error("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
+						err = string.Format("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
 							e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
 					else
-						Logger.Current.Error("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+						err = string.Format("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+
+					Logger.Current.Error(err);
+					_errorWriters[e.Id].WriteLine(err + "\n----------------------------------------------------------------------------------------");
+					_errorWriters[e.Id].Flush();
 
 					numFails++;
 				}
@@ -97,6 +103,9 @@ namespace WrapRec.Core
 
             foreach (StreamWriter w in _statWriters.Values)
                 w.Close();
+
+			foreach (StreamWriter w in _errorWriters.Values)
+				w.Close();
 
 			try
 			{
@@ -154,7 +163,8 @@ namespace WrapRec.Core
 
                     _resultWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".csv")));
                     _statWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".splits.csv")));
-                    _loggedSplits = expIds.ToDictionary(eId => eId, eId => new List<string>());
+					_errorWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".err.txt")));
+					_loggedSplits = expIds.ToDictionary(eId => eId, eId => new List<string>());
                     _loggedModels = expIds.ToDictionary(eId => eId, eId => new List<string>());
 
                     expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
