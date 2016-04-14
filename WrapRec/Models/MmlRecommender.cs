@@ -98,6 +98,8 @@ namespace WrapRec.Models
 
 		public override void Evaluate(Split split, EvaluationContext context)
 		{
+			ExhaustInternalIds(split);
+			
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
 			{
 				if (DataType == DataType.Ratings)
@@ -106,6 +108,18 @@ namespace WrapRec.Models
 	
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
+		}
+
+		// This method makes sure that all itemIds are already have an internalId when they want to be used in evaluation
+		// this prevent cross-thread access to ItemMap (already existing key in dictionary error)
+		// when evaluation is peformed in parallel for each user
+		private void ExhaustInternalIds(Split split)
+		{
+			foreach (var item in split.Container.Items.Values)
+				ItemsMap.ToInternalID(item.Id);
+
+			foreach (var user in split.Container.Items.Values)
+				UsersMap.ToInternalID(user.Id);
 		}
 
 		public override void Clear()
