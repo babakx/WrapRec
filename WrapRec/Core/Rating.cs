@@ -14,6 +14,7 @@ namespace WrapRec.Core
             : base(user, item)
         {
             Value = rating;
+			this.FeedbackType = FeedbackType.Rating;
         }
     }
 }

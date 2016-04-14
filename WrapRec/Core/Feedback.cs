@@ -9,7 +9,8 @@ namespace WrapRec.Core
 	public enum FeedbackType
 	{
 		Positive,
-		Negative
+		Negative,
+		Rating
 	}
 
 	public class Feedback : Entity
@@ -18,6 +19,7 @@ namespace WrapRec.Core
         public Item Item { get; set; }
         public FeedbackSlice SliceType { get; set; }
 		public FeedbackType FeedbackType { get; set; }
+		public int Level { get; set; }
 
         public Feedback(User user, Item item)
             : base()
@@ -29,6 +31,10 @@ namespace WrapRec.Core
 			FeedbackType = FeedbackType.Positive;
         }
 
+		public IEnumerable<Attribute> GetAllAttributes()
+		{
+			return Attributes.Concat(User.Attributes).Concat(Item.Attributes);
+		}
 
         public override string ToString()
         {

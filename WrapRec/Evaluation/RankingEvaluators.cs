@@ -86,7 +86,7 @@ namespace WrapRec.Evaluation
 
         }
 
-        public void InitializeCandidateItems(Split split)
+        protected virtual void Initialize(Split split)
 		{
 			if (CandidateItemsMode == CandidateItems.TRAINING)
 				_allCandidateItems = split.Train.Select(f => f.Item.Id).Distinct().ToList();
@@ -107,22 +107,32 @@ namespace WrapRec.Evaluation
 			}
 		}
 
-		public IEnumerable<string> GetCandidateItems(Split split, User u)
+		public virtual IEnumerable<string> GetCandidateItems(Split split, User u)
 		{
 			var userItems = u.Feedbacks.Select(f => f.Item.Id);
 			return _allCandidateItems.Except(userItems).Take(_maxNumCandidates);
 		}
 
-		public IEnumerable<string> GetRelevantItems(Split split, User user)
+		public virtual IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
 			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST)
 				.Select(f => f.Item.Id).Distinct();
 		}
 
+		protected virtual IEnumerable<Tuple<string, float>> GetScoredRelevantItems(Model model, Split split, User user)
+		{
+			return GetRelevantItems(split, user).Select(i => new Tuple<string, float>(i, model.Predict(user.Id, i)));
+		}
+
+		protected virtual IEnumerable<Tuple<string, float>> GetScoredCandidateItems(Model model, Split split, User user)
+		{
+			return GetCandidateItems(split, user).Select(i => new Tuple<string, float>(i, model.Predict(user.Id, i)));
+		}
+
 		public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
 			split.UpdateFeedbackSlices();
-			InitializeCandidateItems(split);
+			Initialize(split);
 
             var testUsers = GetCandidateUsers(split);
 			int testedUsersCount = 0, testedCases = 0;
@@ -158,11 +168,10 @@ namespace WrapRec.Evaluation
 			Parallel.ForEach(testUsers, u =>
 			{
 				testedUsersCount++;
-				var candidateItems = GetCandidateItems(split, u);
 
 				// the followings are heavy processes, the results are stored in lists to prevent over computing
-				var scoredRelevantItems = GetRelevantItems(split, u).Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
-				var scoredCandidateItems = candidateItems.Select(i => new Tuple<string, double>(i, model.Predict(u.Id, i))).ToList();
+				var scoredRelevantItems = GetScoredRelevantItems(model, split, u).ToList();
+				var scoredCandidateItems = GetScoredCandidateItems(model, split, u).ToList();
 
 				testedCases += scoredRelevantItems.Count;
 
@@ -234,36 +243,16 @@ namespace WrapRec.Evaluation
 					results.Add("TotalRecomItems", distinctItems[maxCand, k].Count.ToString());
 					results.Add("%Coverage", string.Format("{0:0.00}", 
 						(100f * distinctItems[maxCand, k].Count / _allCandidateItems.Count)));
-					results.Add("EvalMethod", "UserBased");
+					results.Add("EvalMethod", GetEvaluatorName());
 
 					context.AddResultsSet("rankingMeasures", results);
 				}
 			}
-
 		}
 
-		protected int IndexOfNewItem(IList<Tuple<string, double>> descSortedList, double newItemScore)
+		protected virtual string GetEvaluatorName()
 		{
-			int startIndex = 0, endIndex = descSortedList.Count - 1;
-
-			while (startIndex + 1 < endIndex)
-			{
-				int index = (startIndex + endIndex) / 2;
-
-				if (newItemScore == descSortedList[index].Item2)
-					return index;
-				else if (newItemScore < descSortedList[index].Item2)
-					startIndex = index;
-				else
-					endIndex = index;
-			}
-
-			if (newItemScore >= descSortedList[startIndex].Item2)
-				return startIndex;
-			else if (newItemScore < descSortedList[endIndex].Item2)
-				return endIndex + 1;
-			else
-				return endIndex;
+			return "UserBased";
 		}
 	}
 

@@ -123,7 +123,9 @@
     <Compile Include="Evaluation\Evaluator.cs" />
     <Compile Include="Evaluation\MAE.cs" />
     <Compile Include="Evaluation\RankingEvaluators.cs" />
+    <Compile Include="Evaluation\RankingEvaluatorsAttributeAware.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsOpr.cs" />
+    <Compile Include="Evaluation\RatingBasedRankingEvaluatorsOpr.cs" />
     <Compile Include="Evaluation\RecommendationsWriter.cs" />
     <Compile Include="Evaluation\RMSE.cs" />
     <Compile Include="IO\CsvReader.cs" />

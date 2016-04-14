@@ -48,7 +48,19 @@ namespace WrapRec.Models
 				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
 				{
 					PropertyInfo pi = MmlRecommenderInstance.GetType().GetProperty(param.Key);
-					pi.SetValue(MmlRecommenderInstance, Convert.ChangeType(param.Value, pi.PropertyType));
+
+					// in case the value of attribute is empty ignore
+					// empty attributes are only used for logging purposes
+					if (String.IsNullOrEmpty(param.Value))
+						continue;
+					
+					object paramVal;
+                    if (pi.PropertyType.IsEnum)
+                        paramVal = Enum.Parse(pi.PropertyType, param.Value);
+                    else
+                        paramVal = param.Value;
+
+                    pi.SetValue(MmlRecommenderInstance, Convert.ChangeType(paramVal, pi.PropertyType));
 				}
 			}
 			catch (Exception ex)
@@ -86,6 +98,8 @@ namespace WrapRec.Models
 
 		public override void Evaluate(Split split, EvaluationContext context)
 		{
+			ExhaustInternalIds(split);
+			
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
 			{
 				if (DataType == DataType.Ratings)
@@ -94,6 +108,18 @@ namespace WrapRec.Models
 	
 				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
+		}
+
+		// This method makes sure that all itemIds are already have an internalId when they want to be used in evaluation
+		// this prevent cross-thread access to ItemMap (already existing key in dictionary error)
+		// when evaluation is peformed in parallel for each user
+		private void ExhaustInternalIds(Split split)
+		{
+			foreach (var item in split.Container.Items.Values)
+				ItemsMap.ToInternalID(item.Id);
+
+			foreach (var user in split.Container.Items.Values)
+				UsersMap.ToInternalID(user.Id);
 		}
 
 		public override void Clear()
@@ -119,6 +145,11 @@ namespace WrapRec.Models
 			{
 				if (kv.Key == "ml-class")
 					return new KeyValuePair<string, string>("ml-class", mlClass);
+
+				if (string.IsNullOrEmpty(kv.Value))
+					return new KeyValuePair<string, string>(kv.Key,
+						MmlRecommenderInstance.GetType().GetProperty(kv.Key).GetValue(MmlRecommenderInstance).ToString());
+
 				return kv;
 			}).ToDictionary(kv => kv.Key, kv => kv.Value);
 		}
