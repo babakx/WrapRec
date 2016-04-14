@@ -9,7 +9,8 @@ namespace WrapRec.Core
 	public enum FeedbackType
 	{
 		Positive,
-		Negative
+		Negative,
+		Rating
 	}
 
 	public class Feedback : Entity
