@@ -115,7 +115,7 @@ namespace WrapRec.Evaluation
 
 		public virtual IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
-			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST)
+			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST && f.FeedbackType != FeedbackType.Negative)
 				.Select(f => f.Item.Id).Distinct();
 		}
 
@@ -167,12 +167,14 @@ namespace WrapRec.Evaluation
 			// workaroung: make sure test users and items are defined in MML Mapping before this call
 			Parallel.ForEach(testUsers, u =>
 			{
-				testedUsersCount++;
-
 				// the followings are heavy processes, the results are stored in lists to prevent over computing
 				var scoredRelevantItems = GetScoredRelevantItems(model, split, u).ToList();
 				var scoredCandidateItems = GetScoredCandidateItems(model, split, u).ToList();
 
+				if (scoredRelevantItems.Count == 0)
+					return;
+				
+				testedUsersCount++;
 				testedCases += scoredRelevantItems.Count;
 
 				// calculating measures for each numCandidates and cutoffs
@@ -207,6 +209,7 @@ namespace WrapRec.Evaluation
 						}
 
 						int minRelevant = Math.Min(k, scoredRelevantItems.Count);
+
 						precision[maxCand, k] += (double)hitCount / k;
 						recall[maxCand, k] += (double)hitCount / scoredRelevantItems.Count;
 						ndcg[maxCand, k] += dcg / idcgs[minRelevant];

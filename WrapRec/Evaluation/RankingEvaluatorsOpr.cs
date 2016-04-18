@@ -44,6 +44,9 @@ namespace WrapRec.Evaluation
 				var scoredRelevantItems = GetScoredRelevantItems(model, split, u).ToList();
                 var scoredCandidateItems = GetScoredCandidateItems(model, split, u).ToList();
 
+				if (scoredRelevantItems.Count == 0)
+					return;
+
                 testedCases += scoredRelevantItems.Count;
 
 				// calculating measures for each numCandidates and cutoffs
