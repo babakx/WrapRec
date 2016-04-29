@@ -25,6 +25,7 @@ namespace WrapRec.Data
 		public DataContainer Container { get; set; }
 		public Dictionary<string, string> SetupParameters { get; set; }
 		public SplitType Type { get; set; }
+		public bool ParallelModels { get; set; }
 		public bool IsSetup { get; protected set; }
 
 		protected IEnumerable<Feedback> _train;
@@ -43,7 +44,10 @@ namespace WrapRec.Data
 			get { return _test; }
 		}
 
-		public abstract void Setup();
+		public virtual void Setup()
+		{
+			ParallelModels = (SetupParameters.ContainsKey("parallelModels") && SetupParameters["parallelModels"] == "true") ? true : false;
+		}
 
         public void UpdateFeedbackSlices()
         {

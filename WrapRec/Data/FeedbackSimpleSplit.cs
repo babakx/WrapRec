@@ -14,6 +14,8 @@ namespace WrapRec.Data
     {
 		public override void Setup()
 		{
+			base.Setup();
+
 			// the CrossValidationSplit is already setuped by its parent split
 			if (IsSetup || Type == SplitType.CROSSVALIDATION_SUBSPLIT || Type == SplitType.DYNAMIC_SUBSPLIT)
 			{
@@ -49,13 +51,15 @@ namespace WrapRec.Data
 					var train = feedbacks.Take(trainCount);
 					var test = feedbacks.Skip(trainCount);
 
-					return new FeedbackSimpleSplit(train, test) 
+					var ss = new FeedbackSimpleSplit(train, test) 
 					{ 
 						Id = Id + "-" + tr.ToString(),
 						Type = SplitType.DYNAMIC_SUBSPLIT,
 						Container = this.Container,
 						SetupParameters = this.SetupParameters
 					};
+					ss.Setup();
+					return ss;
 				});
 			}
 			else if (Type == SplitType.CROSSVALIDATION)
@@ -73,13 +77,15 @@ namespace WrapRec.Data
 							.Take(() => i * foldCount.Value));
 						var test = feedbacks.Skip(() => (numFolds - i - 1) * foldCount.Value)
 							.Take(foldCount);
-						return new FeedbackSimpleSplit(train, test) 
+						var ss = new FeedbackSimpleSplit(train, test) 
 						{ 
 							Id = this.Id + "-fold" + (i + 1),
 							Type = SplitType.CROSSVALIDATION_SUBSPLIT,
 							Container = this.Container,
 							SetupParameters = this.SetupParameters
 						};
+						ss.Setup();
+						return ss;
 					});
 			}
 			IsSetup = true;

@@ -33,6 +33,9 @@ namespace WrapRec.Core
 		Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
         Dictionary<string, List<string>> _loggedModels = new Dictionary<string, List<string>>();
 
+		int numSuccess = 0, numFails = 0;
+		static readonly object _locker = new object();
+
         public ExperimentManager(string configFile)
         {
             ConfigRoot = XDocument.Load(configFile).Root;
@@ -57,45 +60,26 @@ namespace WrapRec.Core
             }
 
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
-			int caseNo = 1, numSuccess = 0, numFails = 0;
-            
-			foreach (Experiment e in Experiments)
+			int caseNo = 1;
+
+			foreach (var splitGroup in Experiments.GroupBy(e => e.Split))
 			{
-				try
+				var split = splitGroup.Key;
+
+				if (split.ParallelModels)
 				{
-					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
-					e.Setup();
+					int count = splitGroup.Count();
+					Logger.Current.Info("\nRunning {0} experiments in parallel on split {1}:\n----------------------------------------",
+						count, split.Id);
 
-					if (e.Type == ExperimentType.Evaluation)
-					{
-						LogExperimentInfo(e);
-						WriteSplitInfo(e);
-						e.Run();
-						LogExperimentResults(e);
-						WriteResultsToFile(e);
-						e.Clear();
-					}
-					else
-					{
-						e.Run();
-					}
-					numSuccess++;
+					Parallel.ForEach(splitGroup, e => RunSingleExperiment(e));
 				}
-				catch (Exception ex)
-				{
-					string err;
-					if (e.Type == ExperimentType.Evaluation)
-						err = string.Format("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
-							e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
-					else
-						err = string.Format("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
-
-					Logger.Current.Error(err);
-					_errorWriters[e.Id].WriteLine(err + "\n----------------------------------------------------------------------------------------");
-					_errorWriters[e.Id].Flush();
-
-					numFails++;
-				}
+				else
+					foreach (Experiment e in splitGroup)
+					{
+						Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
+						RunSingleExperiment(e);
+					}
 			}
 
             foreach (StreamWriter w in _resultWriters.Values)
@@ -134,6 +118,59 @@ namespace WrapRec.Core
 				numSuccess, numFails, ResultsFolder);
 		}
 
+		private void RunSingleExperiment(Experiment e)
+		{
+			try
+			{
+				// setuping cannot be asynchronized since different experiments can have shared split and context
+				// the first experiment, from experiments with shared split and/or evaluation context, will setup split and eval context
+				// model setuping do not necessarily need to be locked
+				// however for clear logging they will be locked for synchronize execution
+				lock (_locker)
+				{
+					e.Setup();
+				}
+
+				if (e.Type == ExperimentType.Evaluation)
+				{
+					lock (_locker)
+					{
+						WriteSplitInfo(e);
+						LogExperimentInfo(e);
+					}
+				
+					// running experiments is the only operation that can be asynchronized
+					e.Run();
+
+					lock (_locker)
+					{
+						LogExperimentResults(e);
+						WriteResultsToFile(e);
+						e.Clear();
+					}
+				}
+				else
+				{
+					e.Run();
+				}
+				numSuccess++;
+			}
+			catch (Exception ex)
+			{
+				string err;
+				if (e.Type == ExperimentType.Evaluation)
+					err = string.Format("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
+						e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+				else
+					err = string.Format("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+
+				Logger.Current.Error(err);
+				_errorWriters[e.Id].WriteLine(err + "\n----------------------------------------------------------------------------------------");
+				_errorWriters[e.Id].Flush();
+
+				numFails++;
+			}
+		}
 
 		private void Setup()
 		{
@@ -217,44 +254,41 @@ namespace WrapRec.Core
 			IEnumerable<Split> splits = expEl.Attribute("splits") != null
 				? expEl.Attribute("splits").Value.Split(',').Select(sId => ParseSplit(sId))
 				: Enumerable.Empty<Split>();
-			
+
 			foreach (Split s in splits)
 			{
-				foreach (Model m in models)
-				{
-                    // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
-                    if (s.SubSplits != null && s.SubSplits.Count() > 0)
-                    {
-                        foreach (Split ss in s.SubSplits)
-                        {
-                            var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+                // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
+                if (s.SubSplits != null && s.SubSplits.Count() > 0)
+					foreach (Split ss in s.SubSplits)
+						foreach (Model m in models)
+						{
+							var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
 							exp.ExperimentManager = this;
-                            exp.Model = m;
+							exp.Model = m;
 							exp.Split = ss;
-                            exp.Id = expId;
+							exp.Id = expId;
 							exp.Type = ExperimentType.Evaluation;
 							if (expEl.Attribute("evalContext") != null)
 								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-                            
+
 							yield return exp;
-                        }
-                    }
-                    else
-                    {
-                        var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+						}
+                else
+					foreach (Model m in models)
+					{
+						var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
 						exp.ExperimentManager = this;
-                        exp.Model = m;
-                        exp.Split = s;
+						exp.Model = m;
+						exp.Split = s;
 						exp.Id = expId;
 						exp.Type = ExperimentType.Evaluation;
 						if (expEl.Attribute("evalContext") != null)
 							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-						
+
 						yield return exp;
-                    }
-				}
+					}
 			}
         }
 
@@ -386,8 +420,8 @@ namespace WrapRec.Core
 
         private EvaluationContext GetEvaluationContext(string contextId)
         {
-			if (EvaluationContexts.ContainsKey(contextId))
-				return EvaluationContexts[contextId];
+			//if (EvaluationContexts.ContainsKey(contextId))
+			//	return EvaluationContexts[contextId];
 			
 			XElement contextEl = ConfigRoot.Descendants("evalContext")
 				.Where(el => el.Attribute("id").Value == contextId).Single();
@@ -408,7 +442,7 @@ namespace WrapRec.Core
 				ec.AddEvaluator(eval);
 			}
 
-			EvaluationContexts.Add(contextId, ec);
+			//EvaluationContexts.Add(contextId, ec);
 			return ec;
         }
 
@@ -431,7 +465,8 @@ Model Parameteres:
 
 		private void LogExperimentResults(Experiment exp)
 		{
-			Logger.Current.Info("\nResults:");
+			Logger.Current.Info("\nResults (experiment '{0}', split '{1}', model '{2}'):", exp.Id, exp.Split.Id, exp.Model.Id);
+			Logger.Current.Info("Model Parameters: \n{0}\n", exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value));
 
 			foreach (var result in exp.EvaluationContext.GetResults())
 			{
