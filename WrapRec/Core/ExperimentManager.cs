@@ -21,7 +21,6 @@ namespace WrapRec.Core
         public XElement ConfigRoot { get; private set; }
 		public IEnumerable<Experiment> Experiments { get; private set; }
 		public Dictionary<string, DataContainer> DataContainers { get; private set; }
-		public Dictionary<string, EvaluationContext> EvaluationContexts { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 		public string JointFile { get; set; }
@@ -40,7 +39,6 @@ namespace WrapRec.Core
         {
             ConfigRoot = XDocument.Load(configFile).Root;
 			DataContainers = new Dictionary<string, DataContainer>();
-			EvaluationContexts = new Dictionary<string, EvaluationContext>();
 			Setup();
         }
 
@@ -420,9 +418,6 @@ namespace WrapRec.Core
 
         private EvaluationContext GetEvaluationContext(string contextId)
         {
-			//if (EvaluationContexts.ContainsKey(contextId))
-			//	return EvaluationContexts[contextId];
-			
 			XElement contextEl = ConfigRoot.Descendants("evalContext")
 				.Where(el => el.Attribute("id").Value == contextId).Single();
 
@@ -442,7 +437,6 @@ namespace WrapRec.Core
 				ec.AddEvaluator(eval);
 			}
 
-			//EvaluationContexts.Add(contextId, ec);
 			return ec;
         }
 
