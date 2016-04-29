@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using WrapRec.Utils;
 using WrapRec.IO;
+using MyMediaLite;
 
 namespace WrapRec.Core
 {
@@ -25,6 +26,13 @@ namespace WrapRec.Core
 		public string ResultsFolder { get; set; }
 		public string JointFile { get; set; }
 		public string[] ExperimentIds { get; private set; }
+		
+		/// <summary>
+		/// This property enables WrapRec to run experiments in parallel
+		/// Don't use two different model types on same experiment element when RunParallel = true
+		/// Otherwise the result header of the output file can be confusing
+		/// </summary>
+		public bool RunParallel { get;  set; }
 
         Dictionary<string, StreamWriter> _statWriters;
         Dictionary<string, StreamWriter> _resultWriters;
@@ -60,60 +68,55 @@ namespace WrapRec.Core
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
 			int caseNo = 1;
 
-			foreach (var splitGroup in Experiments.GroupBy(e => e.Split))
-			{
-				var split = splitGroup.Key;
-
-				if (split.ParallelModels)
+			int totalRunTime = (int)Wrap.MeasureTime(delegate() {
+				if (RunParallel)
 				{
-					int count = splitGroup.Count();
-					Logger.Current.Info("\nRunning {0} experiments in parallel on split {1}:\n----------------------------------------",
-						count, split.Id);
-
-					Parallel.ForEach(splitGroup, e => RunSingleExperiment(e));
+					Logger.Current.Info("\nRunning {0} experiments in parallel...\n----------------------------------------", numExperiments);
+					Parallel.ForEach(Experiments, e => RunSingleExperiment(e));
 				}
 				else
-					foreach (Experiment e in splitGroup)
+					foreach (Experiment e in Experiments)
 					{
 						Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
 						RunSingleExperiment(e);
 					}
-			}
 
-            foreach (StreamWriter w in _resultWriters.Values)
-                w.Close();
+				foreach (StreamWriter w in _resultWriters.Values)
+					w.Close();
 
-            foreach (StreamWriter w in _statWriters.Values)
-                w.Close();
+				foreach (StreamWriter w in _statWriters.Values)
+					w.Close();
 
-			foreach (StreamWriter w in _errorWriters.Values)
-				w.Close();
+				foreach (StreamWriter w in _errorWriters.Values)
+					w.Close();
 
-			try
-			{
-				if (!string.IsNullOrEmpty(JointFile))
+				try
 				{
-					Logger.Current.Info("Joining the results...");
+					if (!string.IsNullOrEmpty(JointFile))
+					{
+						Logger.Current.Info("Joining the results...");
 					
-					var jr = new JoinResults();
-					var param = new Dictionary<string, string>();
-					param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
-					param.Add("outputFile", JointFile);
-					param.Add("delimiter", ResultSeparator);
+						var jr = new JoinResults();
+						var param = new Dictionary<string, string>();
+						param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
+						param.Add("outputFile", JointFile);
+						param.Add("delimiter", ResultSeparator);
 					
-					jr.ExperimentManager = this;
-					jr.SetupParameters = param;
-					jr.Setup();
-					jr.Run();
+						jr.ExperimentManager = this;
+						jr.SetupParameters = param;
+						jr.Setup();
+						jr.Run();
+					}
 				}
-			}
-			catch (Exception ex)
-			{
-				Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
-			}
+				catch (Exception ex)
+				{
+					Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
+				}
+			}).TotalSeconds;
 
             Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
 				numSuccess, numFails, ResultsFolder);
+			Logger.Current.Info("Total running time: {0} seconds.", totalRunTime);
 		}
 
 		private void RunSingleExperiment(Experiment e)
@@ -176,11 +179,16 @@ namespace WrapRec.Core
 			{
 				XElement allExpEl = ConfigRoot.Descendants("experiments").Single();
 
-				if (allExpEl.Attribute("verbosity") != null && allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
-					Logger.Current = NLog.LogManager.GetLogger("traceLogger");
+				if (allExpEl.Attribute("verbosity") != null)
+				{
+					if (allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
+						Logger.Current = NLog.LogManager.GetLogger("traceLogger");
+					else if (allExpEl.Attribute("verbosity").Value.ToLower() == "warn")
+						Logger.Current = NLog.LogManager.GetLogger("warnLogger");
+				}
 
 				ResultSeparator = allExpEl.Attribute("separator") != null ? allExpEl.Attribute("separator").Value.Replace("\\t","\t") : ",";
-
+				RunParallel = allExpEl.Attribute("parallel") != null && allExpEl.Attribute("parallel").Value == "true" ? true : false;
 				bool subFolder = allExpEl.Attribute("subFolder") != null && allExpEl.Attribute("subFolder").Value == "true" ? true : false;
 				string expFolder = subFolder ? DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture) : "";
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
@@ -460,7 +468,8 @@ Model Parameteres:
 		private void LogExperimentResults(Experiment exp)
 		{
 			Logger.Current.Info("\nResults (experiment '{0}', split '{1}', model '{2}'):", exp.Id, exp.Split.Id, exp.Model.Id);
-			Logger.Current.Info("Model Parameters: \n{0}\n", exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value));
+			Logger.Current.Info("Model Parameters: \n{0}\n", 
+				exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value).Aggregate((a, b) => a + " " + b));
 
 			foreach (var result in exp.EvaluationContext.GetResults())
 			{
@@ -471,6 +480,7 @@ Model Parameteres:
 			}
 			
 			Logger.Current.Info("\nTimes:\nTraining: {0} Evaluation: {1}", exp.TrainTime, exp.EvaluationTime);
+			Logger.Current.Info("---------------------------------------");
 		}
 
 		private void WriteResultsToFile(Experiment exp)
