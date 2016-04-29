@@ -14,6 +14,18 @@ $body.scrollspy({
 
 $('#header').load("http://babakx.github.io/WrapRec/header.html");
 
+$('#btnDownloadLatest').click(function () {
+	$.ajax({
+		type: 'GET',
+		url: 'https://api.github.com/repos/babakx/WrapRec/releases/latest',
+		dataType: 'json',
+		success: function (data) {
+			window.location.href = data.assets[0].browser_download_url;
+		}
+	});
+});
+
+
 var xml1 = ['<wraprec>',
 '  <models>',
 '    <model id="mf" class="WrapRec.Models.MmlRecommender">',
