@@ -16,6 +16,16 @@ namespace WrapRec.Evaluation
 	public class RankingEvaluatorsOpr : RankingEvaluators
 	{
 
+		protected MultiKeyDictionary<int, int, StreamWriter> _predictionWriter;
+
+		public override void Setup()
+		{
+			base.Setup();
+
+			if (SetupParameters.ContainsKey("predictionFile"))
+				_predictionWriter = new MultiKeyDictionary<int, int, StreamWriter>();
+		}
+
         public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
             split.UpdateFeedbackSlices();
@@ -35,6 +45,15 @@ namespace WrapRec.Evaluation
                     recallsOpr[maxCand, k] = 0;
 					ndcgOpr[maxCand, k] = 0;
 					mrrOpr[maxCand, k] = 0;
+					
+					if (_predictionWriter != null)
+					{
+						string path = SetupParameters["predictionFile"];
+						_predictionWriter[maxCand, k] = new StreamWriter(
+							string.Format("{0}_{1}_{2}_{3}_{4}.{5}", path.GetPathWithoutExtension(), split.Id, model.Id, maxCand, k, path.GetFileExtension()));
+
+						_predictionWriter[maxCand, k].WriteLine("UserId\tItemId\tScore\tIsCorrect");
+					}
 				}
 			}
 
@@ -60,6 +79,8 @@ namespace WrapRec.Evaluation
                         int rank = IndexOfNewItem(candidatesRankedList, item.Item2);
 						foreach (int k in CutOffs)
 						{
+							bool correct = false;
+
 							if (rank < k)
 							{
 								// if the relevant items falls into the top k items recall would be one (because the only relevent items is covered)
@@ -67,6 +88,12 @@ namespace WrapRec.Evaluation
 								recallsOpr[maxCand, k] += 1;
 								ndcgOpr[maxCand, k] += 1.0 / Math.Log(rank + 2, 2);
 								mrrOpr[maxCand, k] += 1.0 / (rank + 1);
+								correct = true;
+							}
+
+							if (_predictionWriter != null)
+							{
+								_predictionWriter[maxCand, k].WriteLine("{0}\t{1}\t{2}\t{3}", u.Id, item.Item1, item.Item2, correct ? 1 : 0);
 							}
 						}
                     }
@@ -95,6 +122,9 @@ namespace WrapRec.Evaluation
 					results.Add("EvalMethod", GetEvaluatorName());
 
 					context.AddResultsSet("rankingMeasures", results);
+
+					if (_predictionWriter != null)
+						_predictionWriter[maxCand, k].Close();
 				}				
 			}
 		}
