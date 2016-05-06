@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using WrapRec.Utils;
 using WrapRec.IO;
+using MyMediaLite;
 
 namespace WrapRec.Core
 {
@@ -21,11 +22,17 @@ namespace WrapRec.Core
         public XElement ConfigRoot { get; private set; }
 		public IEnumerable<Experiment> Experiments { get; private set; }
 		public Dictionary<string, DataContainer> DataContainers { get; private set; }
-		public Dictionary<string, EvaluationContext> EvaluationContexts { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 		public string JointFile { get; set; }
 		public string[] ExperimentIds { get; private set; }
+		
+		/// <summary>
+		/// This property enables WrapRec to run experiments in parallel
+		/// Don't use two different model types on same experiment element when RunParallel = true
+		/// Otherwise the result header of the output file can be confusing
+		/// </summary>
+		public bool RunParallel { get;  set; }
 
         Dictionary<string, StreamWriter> _statWriters;
         Dictionary<string, StreamWriter> _resultWriters;
@@ -33,11 +40,13 @@ namespace WrapRec.Core
 		Dictionary<string, List<string>> _loggedSplits = new Dictionary<string, List<string>>();
         Dictionary<string, List<string>> _loggedModels = new Dictionary<string, List<string>>();
 
+		int numSuccess = 0, numFails = 0;
+		static readonly object _locker = new object();
+
         public ExperimentManager(string configFile)
         {
             ConfigRoot = XDocument.Load(configFile).Root;
 			DataContainers = new Dictionary<string, DataContainer>();
-			EvaluationContexts = new Dictionary<string, EvaluationContext>();
 			Setup();
         }
 
@@ -57,83 +66,112 @@ namespace WrapRec.Core
             }
 
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
-			int caseNo = 1, numSuccess = 0, numFails = 0;
-            
-			foreach (Experiment e in Experiments)
-			{
+			int caseNo = 1;
+
+			int totalRunTime = (int)Wrap.MeasureTime(delegate() {
+				if (RunParallel)
+				{
+					Logger.Current.Info("\nRunning {0} experiments in parallel...\n----------------------------------------", numExperiments);
+					Parallel.ForEach(Experiments, e => RunSingleExperiment(e));
+				}
+				else
+					foreach (Experiment e in Experiments)
+					{
+						Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
+						RunSingleExperiment(e);
+					}
+
+				foreach (StreamWriter w in _resultWriters.Values)
+					w.Close();
+
+				foreach (StreamWriter w in _statWriters.Values)
+					w.Close();
+
+				foreach (StreamWriter w in _errorWriters.Values)
+					w.Close();
+
 				try
 				{
-					Logger.Current.Info("\nCase {0} of {1}:\n----------------------------------------", caseNo++, numExperiments);
-					e.Setup();
-
-					if (e.Type == ExperimentType.Evaluation)
+					if (!string.IsNullOrEmpty(JointFile))
 					{
-						LogExperimentInfo(e);
+						Logger.Current.Info("Joining the results...");
+					
+						var jr = new JoinResults();
+						var param = new Dictionary<string, string>();
+						param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
+						param.Add("outputFile", JointFile);
+						param.Add("delimiter", ResultSeparator);
+					
+						jr.ExperimentManager = this;
+						jr.SetupParameters = param;
+						jr.Setup();
+						jr.Run();
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
+				}
+			}).TotalSeconds;
+
+            Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
+				numSuccess, numFails, ResultsFolder);
+			Logger.Current.Info("Total running time: {0} seconds.", totalRunTime);
+		}
+
+		private void RunSingleExperiment(Experiment e)
+		{
+			try
+			{
+				// setuping cannot be asynchronized since different experiments can have shared split and context
+				// the first experiment, from experiments with shared split and/or evaluation context, will setup split and eval context
+				// model setuping do not necessarily need to be locked
+				// however for clear logging they will be locked for synchronize execution
+				lock (_locker)
+				{
+					e.Setup();
+				}
+
+				if (e.Type == ExperimentType.Evaluation)
+				{
+					lock (_locker)
+					{
 						WriteSplitInfo(e);
-						e.Run();
+						LogExperimentInfo(e);
+					}
+				
+					// running experiments is the only operation that can be asynchronized
+					e.Run();
+
+					lock (_locker)
+					{
 						LogExperimentResults(e);
 						WriteResultsToFile(e);
 						e.Clear();
 					}
-					else
-					{
-						e.Run();
-					}
-					numSuccess++;
 				}
-				catch (Exception ex)
+				else
 				{
-					string err;
-					if (e.Type == ExperimentType.Evaluation)
-						err = string.Format("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
-							e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
-					else
-						err = string.Format("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
-
-					Logger.Current.Error(err);
-					_errorWriters[e.Id].WriteLine(err + "\n----------------------------------------------------------------------------------------");
-					_errorWriters[e.Id].Flush();
-
-					numFails++;
+					e.Run();
 				}
-			}
-
-            foreach (StreamWriter w in _resultWriters.Values)
-                w.Close();
-
-            foreach (StreamWriter w in _statWriters.Values)
-                w.Close();
-
-			foreach (StreamWriter w in _errorWriters.Values)
-				w.Close();
-
-			try
-			{
-				if (!string.IsNullOrEmpty(JointFile))
-				{
-					Logger.Current.Info("Joining the results...");
-					
-					var jr = new JoinResults();
-					var param = new Dictionary<string, string>();
-					param.Add("sourceFiles", ExperimentIds.Select(eId => eId + ".csv").Aggregate((a,b) => a + "," + b));
-					param.Add("outputFile", JointFile);
-					param.Add("delimiter", ResultSeparator);
-					
-					jr.ExperimentManager = this;
-					jr.SetupParameters = param;
-					jr.Setup();
-					jr.Run();
-				}
+				numSuccess++;
 			}
 			catch (Exception ex)
 			{
-				Logger.Current.Error("Error in joining the results: \n{0}\n{1}",  ex.Message, ex.StackTrace);
+				string err;
+				if (e.Type == ExperimentType.Evaluation)
+					err = string.Format("Error in expriment '{0}', model '{1}', split '{2}':\n{3}\n{4}",
+						e.Id, e.Model.Id, e.Split.Id, ex.Message, ex.StackTrace);
+				else
+					err = string.Format("Error in expriment '{0}':\n{1}\n{2}", e.Id, ex.Message, ex.StackTrace);
+
+				Logger.Current.Error(err);
+				_errorWriters[e.Id].WriteLine(err + "\n----------------------------------------------------------------------------------------");
+				_errorWriters[e.Id].Flush();
+
+				numFails++;
 			}
-
-            Logger.Current.Info("\nExperiments are executed: {0} succeeded, {1} failed.\nResults are stored in {2}", 
-				numSuccess, numFails, ResultsFolder);
 		}
-
 
 		private void Setup()
 		{
@@ -141,11 +179,16 @@ namespace WrapRec.Core
 			{
 				XElement allExpEl = ConfigRoot.Descendants("experiments").Single();
 
-				if (allExpEl.Attribute("verbosity") != null && allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
-					Logger.Current = NLog.LogManager.GetLogger("traceLogger");
+				if (allExpEl.Attribute("verbosity") != null)
+				{
+					if (allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
+						Logger.Current = NLog.LogManager.GetLogger("traceLogger");
+					else if (allExpEl.Attribute("verbosity").Value.ToLower() == "warn")
+						Logger.Current = NLog.LogManager.GetLogger("warnLogger");
+				}
 
 				ResultSeparator = allExpEl.Attribute("separator") != null ? allExpEl.Attribute("separator").Value.Replace("\\t","\t") : ",";
-
+				RunParallel = allExpEl.Attribute("parallel") != null && allExpEl.Attribute("parallel").Value == "true" ? true : false;
 				bool subFolder = allExpEl.Attribute("subFolder") != null && allExpEl.Attribute("subFolder").Value == "true" ? true : false;
 				string expFolder = subFolder ? DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture) : "";
 				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
@@ -217,44 +260,41 @@ namespace WrapRec.Core
 			IEnumerable<Split> splits = expEl.Attribute("splits") != null
 				? expEl.Attribute("splits").Value.Split(',').Select(sId => ParseSplit(sId))
 				: Enumerable.Empty<Split>();
-			
+
 			foreach (Split s in splits)
 			{
-				foreach (Model m in models)
-				{
-                    // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
-                    if (s.SubSplits != null && s.SubSplits.Count() > 0)
-                    {
-                        foreach (Split ss in s.SubSplits)
-                        {
-                            var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+                // if split has subslits (such as cross-validation) for each subsplit a new experiment instance is created
+                if (s.SubSplits != null && s.SubSplits.Count() > 0)
+					foreach (Split ss in s.SubSplits)
+						foreach (Model m in models)
+						{
+							var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
 							exp.ExperimentManager = this;
-                            exp.Model = m;
+							exp.Model = m;
 							exp.Split = ss;
-                            exp.Id = expId;
+							exp.Id = expId;
 							exp.Type = ExperimentType.Evaluation;
 							if (expEl.Attribute("evalContext") != null)
 								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-                            
+
 							yield return exp;
-                        }
-                    }
-                    else
-                    {
-                        var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
+						}
+                else
+					foreach (Model m in models)
+					{
+						var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
 						exp.ExperimentManager = this;
-                        exp.Model = m;
-                        exp.Split = s;
+						exp.Model = m;
+						exp.Split = s;
 						exp.Id = expId;
 						exp.Type = ExperimentType.Evaluation;
 						if (expEl.Attribute("evalContext") != null)
 							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
-						
+
 						yield return exp;
-                    }
-				}
+					}
 			}
         }
 
@@ -386,9 +426,6 @@ namespace WrapRec.Core
 
         private EvaluationContext GetEvaluationContext(string contextId)
         {
-			if (EvaluationContexts.ContainsKey(contextId))
-				return EvaluationContexts[contextId];
-			
 			XElement contextEl = ConfigRoot.Descendants("evalContext")
 				.Where(el => el.Attribute("id").Value == contextId).Single();
 
@@ -408,7 +445,6 @@ namespace WrapRec.Core
 				ec.AddEvaluator(eval);
 			}
 
-			EvaluationContexts.Add(contextId, ec);
 			return ec;
         }
 
@@ -431,7 +467,9 @@ Model Parameteres:
 
 		private void LogExperimentResults(Experiment exp)
 		{
-			Logger.Current.Info("\nResults:");
+			Logger.Current.Info("\nResults (experiment '{0}', split '{1}', model '{2}'):", exp.Id, exp.Split.Id, exp.Model.Id);
+			Logger.Current.Info("Model Parameters: \n{0}\n", 
+				exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value).Aggregate((a, b) => a + " " + b));
 
 			foreach (var result in exp.EvaluationContext.GetResults())
 			{
@@ -442,6 +480,7 @@ Model Parameteres:
 			}
 			
 			Logger.Current.Info("\nTimes:\nTraining: {0} Evaluation: {1}", exp.TrainTime, exp.EvaluationTime);
+			Logger.Current.Info("---------------------------------------");
 		}
 
 		private void WriteResultsToFile(Experiment exp)

@@ -56,10 +56,13 @@ namespace WrapRec.Data
         public Feedback AddFeedback(string userId, string itemId)
         {
 			Feedback feedback;
-
+			
 			if (!AllowDuplicates && FeedbacksDic.ContainsKey(userId, itemId))
 			{
 				feedback = FeedbacksDic[userId, itemId];
+				// promote a feedback to a higher level if it is already observed 
+				// note that this assumes that the feedback are positive
+				feedback.Level++;
 				return feedback;
 			}
 

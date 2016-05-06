@@ -11,6 +11,7 @@ namespace WrapRec.Core
         public string Id { get; set; }
 
         public ICollection<Attribute> Attributes { get; protected set; }
+		public Dictionary<string, Attribute> Attribute { get; protected set; }
 
         public Entity()
         {
@@ -22,6 +23,12 @@ namespace WrapRec.Core
         {
             Id = id;
         }
+
+		// TODO this is a temporary solution, the List should be replaced by dictionary
+		public void SetupAttributeDic()
+		{
+			Attribute = Attributes.ToDictionary(f => f.Name, f => f);
+		}
 
 		public Attribute GetOrCreateAttribute(string name)
 		{

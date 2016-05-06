@@ -43,7 +43,10 @@ namespace WrapRec.Data
 			get { return _test; }
 		}
 
-		public abstract void Setup();
+		public virtual void Setup()
+		{ 
+			// empty body
+		}
 
         public void UpdateFeedbackSlices()
         {

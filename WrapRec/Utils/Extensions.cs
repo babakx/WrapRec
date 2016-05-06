@@ -70,9 +70,9 @@ namespace WrapRec.Utils
         {
             return path.Substring(path.LastIndexOf('\\') + 1, path.LastIndexOf('.') - path.LastIndexOf('\\') - 1);
         }
-        public static string GetFilePureName(this string path)
+        public static string GetPathWithoutExtension(this string path)
         {
-            return path.Substring(0, path.IndexOf('.'));
+            return path.Substring(0, path.LastIndexOf('.'));
         }
         public static string GetFileExtension(this string path)
         {

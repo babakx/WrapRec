@@ -65,6 +65,8 @@ namespace WrapRec.IO
 					LoadRatings(container);
 					break;
 				case DataType.PosFeedback:
+				// TODO its now working fine, but make sure you change the type of negative feedback to negativex
+				case DataType.NegFeedback:
 					LoadPosFeedback(container);
 					break;
 				case DataType.UserAttributes:
