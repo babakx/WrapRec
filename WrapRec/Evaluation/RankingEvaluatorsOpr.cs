@@ -92,9 +92,8 @@ namespace WrapRec.Evaluation
 							}
 
 							if (_predictionWriter != null)
-							{
-								_predictionWriter[maxCand, k].WriteLine("{0}\t{1}\t{2}\t{3}", u.Id, item.Item1, item.Item2, correct ? 1 : 0);
-							}
+								lock (this)
+									_predictionWriter[maxCand, k].WriteLine("{0}\t{1}\t{2}\t{3}", u.Id, item.Item1, item.Item2, correct ? 1 : 0);	
 						}
                     }
 				}
