@@ -1,0 +1,32 @@
+<wraprec>
+  <models>
+    <model id="model1" model1-parameters />
+    <model id="model2" model2-parameters />
+    <model id="model-k" model-k-parameters />
+  </models>
+  <data>
+    <dataReaders>
+      <reader id="reader1" reader1-parameters />
+      <reader id="reader2" reader2-parameters />
+    </dataReaders>
+    <dataContainers>
+      <dataContainer id="container1" container1-parameters />
+      <dataContainer id="container2" container1-parameters />
+    </dataContainers>
+  </data>
+  <splits>
+    <split id="split1" split1-parameters />
+    <split id="split2" split2-parameters />
+  </splits>
+  <evalContexts>
+    <evalContext id="evalContext1">
+      <evaluator parameter />
+      <evaluator parameter />
+      <evaluator parameter />
+    </evalContext>
+  </evalContexts>
+  <experiments run="exp1,exp2" resultsFolder="results" verbosity="info">
+    <experiment id="exp1" models="model1,model2" splits="split1" evalContext="evalContext1" />
+    <experiment id="exp2" models="model-k" splits="split2" evalContext="evalContext1" />
+  </experiments>
+</wraprec>

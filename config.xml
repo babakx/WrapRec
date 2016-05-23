@@ -17,7 +17,7 @@
 		</model>
 		<model id="libfm" class="WrapRec.Models.LibFmWrapper">
 			<parameters libFmPath="D:\Dropbox\Projects\WrapRec Projects\WrapRec\lib\libfm.net.exe" 
-				task="r" dim="1-1-8" method="sgd,mcmc" iter="30" learn_rate="0.02" />			
+				task="r" dim="1-1-8" method="sgd" iter="30" learn_rate="0.02" save_model="&quot;D:\Dropbox\Datasets\Wraprec Results\model.libfm&quot;" />			
 		</model>
 	</models>
   <data>
@@ -38,7 +38,7 @@
 		</dataContainers>
   </data>
   <splits>
-    <split id="ml100k-fixed" type="dynamic" dataContainer="ml100k" trainRatios="0.75" itemAttributes="all" />
+    <split id="ml100k-fixed" type="dynamic" dataContainer="ml100k" trainRatios="0.75" />
     <split id="ml100k-dynamic" type="dynamic" dataContainer="ml100k" trainRatios="0.75" />
     <split id="ml100k-cv" type="crossValidation" dataContainer="ml100k" numFolds="5" />
     <split id="ml1m-custom" type="custom" dataContainer="ml" class="CustomSplitter" />
@@ -48,7 +48,8 @@
     <evalContext id="rating-default">
       <evaluator class="WrapRec.Evaluation.RMSE" />
       <evaluator class="WrapRec.Evaluation.MAE" />
-		</evalContext>
+      <evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
+    </evalContext>
 		<evalContext id="ranking">
 			<evaluator class="WrapRec.Evaluation.RankingEvaluators" candidateItemsMode="training" candidateItemsFile="file.txt" numCandidates="100,1000" cutOffs="5,10,20"  />
 		</evalContext>
