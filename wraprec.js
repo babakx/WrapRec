@@ -14,15 +14,26 @@ $body.scrollspy({
 
 $('#header').load("http://babakx.github.io/WrapRec/header.html");
 
-$('#btnDownloadLatest').click(function () {
+$('#btnDownloadLatestWin').click(function () {
 	$.ajax({
 		type: 'GET',
 		url: 'https://api.github.com/repos/babakx/WrapRec/releases/latest',
 		dataType: 'json',
 		success: function (data) {
-			window.location.href = data.assets[0].browser_download_url;
+			window.location.href = data.assets[1].browser_download_url;
 		}
 	});
+});
+
+$('#btnDownloadLatestMono').click(function () {
+    $.ajax({
+        type: 'GET',
+        url: 'https://api.github.com/repos/babakx/WrapRec/releases/latest',
+        dataType: 'json',
+        success: function (data) {
+            window.location.href = data.assets[0].browser_download_url;
+        }
+    });
 });
 
 
