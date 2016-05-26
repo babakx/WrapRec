@@ -26,7 +26,8 @@ namespace WrapRec.Core
 		public string ResultsFolder { get; set; }
 		public string JointFile { get; set; }
 		public string[] ExperimentIds { get; private set; }
-		
+		public Dictionary<string, string> Parameters { get; private set; }
+
 		/// <summary>
 		/// This property enables WrapRec to run experiments in parallel
 		/// Don't use two different model types on same experiment element when RunParallel = true
@@ -179,11 +180,13 @@ namespace WrapRec.Core
 			{
 				XElement allExpEl = ConfigRoot.Descendants("experiments").Single();
 
+                Parameters = ConfigRoot.Descendants("param").ToDictionary(p => p.Attribute("name").Value, p => p.Attribute("value").Value);
+                                
 				if (allExpEl.Attribute("verbosity") != null)
 				{
-					if (allExpEl.Attribute("verbosity").Value.ToLower() == "trace")
+					if (allExpEl.Attribute("verbosity").Value.Inject(Parameters).ToLower() == "trace")
 						Logger.Current = NLog.LogManager.GetLogger("traceLogger");
-					else if (allExpEl.Attribute("verbosity").Value.ToLower() == "warn")
+					else if (allExpEl.Attribute("verbosity").Value.Inject(Parameters).ToLower() == "warn")
 						Logger.Current = NLog.LogManager.GetLogger("warnLogger");
 				}
 
@@ -191,18 +194,18 @@ namespace WrapRec.Core
 				RunParallel = allExpEl.Attribute("parallel") != null && allExpEl.Attribute("parallel").Value == "true" ? true : false;
 				bool subFolder = allExpEl.Attribute("subFolder") != null && allExpEl.Attribute("subFolder").Value == "true" ? true : false;
 				string expFolder = subFolder ? DateTime.Now.ToString("wr yyyy-MM-dd HH.mm", CultureInfo.InvariantCulture) : "";
-				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value 
+				string rootPath = allExpEl.Attribute("resultsFolder") != null ? allExpEl.Attribute("resultsFolder").Value.Inject(Parameters) 
 					: Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				ResultsFolder = Directory.CreateDirectory(Path.Combine(rootPath, expFolder)).FullName;
 				JointFile = allExpEl.Attribute("jointResults") != null ?
-					Path.Combine(ResultsFolder, allExpEl.Attribute("jointResults").Value) : "";
+					Path.Combine(ResultsFolder, allExpEl.Attribute("jointResults").Value.Inject(Parameters)) : "";
 
 				XAttribute runAttr = allExpEl.Attribute("run");
 
 				IEnumerable<XElement> expEls = allExpEl.Descendants("experiment");
 				if (runAttr != null)
 				{
-					var expIds = runAttr.Value.Split(',');
+					var expIds = runAttr.Value.Inject(Parameters).Split(',');
 
                     _resultWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".csv")));
                     _statWriters = expIds.ToDictionary(eId => eId, eId => new StreamWriter(Path.Combine(ResultsFolder, eId + ".splits.csv")));
@@ -227,7 +230,7 @@ namespace WrapRec.Core
         private IEnumerable<Experiment> ParseExperiments(XElement expEl)
         {
 			string expId = expEl.Attribute("id").Value;
-			string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value : "";
+			string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value.Inject(Parameters) : "";
 
 			Type expType;
 			if (!string.IsNullOrEmpty(expClass))
@@ -239,13 +242,13 @@ namespace WrapRec.Core
 			else
 				expType = typeof(Experiment);
 
-			if (expEl.Attribute("type") != null && expEl.Attribute("type").Value == "other")
+			if (expEl.Attribute("type") != null && expEl.Attribute("type").Value.Inject(Parameters) == "other")
 			{
 				var exp = (Experiment)expType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
 				exp.ExperimentManager = this;
 				exp.Id = expId;
-				exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+				exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
 				exp.Type = ExperimentType.Other;
 
 				yield return exp;
@@ -253,12 +256,12 @@ namespace WrapRec.Core
 
 			// one modelId might map to multiple models (if multiple values are used for parameters)
 			IEnumerable<Model> models = expEl.Attribute("models") != null
-				 ? expEl.Attribute("models").Value.Split(',').SelectMany(mId => ParseModelsSet(mId))
+				 ? expEl.Attribute("models").Value.Inject(Parameters).Split(',').SelectMany(mId => ParseModelsSet(mId))
 				 : Enumerable.Empty<Model>();
 
 			// one splitId always map to one split
 			IEnumerable<Split> splits = expEl.Attribute("splits") != null
-				? expEl.Attribute("splits").Value.Split(',').Select(sId => ParseSplit(sId))
+				? expEl.Attribute("splits").Value.Inject(Parameters).Split(',').Select(sId => ParseSplit(sId))
 				: Enumerable.Empty<Split>();
 
 			foreach (Split s in splits)
@@ -276,7 +279,7 @@ namespace WrapRec.Core
 							exp.Id = expId;
 							exp.Type = ExperimentType.Evaluation;
 							if (expEl.Attribute("evalContext") != null)
-								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
 							yield return exp;
 						}
@@ -291,7 +294,7 @@ namespace WrapRec.Core
 						exp.Id = expId;
 						exp.Type = ExperimentType.Evaluation;
 						if (expEl.Attribute("evalContext") != null)
-							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value);
+							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
 						yield return exp;
 					}
@@ -303,20 +306,20 @@ namespace WrapRec.Core
             XElement modelEl = ConfigRoot.Descendants("model")
                 .Where(el => el.Attribute("id").Value == modelId).Single();
 
-			Type modelType = Helpers.ResolveType(modelEl.Attribute("class").Value);
+			Type modelType = Helpers.ResolveType(modelEl.Attribute("class").Value.Inject(Parameters));
             if (!typeof(Model).IsAssignableFrom(modelType))
                 throw new WrapRecException(string.Format("Model type '{0}' should inherit class 'WrapRec.Models.Model'", modelType.Name));
 
             var allSetupParams = modelEl.Descendants("parameters").Single()
-                .Attributes().ToDictionary(a => a.Name, a => a.Value);
+                .Attributes().ToDictionary(a => a.Name, a => a.Value.Inject(Parameters));
 
-			var paramCartesians = allSetupParams.Select(kv => kv.Value.Split(',').AsEnumerable()).CartesianProduct();
+			var paramCartesians = allSetupParams.Select(kv => kv.Value.Inject(Parameters).Split(',').AsEnumerable()).CartesianProduct();
 
 			foreach (IEnumerable<string> pc in paramCartesians)
 			{
 				var setupParams = allSetupParams.Select(kv => kv.Key)
 					.Zip(pc, (k, v) => new { Name = k, Value = v })
-					.ToDictionary(kv => kv.Name.LocalName, kv => kv.Value);
+					.ToDictionary(kv => kv.Name.LocalName, kv => kv.Value.Inject(Parameters));
 
 				var model = (Model)modelType.GetConstructor(Type.EmptyTypes).Invoke(null);
 				model.Id = modelId;
@@ -331,13 +334,13 @@ namespace WrapRec.Core
             XElement splitEl = ConfigRoot.Descendants("split")
 				.Where(el => el.Attribute("id").Value == splitId).Single();
 
-			SplitType splitType = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.ToUpper());
+			SplitType splitType = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.Inject(Parameters).ToUpper());
 			DataContainer container = GetDataContainer(splitEl.Attribute("dataContainer").Value);
 			
 			Split split;
 			if (splitEl.Attribute("class") != null)
 			{
-				Type splitClassType = Helpers.ResolveType(splitEl.Attribute("class").Value);
+				Type splitClassType = Helpers.ResolveType(splitEl.Attribute("class").Value.Inject(Parameters));
 				if (!typeof(Split).IsAssignableFrom(splitClassType))
 					throw new WrapRecException(string.Format("Split type '{0}' should inherit class 'WrapRec.Data.Split'", splitClassType.Name));
 
@@ -346,7 +349,7 @@ namespace WrapRec.Core
 			else
 				split = new FeedbackSimpleSplit();
 
-			var setupParams = splitEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+			var setupParams = splitEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
 
 			split.Id = splitId;
 			split.Type = splitType;
@@ -374,7 +377,7 @@ namespace WrapRec.Core
 
 			var container = new DataContainer() { AllowDuplicates = allowDup };
 			container.Id = containerId;
-			foreach (string readerId in dcEl.Attribute("dataReaders").Value.Split(','))
+			foreach (string readerId in dcEl.Attribute("dataReaders").Value.Inject(Parameters).Split(','))
 			{
 				container.DataReaders.Add(ParseDataReader(readerId));
 			}
@@ -392,21 +395,21 @@ namespace WrapRec.Core
 			XAttribute sliceTypeAttr = readerEl.Attribute("sliceType");
 			if (sliceTypeAttr != null)
 			{
-				if (sliceTypeAttr.Value == "train")
+				if (sliceTypeAttr.Value.Inject(Parameters) == "train")
 					sliceType = FeedbackSlice.TRAIN;
-				else if (sliceTypeAttr.Value == "test")
+				else if (sliceTypeAttr.Value.Inject(Parameters) == "test")
 					sliceType = FeedbackSlice.TEST;
 			}
 
 			DataType dataType = DataType.Other;
 			XAttribute dataTypeAttr = readerEl.Attribute("dataType");
 			if (dataTypeAttr != null)
-				dataType = (DataType)Enum.Parse(typeof(DataType), dataTypeAttr.Value, true);
+				dataType = (DataType)Enum.Parse(typeof(DataType), dataTypeAttr.Value.Inject(Parameters), true);
 
 			DatasetReader reader;
 			if (readerEl.Attribute("class") != null)
 			{
-				Type readerClassType = Helpers.ResolveType(readerEl.Attribute("class").Value);
+				Type readerClassType = Helpers.ResolveType(readerEl.Attribute("class").Value.Inject(Parameters));
 				if (!typeof(DatasetReader).IsAssignableFrom(readerClassType))
 					throw new WrapRecException(string.Format("Reader type '{0}' should inherit class 'WrapRec.Data.DatasetReader'", readerClassType.Name));
 
@@ -416,10 +419,10 @@ namespace WrapRec.Core
 				reader = new CsvReader();
 
 			reader.Id = readerId;
-			reader.Path = readerEl.Attribute("path").Value;
+			reader.Path = readerEl.Attribute("path").Value.Inject(Parameters);
 			reader.DataType = dataType;
 			reader.SliceType = sliceType;
-			reader.SetupParameters = readerEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
+			reader.SetupParameters = readerEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
 
 			return reader;
 		}
@@ -435,12 +438,12 @@ namespace WrapRec.Core
 			foreach (XElement evalEl in contextEl.Descendants("evaluator"))
 			{
 				Evaluator eval;
-				Type evalType = Helpers.ResolveType(evalEl.Attribute("class").Value);
+				Type evalType = Helpers.ResolveType(evalEl.Attribute("class").Value.Inject(Parameters));
 				if (!typeof(Evaluator).IsAssignableFrom(evalType))
 					throw new WrapRecException(string.Format("Evaluator type '{0}' should inherit class 'WrapRec.Evaluation.Evaluator'", evalType.Name));
 
 				eval = (Evaluator)evalType.GetConstructor(Type.EmptyTypes).Invoke(null);
-				eval.SetupParameters = evalEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);				
+				eval.SetupParameters = evalEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));				
 
 				ec.AddEvaluator(eval);
 			}
@@ -459,7 +462,7 @@ Model Id: {2}
 Model Parameteres:
 {3}
 ";
-			string modelParameters = exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value)
+			string modelParameters = exp.Model.GetModelParameters().Select(kv => kv.Key + ":" + kv.Value.Inject(Parameters))
 				.Aggregate((a, b) => a + " " + b);
 
 			Logger.Current.Info(format, exp.Id, exp.Split.Id, exp.Model.Id, modelParameters);
@@ -553,6 +556,5 @@ Model Parameteres:
             _loggedSplits[exp.Id].Add(exp.Split.Id);
             _statWriters[exp.Id].Flush();
         }
-
     }
 }

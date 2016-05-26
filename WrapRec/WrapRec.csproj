@@ -145,6 +145,7 @@
     <Compile Include="Utils\JoinPredictionFiles.cs" />
     <Compile Include="Utils\MultiKeyDictionary.cs" />
     <Compile Include="Utils\JoinResults.cs" />
+    <Compile Include="Utils\StringInjectExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
