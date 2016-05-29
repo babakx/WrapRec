@@ -499,7 +499,8 @@ Model Parameteres:
 				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
-					.Aggregate((a, b) => a + ResultSeparator + b);
+					.Concat(Parameters.Keys)
+                    .Aggregate((a, b) => a + ResultSeparator + b);
 
 				string resultsHeader = resultFields.Aggregate((a, b) => a + ResultSeparator + b);
 
@@ -511,7 +512,8 @@ Model Parameteres:
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
-				.Aggregate((a, b) => a + ResultSeparator + b);
+				.Concat(Parameters.Values)
+                .Aggregate((a, b) => a + ResultSeparator + b);
 
 			// for each set of results one row would be written to the file
 			foreach (Dictionary<string, string> resultsDic in allResults)
@@ -545,12 +547,14 @@ Model Parameteres:
             if (!_loggedSplits[exp.Id].Contains("header"))
             {
                 string header = splitStats.Keys.Concat(containerStats.Keys)
+                    .Concat(Parameters.Keys)
                     .Aggregate((a, b) => a + ResultSeparator + b);
                 _statWriters[exp.Id].WriteLine(header);
                 _loggedSplits[exp.Id].Add("header");
             }
 
             string stats = splitStats.Values.Concat(containerStats.Values)
+                .Concat(Parameters.Values)
                 .Aggregate((a, b) => a + ResultSeparator + b);
             _statWriters[exp.Id].WriteLine(stats);
             _loggedSplits[exp.Id].Add(exp.Split.Id);
