@@ -95,6 +95,20 @@ namespace WrapRec.Data
 				Items.Remove(f.Item.Id);
 		}
 
+        public void RemoveItem(Item item)
+        {
+            foreach (Feedback f in item.Feedbacks)
+            {
+                Feedbacks.Remove(f);
+                FeedbacksDic[f.User.Id].Remove(f.Item.Id);
+
+                if (f.User.Feedbacks.Count == 0)
+                    Users.Remove(f.User.Id);
+            }
+
+            Items.Remove(item.Id);
+        }
+
         public Rating AddRating(string userId, string itemId, float rating)
         {
 			if (rating > _maxTarget)

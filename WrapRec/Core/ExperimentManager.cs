@@ -19,14 +19,14 @@ namespace WrapRec.Core
 {
     public class ExperimentManager
     {
-        public XElement ConfigRoot { get; private set; }
+        public static XElement ConfigRoot { get; private set; }
 		public IEnumerable<Experiment> Experiments { get; private set; }
 		public Dictionary<string, DataContainer> DataContainers { get; private set; }
 		public string ResultSeparator { get; private set; }
 		public string ResultsFolder { get; set; }
 		public string JointFile { get; set; }
 		public string[] ExperimentIds { get; private set; }
-		public Dictionary<string, string> Parameters { get; private set; }
+		public static Dictionary<string, string> Parameters { get; private set; }
 
 		/// <summary>
 		/// This property enables WrapRec to run experiments in parallel
@@ -73,7 +73,8 @@ namespace WrapRec.Core
 				if (RunParallel)
 				{
 					Logger.Current.Info("\nRunning {0} experiments in parallel...\n----------------------------------------", numExperiments);
-					Parallel.ForEach(Experiments, e => RunSingleExperiment(e));
+
+                    Parallel.ForEach(Experiments, e => RunSingleExperiment(e));
 				}
 				else
 					foreach (Experiment e in Experiments)
@@ -386,7 +387,7 @@ namespace WrapRec.Core
 			return container;
 		}
 
-		private DatasetReader ParseDataReader(string readerId)
+		public static DatasetReader ParseDataReader(string readerId)
 		{
 			XElement readerEl = ConfigRoot.Descendants("reader")
 				.Where(el => el.Attribute("id").Value == readerId).Single();

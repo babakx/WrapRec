@@ -24,8 +24,9 @@ namespace WrapRec.Evaluation
 
 		int _maxNumCandidates;
 		protected IList<string> _allCandidateItems;
+        protected MultiKeyDictionary<int, int, StreamWriter> _perUserMetrics;
 
-		public override void Setup()
+        public override void Setup()
 		{
             // candidate items
             if (!SetupParameters.ContainsKey("candidateItemsMode"))
@@ -60,7 +61,10 @@ namespace WrapRec.Evaluation
 				}).ToArray();
 
 			_maxNumCandidates = NumCandidates.Max();
-		}
+
+            if (SetupParameters.ContainsKey("userMetricsFile"))
+                _perUserMetrics = new MultiKeyDictionary<int, int, StreamWriter>();
+        }
 
         public IEnumerable<User> GetCandidateUsers(Split split)
         {
@@ -160,11 +164,18 @@ namespace WrapRec.Evaluation
 					mrrs[maxCand, k] = 0;
 					maps[maxCand, k] = 0;
 					distinctItems[maxCand, k] = new List<string>();
-				}
-			}
 
-			// TODO: fix problem with parallelization 
-			// workaroung: make sure test users and items are defined in MML Mapping before this call
+                    if (_perUserMetrics != null)
+                    {
+                        string path = SetupParameters["userMetricsFile"];
+                        _perUserMetrics[maxCand, k] = new StreamWriter(
+                            string.Format("{0}_{1}_{2}_{3}_{4}.{5}", path.GetPathWithoutExtension(), split.Id, model.Id, maxCand, k, path.GetFileExtension()));
+
+                        _perUserMetrics[maxCand, k].WriteLine("UserId\tRecall");
+                    }
+                }
+            }
+
 			Parallel.ForEach(testUsers, u =>
 			{
 				// the followings are heavy processes, the results are stored in lists to prevent over computing
@@ -210,13 +221,21 @@ namespace WrapRec.Evaluation
 
 						int minRelevant = Math.Min(k, scoredRelevantItems.Count);
 
-						precision[maxCand, k] += (double)hitCount / k;
-						recall[maxCand, k] += (double)hitCount / scoredRelevantItems.Count;
+                        double rc = (double)hitCount / scoredRelevantItems.Count;
+
+                        precision[maxCand, k] += (double)hitCount / k;
+						recall[maxCand, k] += rc;
 						ndcg[maxCand, k] += dcg / idcgs[minRelevant];
 						maps[maxCand, k] += map / minRelevant;
-						mrrs[maxCand, k] += (lowestRank < int.MaxValue) ? 1.0 / (lowestRank + 1) : 0;
-					}
-				}
+                        //TODO: check to see if the following MRR definition is valid
+                        mrrs[maxCand, k] += (lowestRank < int.MaxValue) ? 1.0 / (lowestRank + 1) : 0;
+
+                        if (_perUserMetrics != null)
+                            lock (this)
+                                _perUserMetrics[maxCand, k].WriteLine("{0}\t{1:0.0000}", u.Id, rc);
+
+                    }
+                }
 			});
 
 			// aggregating measures and storing the results
@@ -249,8 +268,11 @@ namespace WrapRec.Evaluation
 					results.Add("EvalMethod", GetEvaluatorName());
 
 					context.AddResultsSet("rankingMeasures", results);
-				}
-			}
+
+                    if (_perUserMetrics != null)
+                        _perUserMetrics[maxCand, k].Close();
+                }
+            }
 		}
 
 		protected virtual string GetEvaluatorName()

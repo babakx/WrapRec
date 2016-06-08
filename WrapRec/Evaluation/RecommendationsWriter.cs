@@ -56,8 +56,14 @@ namespace WrapRec.Evaluation
             results.Add("NumCandidates", NumCandidates.Max().ToString());
             results.Add("CutOff", maxCutOff.ToString());
             results.Add("OutputFile", OutputFile);
-                    
-            context.AddResultsSet("recommendationsWriter", results);
+            results.Add("EvalMethod", GetEvaluatorName());
+
+            context.AddResultsSet("rankingMeasures", results);
+        }
+
+        protected override string GetEvaluatorName()
+        {
+            return "UserBasedWriter";
         }
     }
 }
