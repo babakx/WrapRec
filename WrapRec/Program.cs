@@ -14,7 +14,7 @@ namespace WrapRec
 	{
 		static void Main(string[] args)
 		{
-			string usage = @"WrapRec 2.0 recommendation toolkit. \nUsage: WrapRec.exe configFile [--cwd=current-working-directory]";
+            string usage = @"WrapRec 2.0 recommendation toolkit. \nUsage: WrapRec.exe configFile [--cwd=current-working-directory]";
 
 			if (args.Length < 1 || args.Length > 2)
 			{
@@ -29,16 +29,18 @@ namespace WrapRec
 					Console.WriteLine("Invalid arguments!");
 					return;
 				}
-
+                
 				Environment.CurrentDirectory = parts[1];
 			}
 
 			var em = new ExperimentManager(args[0]);
 			em.RunExperiments();
+
+#if DEBUG
+            Console.Read();
+#endif
 		}
-	
+        
     }
-
-
 }
 

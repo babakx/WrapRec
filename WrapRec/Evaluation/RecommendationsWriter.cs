@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using WrapRec.Core;
 using WrapRec.Data;
 using WrapRec.Models;
+using WrapRec.Utils;
 
 namespace WrapRec.Evaluation
 {
@@ -44,7 +45,7 @@ namespace WrapRec.Evaluation
                 output.Add(line);
             });
 
-            OutputFile = string.Format("{0}.{1}.{2}", OutputFile, split.Id, model.Id);
+            OutputFile = string.Format("{0}_{1}_{2}.{3}", OutputFile.GetPathWithoutExtension(), split.Id, model.Id, OutputFile.GetFileExtension());
             File.WriteAllLines(OutputFile, output);
 
             var results = new Dictionary<string, string>();
@@ -55,8 +56,14 @@ namespace WrapRec.Evaluation
             results.Add("NumCandidates", NumCandidates.Max().ToString());
             results.Add("CutOff", maxCutOff.ToString());
             results.Add("OutputFile", OutputFile);
-                    
-            context.AddResultsSet("recommendationsWriter", results);
+            results.Add("EvalMethod", GetEvaluatorName());
+
+            context.AddResultsSet("rankingMeasures", results);
+        }
+
+        protected override string GetEvaluatorName()
+        {
+            return "UserBasedWriter";
         }
     }
 }
