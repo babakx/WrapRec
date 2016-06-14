@@ -51,6 +51,20 @@ namespace WrapRec.Core
 			Setup();
         }
 
+        public void OverwriteParameters(Dictionary<string, string> newParams)
+        {
+            foreach (string name in newParams.Keys)
+            {
+                if (!Parameters.ContainsKey(name))
+                {
+                    Console.WriteLine("Parameter {0} is not defined in the configuration file.", name);
+                    Environment.Exit(1);
+                }
+
+                Parameters[name] = newParams[name];
+            }
+        }
+
 		public void RunExperiments()
 		{
             int numExperiments = 0;

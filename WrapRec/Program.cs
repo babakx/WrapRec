@@ -14,26 +14,29 @@ namespace WrapRec
 	{
 		static void Main(string[] args)
 		{
-            string usage = @"WrapRec 2.0 recommendation toolkit. \nUsage: WrapRec.exe configFile [--cwd=current-working-directory]";
+            string usage = @"WrapRec 2.0 recommendation toolkit. \nUsage: WrapRec.exe configFile [cwd=current-working-directory] [params]";
 
-			if (args.Length < 1 || args.Length > 2)
+			if (args.Length < 1)
 			{
 				Console.WriteLine(usage);
 				return;
 			}
-			else if (args.Length == 2)
+
+            var em = new ExperimentManager(args[0]);
+
+            if (args.Length >= 2)
 			{
-				var parts = args[1].Split('=');
-				if (parts[0] != "--cwd")
-				{
-					Console.WriteLine("Invalid arguments!");
-					return;
-				}
-                
-				Environment.CurrentDirectory = parts[1];
+                var argsDic = args.Skip(1).ToDictionary(a => a.Split('=')[0], a => a.Split('=')[1]);
+
+                if (argsDic.ContainsKey("cwd"))
+                {
+                    Environment.CurrentDirectory = argsDic["cwd"];
+                    argsDic.Remove("cwd");
+                }
+
+                em.OverwriteParameters(argsDic);
 			}
 
-			var em = new ExperimentManager(args[0]);
 			em.RunExperiments();
 
 #if DEBUG
