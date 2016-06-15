@@ -156,7 +156,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\EvaluatePredictionFile.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\FileSplitter.cs" />
     <Compile Include="Utils\Helpers.cs" />
