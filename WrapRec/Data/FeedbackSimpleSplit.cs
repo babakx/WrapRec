@@ -24,7 +24,7 @@ namespace WrapRec.Data
 			}
 
 			// Setuping splits
-			float[] trainRatios = new float[] { 1f };
+			float[] trainRatios = { 1f };
 			int numFolds = 5;
 
 			if (SetupParameters.ContainsKey("trainRatios"))
