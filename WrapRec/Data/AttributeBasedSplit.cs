@@ -14,7 +14,7 @@ namespace WrapRec.Data
             
             // the following constrain only applies to train set
             var parts = SetupParameters["attrEqual"].Split(':');
-            _train = _train.Where(f => f.Attribute[parts[0]].Value == parts[1]);
+            _train = _train.Where(f => f.Attributes[parts[0]].Value == parts[1]);
         }
     }
 }

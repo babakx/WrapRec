@@ -45,9 +45,9 @@ namespace WrapRec.Models
 
 			_numValues += 2;
 
-			var feedbackAttrs = feedback.Attributes.Where(a => FeedbackAttributes.Contains("all") || FeedbackAttributes.Contains(a.Name));
-			var itemAttrs = feedback.Item.Attributes.Where(a => ItemAttributes.Contains("all") || ItemAttributes.Contains(a.Name));
-			var userAttrs = feedback.User.Attributes.Where(a => UserAttributes.Contains("all") || UserAttributes.Contains(a.Name));
+			var feedbackAttrs = feedback.Attributes.Values.Where(a => FeedbackAttributes.Contains("all") || FeedbackAttributes.Contains(a.Name));
+			var itemAttrs = feedback.Item.Attributes.Values.Where(a => ItemAttributes.Contains("all") || ItemAttributes.Contains(a.Name));
+			var userAttrs = feedback.User.Attributes.Values.Where(a => UserAttributes.Contains("all") || UserAttributes.Contains(a.Name));
 
 			foreach (var attr in feedbackAttrs.Union(userAttrs).Union(itemAttrs))
 			{

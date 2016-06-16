@@ -10,12 +10,11 @@ namespace WrapRec.Core
     {
         public string Id { get; set; }
 
-        public ICollection<Attribute> Attributes { get; protected set; }
-		public Dictionary<string, Attribute> Attribute { get; protected set; }
+        public Dictionary<string, Attribute> Attributes { get; protected set; }
 
         public Entity()
         {
-			Attributes = new List<Attribute>();
+			Attributes = new Dictionary<string, Attribute>();
         }
 
         public Entity(string id) 
@@ -24,27 +23,20 @@ namespace WrapRec.Core
             Id = id;
         }
 
-		// TODO this is a temporary solution, the List should be replaced by dictionary
-		public void SetupAttributeDic()
-		{
-			Attribute = Attributes.ToDictionary(f => f.Name, f => f);
-		}
-
 		public Attribute GetOrCreateAttribute(string name)
 		{
-			var attr = Attributes.FirstOrDefault(a => a.Name == name);
+			if (Attributes.ContainsKey(name))
+		        return Attributes[name];
 
-			if (attr != null)
-				return attr;
-			
-			attr = new Attribute() { Name = name };
-			Attributes.Add(attr);
+			var attr = new Attribute() { Name = name };
+			Attributes.Add(name, attr);
+
 			return attr;
 		}
 
         public override string ToString()
         {
-            string attributes = Attributes.Count > 0 ? Attributes.Select(a => a.Name + ":" + a.Value)
+            string attributes = Attributes.Count > 0 ? Attributes.Values.Select(a => a.Name + ":" + a.Value)
 				.Aggregate((a, b) => a + " " + b) : "";
             
             return string.Format("Id {0}{1}", Id, 

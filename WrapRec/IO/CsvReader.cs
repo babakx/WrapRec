@@ -116,7 +116,7 @@ namespace WrapRec.IO
 				if (Header != null)
 					foreach (var h in Header.Skip(2))
 						foreach (var attr in GetAttributes(h))
-							feedback.Attributes.Add(attr);
+							feedback.Attributes.Add(attr.Name, attr);
 				
 				EnrichFeedback(feedback);
 			}
@@ -135,7 +135,7 @@ namespace WrapRec.IO
 				if (Header != null)
 					foreach (var h in Header.Skip(3))
 						foreach (var attr in GetAttributes(h))
-							rating.Attributes.Add(attr);
+							rating.Attributes.Add(attr.Name, attr);
 
 				EnrichFeedback(rating);
 			}
@@ -155,7 +155,7 @@ namespace WrapRec.IO
 
 				foreach (var h in Header.Skip(1))
 					foreach (var attr in GetAttributes(h))
-						user.Attributes.Add(attr);
+						user.Attributes.Add(attr.Name, attr);
 			}
 			while (Reader.Read());
 
@@ -173,7 +173,7 @@ namespace WrapRec.IO
 
 				foreach (var h in Header.Skip(1))
 					foreach (var attr in GetAttributes(h))
-						item.Attributes.Add(attr);
+						item.Attributes.Add(attr.Name, attr);
 			}
 			while (Reader.Read());
 		}

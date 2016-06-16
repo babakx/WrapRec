@@ -33,7 +33,7 @@ namespace WrapRec.Core
 
 		public IEnumerable<Attribute> GetAllAttributes()
 		{
-			return Attributes.Concat(User.Attributes).Concat(Item.Attributes);
+			return Attributes.Values.Concat(User.Attributes.Values).Concat(Item.Attributes.Values);
 		}
 
         public override string ToString()
