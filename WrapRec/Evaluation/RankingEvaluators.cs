@@ -37,7 +37,7 @@ namespace WrapRec.Evaluation
             if (SetupParameters.ContainsKey("candidateItemsFile"))
                 CandidateItemsFile = SetupParameters["candidateItemsFile"];
             else if (CandidateItemsMode == CandidateItems.EXPLICIT)
-                throw new WrapRecException("Expect a 'candidateItemsFile' for the mode 'explicit!'");
+                throw new WrapRecException("Expect a 'candidateItemsFile' for the mode 'explicit'!");
 
             // candidate useres
             if (!SetupParameters.ContainsKey("candidateUsersMode"))
@@ -137,6 +137,11 @@ namespace WrapRec.Evaluation
 		{
 			split.UpdateFeedbackSlices();
 			Initialize(split);
+
+            // if mode is explicit, make sure all item Ids are added to the ItemsMap dic
+            if (CandidateItemsMode == CandidateItems.EXPLICIT && model is MmlRecommender)
+                foreach (string itemId in _allCandidateItems)
+                    ((MmlRecommender) model).ItemsMap.ToInternalID(itemId);
 
             var testUsers = GetCandidateUsers(split);
 			int testedUsersCount = 0, testedCases = 0;
