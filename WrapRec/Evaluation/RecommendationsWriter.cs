@@ -28,6 +28,11 @@ namespace WrapRec.Evaluation
             split.UpdateFeedbackSlices();
             Initialize(split);
 
+            // if mode is explicit, make sure all item Ids are added to the ItemsMap dic
+            if (CandidateItemsMode == CandidateItems.EXPLICIT && model is MmlRecommender)
+                foreach (string itemId in _allCandidateItems)
+                    ((MmlRecommender)model).ItemsMap.ToInternalID(itemId);
+
             var candidateUsers = GetCandidateUsers(split);
             var output = new List<string>();
             int maxCutOff = CutOffs.Max();

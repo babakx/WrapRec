@@ -131,6 +131,7 @@
     <Compile Include="Core\Rating.cs" />
     <Compile Include="Core\User.cs" />
     <Compile Include="Core\WrapRecException.cs" />
+    <Compile Include="Data\AttributeBasedSplit.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\FeedbackSimpleSplit.cs" />
     <Compile Include="Data\Split.cs" />

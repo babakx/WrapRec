@@ -21,7 +21,7 @@ namespace WrapRec.Utils
 		public override void Setup()
 		{
 			var readerPaths = ExperimentManager.ConfigRoot.Descendants("reader")
-				.ToDictionary(el => el.Attribute("id").Value, el => el.Attribute("path").Value);
+				.ToDictionary(el => el.Attribute("id").Value, el => el.Attribute("path").Value.Inject(ExperimentManager.Parameters));
 
 			Part1Path = readerPaths[SetupParameters["part1Reader"]];
 			Part2Path = readerPaths[SetupParameters["part2Reader"]];

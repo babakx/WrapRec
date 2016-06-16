@@ -16,7 +16,7 @@ namespace WrapRec.Evaluation
     /// Note that, this class violates the decopouling of EvaluationContext and Split. You should make sure that the 
     /// right split is used when using this evaluator
     /// </summary>
-    public class RankingEvaluatorsExtendedRelevantItems : RankingEvaluatorsOpr
+    public class RankingEvaluatorsExtendedRelevantItems : RankingEvaluators
     {
         protected DataContainer RelevantsContainer;
 

@@ -250,9 +250,9 @@ namespace WrapRec.Data
                     items[itemId]++;
             }
 
-			var feedbackAttrs = Feedbacks.First().Attributes.Select(a => a.Name).Distinct().ToList();
-			var userAttrs = Feedbacks.First().User.Attributes.Select(a => a.Name).Distinct().ToList();
-			var itemAttrs = Feedbacks.First().Item.Attributes.Select(a => a.Name).Distinct().ToList();
+			var feedbackAttrs = Feedbacks.First().Attributes.Values.Select(a => a.Name).Distinct().ToList();
+			var userAttrs = Feedbacks.First().User.Attributes.Values.Select(a => a.Name).Distinct().ToList();
+			var itemAttrs = Feedbacks.First().Item.Attributes.Values.Select(a => a.Name).Distinct().ToList();
 
             _statistics.Add("containerId", Id);
 
