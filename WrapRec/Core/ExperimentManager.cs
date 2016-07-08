@@ -292,7 +292,8 @@ namespace WrapRec.Core
 							exp.Model = m;
 							exp.Split = ss;
 							exp.Id = expId;
-							exp.Type = ExperimentType.Evaluation;
+                            exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
+                            exp.Type = ExperimentType.Evaluation;
 							if (expEl.Attribute("evalContext") != null)
 								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
@@ -307,7 +308,8 @@ namespace WrapRec.Core
 						exp.Model = m;
 						exp.Split = s;
 						exp.Id = expId;
-						exp.Type = ExperimentType.Evaluation;
+                        exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
+                        exp.Type = ExperimentType.Evaluation;
 						if (expEl.Attribute("evalContext") != null)
 							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
@@ -501,7 +503,7 @@ Model Parameteres:
 			Logger.Current.Info("---------------------------------------");
 		}
 
-		private void WriteResultsToFile(Experiment exp)
+		public void WriteResultsToFile(Experiment exp)
 		{
             var allResults = exp.EvaluationContext.GetResults().ToList();
 			var resultFields = allResults.SelectMany(dic => dic.Keys).Distinct().ToList();
@@ -511,7 +513,7 @@ Model Parameteres:
             // TODO: if model is used in multiple splits, the header will not be written for the new splits
 			if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
-				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates" }
+				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates", "CurrentIter", "EpochTime" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Concat(Parameters.Keys)
@@ -523,7 +525,7 @@ Model Parameteres:
                 _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
-			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id, exp.Split.Container.AllowDuplicates.ToString() }
+			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id, exp.Split.Container.AllowDuplicates.ToString(), exp.CurrentIter.ToString(), exp.EpochTime.ToString() }
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
