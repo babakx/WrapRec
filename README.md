@@ -41,3 +41,5 @@ mono wraprec.exe [config.xml]
 
 For more details, see [Get Started with WrapRec](http://babakx.github.io/WrapRec/GetStarted.html).
 
+### License
+WrapRec is under the [MIT License](https://opensource.org/licenses/MIT).
