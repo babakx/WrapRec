@@ -232,12 +232,14 @@ namespace WrapRec.Evaluation
 						recall[maxCand, k] += rc;
 						ndcg[maxCand, k] += dcg / idcgs[minRelevant];
 						maps[maxCand, k] += map / minRelevant;
-                        //TODO: check to see if the following MRR definition is valid
-                        mrrs[maxCand, k] += (lowestRank < int.MaxValue) ? 1.0 / (lowestRank + 1) : 0;
+                        // implemented based on https://en.wikipedia.org/wiki/Mean_reciprocal_rank
+                        float m = (lowestRank < int.MaxValue) ? 1.0f / (lowestRank + 1) : 0;
+					    
+                        mrrs[maxCand, k] += m;
 
                         if (_perUserMetrics != null)
                             lock (this)
-                                _perUserMetrics[maxCand, k].WriteLine("{0}\t{1:0.0000}", u.Id, rc);
+                                _perUserMetrics[maxCand, k].WriteLine("{0}\t{1:0.0000}", u.Id, m);
 
                     }
                 }

@@ -116,7 +116,8 @@ namespace WrapRec.IO
 				if (Header != null)
 					foreach (var h in Header.Skip(2))
 						foreach (var attr in GetAttributes(h))
-							feedback.Attributes.Add(attr.Name, attr);
+                            if (!feedback.Attributes.ContainsKey(attr.Name))
+                                feedback.Attributes.Add(attr.Name, attr);
 				
 				EnrichFeedback(feedback);
 			}

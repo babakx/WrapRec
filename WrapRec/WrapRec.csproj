@@ -142,6 +142,7 @@
     <Compile Include="Evaluation\RankingEvaluatorsAttributeAware.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsExtendedRelevantItems.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsOpr.cs" />
+    <Compile Include="Evaluation\RatingBasedRankingEvaluators.cs" />
     <Compile Include="Evaluation\RatingBasedRankingEvaluatorsOpr.cs" />
     <Compile Include="Evaluation\RecommendationsWriter.cs" />
     <Compile Include="Evaluation\RMSE.cs" />

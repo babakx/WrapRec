@@ -31,7 +31,8 @@ namespace WrapRec.Models
 
         public void OnIterate(object sender, int epochTime)
         {
-            Iterated(sender, epochTime);
+            if (Iterated != null)
+                Iterated(sender, epochTime);
         }
     }
 }
