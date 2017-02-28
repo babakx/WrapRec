@@ -92,7 +92,7 @@ namespace WrapRec.Data
 			}
 		}
 
-		private User SampleUser(List<string> allUserIds)
+	    private User SampleUser(List<string> allUserIds)
 		{
 			int rndIndex = (new Random()).Next(allUserIds.Count);
 			return Container.Users[allUserIds[rndIndex]];

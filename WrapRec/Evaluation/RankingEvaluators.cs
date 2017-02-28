@@ -22,9 +22,10 @@ namespace WrapRec.Evaluation
         public int[] NumCandidates { get; private set; }
 		public int[] CutOffs { get; private set; }
 
-		int _maxNumCandidates;
+		protected int _maxNumCandidates;
 		protected IList<string> _allCandidateItems;
         protected MultiKeyDictionary<int, int, StreamWriter> _perUserMetrics;
+        protected Func<Feedback, bool> _isSliceRelevant;
 
         public override void Setup()
 		{
@@ -39,7 +40,7 @@ namespace WrapRec.Evaluation
             else if (CandidateItemsMode == CandidateItems.EXPLICIT)
                 throw new WrapRecException("Expect a 'candidateItemsFile' for the mode 'explicit'!");
 
-            // candidate useres
+            // candidate users
             if (!SetupParameters.ContainsKey("candidateUsersMode"))
                 CandidateUsersMode = CandidateItems.TEST;
             else
@@ -62,11 +63,16 @@ namespace WrapRec.Evaluation
 
 			_maxNumCandidates = NumCandidates.Max();
 
+            if (SetupParameters.ContainsKey("relevantItems") && SetupParameters["relevantItems"].ToLower() == "all")
+                _isSliceRelevant = f => f.SliceType == FeedbackSlice.TRAIN || f.SliceType == FeedbackSlice.TEST;
+            else
+                _isSliceRelevant = f => f.SliceType == FeedbackSlice.TEST;
+
             if (SetupParameters.ContainsKey("userMetricsFile"))
                 _perUserMetrics = new MultiKeyDictionary<int, int, StreamWriter>();
         }
 
-        public IEnumerable<User> GetCandidateUsers(Split split)
+        public virtual IEnumerable<User> GetCandidateUsers(Split split)
         {
             if (CandidateUsersMode == CandidateItems.TRAINING)
                 return split.Train.Select(f => f.User).Distinct();
@@ -119,7 +125,7 @@ namespace WrapRec.Evaluation
 
 		public virtual IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
-			return user.Feedbacks.Where(f => f.SliceType == FeedbackSlice.TEST && f.FeedbackType != FeedbackType.Negative)
+			return user.Feedbacks//.Where(f => _isSliceRelevant(f) && f.FeedbackType != FeedbackType.Negative)
 				.Select(f => f.Item.Id).Distinct();
 		}
 
@@ -150,7 +156,8 @@ namespace WrapRec.Evaluation
 			var ndcg = new MultiKeyDictionary<int, int, double>();
 			var mrrs = new MultiKeyDictionary<int, int, double>();
 			var maps = new MultiKeyDictionary<int, int, double>();
-			var distinctItems = new MultiKeyDictionary<int, int, List<string>>();
+            var errs = new MultiKeyDictionary<int, int, double>();
+            var distinctItems = new MultiKeyDictionary<int, int, List<string>>();
 
 
 			// pre-compute IDCGs for speed up
@@ -167,6 +174,7 @@ namespace WrapRec.Evaluation
 					recall[maxCand, k] = 0;
 					ndcg[maxCand, k] = 0;
 					mrrs[maxCand, k] = 0;
+				    errs[maxCand, k] = 0;
 					maps[maxCand, k] = 0;
 					distinctItems[maxCand, k] = new List<string>();
 
@@ -213,6 +221,7 @@ namespace WrapRec.Evaluation
 						double dcg = 0;
 						int lowestRank = int.MaxValue;
 						double map = 0;
+					    double err = 0;
 
 						foreach (string item in hitsAtK)
 						{
@@ -220,7 +229,8 @@ namespace WrapRec.Evaluation
 							int rank =  topkItems.IndexOf(item);
 							dcg += 1.0 / Math.Log(rank + 2, 2);
 							map += (double)hitCount / (rank + 1);
-							if (rank < lowestRank)
+						    err += 1.0f/(rank + 1);
+                            if (rank < lowestRank)
 								lowestRank = rank;
 						}
 
@@ -236,6 +246,7 @@ namespace WrapRec.Evaluation
                         float m = (lowestRank < int.MaxValue) ? 1.0f / (lowestRank + 1) : 0;
 					    
                         mrrs[maxCand, k] += m;
+                        errs[maxCand, k] += err;
 
                         if (_perUserMetrics != null)
                             lock (this)

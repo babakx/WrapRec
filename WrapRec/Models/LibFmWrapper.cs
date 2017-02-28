@@ -20,8 +20,8 @@ namespace WrapRec.Models
 		public FmFeatureBuilder FeatureBuilder { get; set; }
 
 		public List<string> LibFmArguments { get; private set; }
-        
-		float _trainRmse, _testRmse, _lowestTestRmse = float.MaxValue;
+
+        float _trainRmse, _testRmse, _lowestTestRmse = float.MaxValue;
 		int _currentIter = 1, _lowestIter;
 		string _outputPath = "test.out";
 
@@ -167,6 +167,9 @@ namespace WrapRec.Models
 					}
 
 					_currentIter++;
+
+                    // TODO: iteratoin time should be measured
+                    //OnIterate(this, 0);
 				}
 			}
 		}

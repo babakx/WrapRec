@@ -26,12 +26,17 @@ namespace WrapRec.Evaluation
 				_predictionWriter = new MultiKeyDictionary<int, int, StreamWriter>();
 		}
 
+        public override IEnumerable<User> GetCandidateUsers(Split split)
+        {
+            return split.Test.Select(f => f.User).Distinct();
+        }
+
         public override void Evaluate(EvaluationContext context, Model model, Split split)
 		{
             split.UpdateFeedbackSlices();
             Initialize(split);
 
-            var testUsers = split.Test.Select(f => f.User).Distinct();
+            var testUsers = GetCandidateUsers(split);
             int testedCases = 0;
             var recallsOpr = new MultiKeyDictionary<int, int, double>();
 			var ndcgOpr = new MultiKeyDictionary<int, int, double>();

@@ -138,6 +138,8 @@
     <Compile Include="Evaluation\EvaluationContext.cs" />
     <Compile Include="Evaluation\Evaluator.cs" />
     <Compile Include="Evaluation\MAE.cs" />
+    <Compile Include="Evaluation\RankingEvaluatorFromFileOpr.cs" />
+    <Compile Include="Evaluation\RankingEvaluatorFromFile.cs" />
     <Compile Include="Evaluation\RankingEvaluators.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsAttributeAware.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsExtendedRelevantItems.cs" />
@@ -146,10 +148,12 @@
     <Compile Include="Evaluation\RatingBasedRankingEvaluatorsOpr.cs" />
     <Compile Include="Evaluation\RecommendationsWriter.cs" />
     <Compile Include="Evaluation\RMSE.cs" />
+    <Compile Include="Evaluation\Scorer.cs" />
     <Compile Include="IO\CsvReader.cs" />
     <Compile Include="IO\DatasetReader.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Models\FmFeatureBuilder.cs" />
+    <Compile Include="Models\IModelAwareRecommender.cs" />
     <Compile Include="Models\LibFmRecommender.cs" />
     <Compile Include="Models\LibFmWrapper.cs" />
     <Compile Include="Models\MmlRecommender.cs" />
@@ -158,6 +162,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\GpfmConverter.cs" />
     <Compile Include="Utils\FileSplitter.cs" />
     <Compile Include="Utils\Helpers.cs" />
     <Compile Include="Utils\JoinPredictionFiles.cs" />

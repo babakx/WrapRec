@@ -90,6 +90,9 @@ namespace WrapRec.Models
 					mmlFeedback.Add(UsersMap.ToInternalID(feedback.User.Id), ItemsMap.ToInternalID(feedback.Item.Id));
 				}
 				((ItemRecommender)MmlRecommenderInstance).Feedback = mmlFeedback;
+
+                if (MmlRecommenderInstance is IModelAwareRecommender)
+                    ((IModelAwareRecommender)MmlRecommenderInstance).Model = this;
 			}
 
             Logger.Current.Trace("Training with MyMediaLite recommender...");
