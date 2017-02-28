@@ -15,6 +15,7 @@ namespace WrapRec.IO
 		NegFeedback,
 		UserAttributes,
 		ItemAttributes,
+        CrossDomainUserData,
 		Other
 	}
 

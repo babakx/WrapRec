@@ -18,6 +18,8 @@ namespace WrapRec.IO
 		protected Dictionary<string, string> Header { get; private set; }
 		protected Dictionary<string, int> FieldIndices { get; private set; }
 
+	    private Dictionary<string, int> _userAuxCount = new Dictionary<string, int>();
+
 		public override void Setup()
 		{
 			bool hasHeader = (SetupParameters.ContainsKey("hasHeader") && SetupParameters["hasHeader"] == "false") ? false : true;
@@ -75,7 +77,10 @@ namespace WrapRec.IO
 				case DataType.ItemAttributes:
 					LoadItemContext(container);
 					break;
-				case DataType.Other:
+                case DataType.CrossDomainUserData:
+                    LoadCrossDomainUserData(container);
+                    break;
+                case DataType.Other:
 				default:
 					throw new WrapRecException(
 						string.Format("dataType is not specified or not supported by CsvReader", Id));
@@ -85,13 +90,13 @@ namespace WrapRec.IO
 		protected IEnumerable<Core.Attribute> GetAttributes(KeyValuePair<string, string> header)
 		{
 			string fieldValue = Reader[FieldIndices[header.Key]];
-			
-			if (header.Value == "md")
+
+            if (header.Value == "md")
 				foreach (string attr in fieldValue.Split('|'))
 					yield return new Core.Attribute() { Name = header.Key, Value = attr, Type = AttributeType.Discrete };
 			else if (header.Value == "r")
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.RealValued };
-			else if (header.Value == "b")
+            else if (header.Value == "b")
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.Binary };
 			else if (header.Value == "n")
 				yield break;
@@ -116,7 +121,8 @@ namespace WrapRec.IO
 				if (Header != null)
 					foreach (var h in Header.Skip(2))
 						foreach (var attr in GetAttributes(h))
-							feedback.Attributes.Add(attr.Name, attr);
+                            if (!feedback.Attributes.ContainsKey(attr.Name))
+                                feedback.Attributes.Add(attr.Name, attr);
 				
 				EnrichFeedback(feedback);
 			}
@@ -143,25 +149,63 @@ namespace WrapRec.IO
 
 		}
 
-		protected virtual void LoadUserContext(DataContainer container)
-		{
-			if (Header == null)
-				throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));
+	    public virtual void LoadUserContext(DataContainer container)
+	    {
+            if (Header == null)
+                throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));
 
-			// Assuming format userId,attr1,attr2,...
-			do
-			{
-				var user = container.AddUser(Reader.GetField(0));
+            // Assuming format userId,attr1,attr2,...
+            do
+            {
+                var user = container.AddUser(Reader.GetField(0));
 
-				foreach (var h in Header.Skip(1))
-					foreach (var attr in GetAttributes(h))
-						user.Attributes.Add(attr.Name, attr);
-			}
-			while (Reader.Read());
+                foreach (var h in Header.Skip(1))
+                    foreach (var attr in GetAttributes(h))
+                        user.Attributes.Add(attr.Name, attr);
 
-		}
+            }
+            while (Reader.Read());
+        }
 
-		protected virtual void LoadItemContext(DataContainer container)
+        protected virtual void LoadCrossDomainUserData(DataContainer container)
+        {
+            if (Header == null)
+                throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));
+
+            int maxNumFeatures = SetupParameters.ContainsKey("maxAuxFeatures")
+                ? int.Parse(SetupParameters["maxAuxFeatures"])
+                : 5;
+            
+            // Assuming format userId,xdItem[,rating]
+            do
+            {
+                var user = container.AddUser(Reader.GetField(0));
+
+                if (!_userAuxCount.ContainsKey(user.Id))
+                    _userAuxCount.Add(user.Id, 1);
+                else
+                    _userAuxCount[user.Id]++;
+
+                //if (user.Attributes.Count < maxNumFeatures)
+                if (_userAuxCount[user.Id] <= maxNumFeatures)
+                {
+                    var header = Header.Skip(1).Take(1).Single();
+                    string fieldValue = Reader[FieldIndices[header.Key]] + Id;
+                    string nextFieldValue = Reader[FieldIndices[header.Key] + 1];
+
+                    user.Attributes.Add(fieldValue,
+                        new Core.Attribute()
+                        {
+                            Name = fieldValue,
+                            Value = nextFieldValue,
+                            Type = AttributeType.RealValued
+                        });
+                }
+            }
+            while (Reader.Read());
+        }
+
+        protected virtual void LoadItemContext(DataContainer container)
 		{
 			if (Header == null)
 				throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));

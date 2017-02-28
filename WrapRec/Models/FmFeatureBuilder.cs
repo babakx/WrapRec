@@ -65,14 +65,14 @@ namespace WrapRec.Models
 		public Tuple<int, float> TranslateAttribute(WrapRec.Core.Attribute attr)
 		{
 			if (attr.Type == AttributeType.Binary && (attr.Value == "1" || attr.Value == "true"))
-				return new Tuple<int, float>(Mapper.ToInternalID(attr.Name), 1);
+				return new Tuple<int, float>(Mapper.ToInternalID(attr.Name), 0.1f);
 			else if (attr.Type == AttributeType.Discrete)
-				return new Tuple<int, float>(Mapper.ToInternalID(attr.Value), 1);
+				return new Tuple<int, float>(Mapper.ToInternalID(attr.Value), 0.1f);
 			else if (attr.Type == AttributeType.RealValued)
-				return new Tuple<int,float>(Mapper.ToInternalID(attr.Name), float.Parse(attr.Value));
+				return new Tuple<int,float>(Mapper.ToInternalID(attr.Name), float.Parse(attr.Value) * 0.1f);
 
-			return null;
-		}
+			return new Tuple<int, float>(Mapper.ToInternalID(attr.Name), 0);
+        }
 
 		public void RestartNumValues()
 		{

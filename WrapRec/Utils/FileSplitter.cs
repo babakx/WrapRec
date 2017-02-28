@@ -21,7 +21,7 @@ namespace WrapRec.Utils
 		public override void Setup()
 		{
 			var readerPaths = ExperimentManager.ConfigRoot.Descendants("reader")
-				.ToDictionary(el => el.Attribute("id").Value, el => el.Attribute("path").Value.Inject(ExperimentManager.Parameters));
+				.ToDictionary(el => el.Attribute("id").Value.Inject(ExperimentManager.Parameters), el => el.Attribute("path").Value.Inject(ExperimentManager.Parameters));
 
 			Part1Path = readerPaths[SetupParameters["part1Reader"]];
 			Part2Path = readerPaths[SetupParameters["part2Reader"]];
@@ -30,7 +30,7 @@ namespace WrapRec.Utils
 			Part1Ratio = float.Parse(SetupParameters["part1Ratio"]);
 
 			var hasHeaderAttr = ExperimentManager.ConfigRoot.Descendants("reader")
-				.Where(el => el.Attribute("id").Value == SetupParameters["sourceReader"]).Single()
+				.Where(el => el.Attribute("id").Value.Inject(ExperimentManager.Parameters) == SetupParameters["sourceReader"]).Single()
 				.Attribute("hasHeader");
 
 			HasHeader = hasHeaderAttr != null && hasHeaderAttr.Value == "false" ? false : true;

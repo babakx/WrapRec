@@ -44,25 +44,11 @@ namespace WrapRec.Core
 		int numSuccess = 0, numFails = 0;
 		static readonly object _locker = new object();
 
-        public ExperimentManager(string configFile)
+        public ExperimentManager(string configFile, Dictionary<string, string> overrideParams = null)
         {
             ConfigRoot = XDocument.Load(configFile).Root;
 			DataContainers = new Dictionary<string, DataContainer>();
-			Setup();
-        }
-
-        public void OverwriteParameters(Dictionary<string, string> newParams)
-        {
-            foreach (string name in newParams.Keys)
-            {
-                if (!Parameters.ContainsKey(name))
-                {
-                    Console.WriteLine("Parameter {0} is not defined in the configuration file.", name);
-                    Environment.Exit(1);
-                }
-
-                Parameters[name] = newParams[name];
-            }
+			Setup(overrideParams);
         }
 
 		public void RunExperiments()
@@ -77,7 +63,7 @@ namespace WrapRec.Core
             catch (Exception ex)
             {
                 Logger.Current.Error("Error in setuping experiments. Make sure the configuration file is formatted correctly. \nError: {0}\n{1}", ex.Message, ex.StackTrace);
-                Environment.Exit(1);
+                //Environment.Exit(1);
             }
 
 			Logger.Current.Info("Number of experiment cases to be done: {0}", numExperiments);
@@ -189,15 +175,29 @@ namespace WrapRec.Core
 			}
 		}
 
-		private void Setup()
+		private void Setup(Dictionary<string,string> overrideParams)
 		{
 			try
 			{
 				XElement allExpEl = ConfigRoot.Descendants("experiments").Single();
 
                 Parameters = ConfigRoot.Descendants("param").ToDictionary(p => p.Attribute("name").Value, p => p.Attribute("value").Value);
-                                
-				if (allExpEl.Attribute("verbosity") != null)
+
+			    if (overrideParams != null)
+			    {
+			        foreach (string name in overrideParams.Keys)
+			        {
+			            if (!Parameters.ContainsKey(name))
+			            {
+			                Console.WriteLine("Parameter {0} is not defined in the configuration file.", name);
+			                Environment.Exit(1);
+			            }
+
+			            Parameters[name] = overrideParams[name];
+			        }
+			    }
+
+			    if (allExpEl.Attribute("verbosity") != null)
 				{
 					if (allExpEl.Attribute("verbosity").Value.Inject(Parameters).ToLower() == "trace")
 						Logger.Current = NLog.LogManager.GetLogger("traceLogger");
@@ -228,8 +228,8 @@ namespace WrapRec.Core
 					_loggedSplits = expIds.ToDictionary(eId => eId, eId => new List<string>());
                     _loggedModels = expIds.ToDictionary(eId => eId, eId => new List<string>());
 
-                    expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value));
-					ExperimentIds = expEls.Select(el => el.Attribute("id").Value).ToArray();
+                    expEls = expEls.Where(el => expIds.Contains(el.Attribute("id").Value.Inject(Parameters)));
+					ExperimentIds = expEls.Select(el => el.Attribute("id").Value.Inject(Parameters)).ToArray();
 				}
 
 				Logger.Current.Info("Resolving experiments...");
@@ -238,13 +238,13 @@ namespace WrapRec.Core
 			catch (Exception ex)
 			{
 				Logger.Current.Error("Error in setuping experiments or parsing the configuration file: {0}\n{1}\n", ex.Message, ex.StackTrace);
-				Environment.Exit(1);
+				//Environment.Exit(1);
 			}
 		}
 
         private IEnumerable<Experiment> ParseExperiments(XElement expEl)
         {
-			string expId = expEl.Attribute("id").Value;
+			string expId = expEl.Attribute("id").Value.Inject(Parameters);
 			string expClass = expEl.Attribute("class") != null ? expEl.Attribute("class").Value.Inject(Parameters) : "";
 
 			Type expType;
@@ -292,7 +292,8 @@ namespace WrapRec.Core
 							exp.Model = m;
 							exp.Split = ss;
 							exp.Id = expId;
-							exp.Type = ExperimentType.Evaluation;
+                            exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
+                            exp.Type = ExperimentType.Evaluation;
 							if (expEl.Attribute("evalContext") != null)
 								exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
@@ -307,7 +308,8 @@ namespace WrapRec.Core
 						exp.Model = m;
 						exp.Split = s;
 						exp.Id = expId;
-						exp.Type = ExperimentType.Evaluation;
+                        exp.SetupParameters = expEl.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value.Inject(Parameters));
+                        exp.Type = ExperimentType.Evaluation;
 						if (expEl.Attribute("evalContext") != null)
 							exp.EvaluationContext = GetEvaluationContext(expEl.Attribute("evalContext").Value.Inject(Parameters));
 
@@ -347,10 +349,10 @@ namespace WrapRec.Core
         private Split ParseSplit(string splitId)
         {
             XElement splitEl = ConfigRoot.Descendants("split")
-				.Where(el => el.Attribute("id").Value == splitId).Single();
+				.Where(el => el.Attribute("id").Value.Inject(Parameters) == splitId).Single();
 
 			SplitType splitType = (SplitType) Enum.Parse(typeof(SplitType), splitEl.Attribute("type").Value.Inject(Parameters).ToUpper());
-			DataContainer container = GetDataContainer(splitEl.Attribute("dataContainer").Value);
+			DataContainer container = GetDataContainer(splitEl.Attribute("dataContainer").Value.Inject(Parameters));
 			
 			Split split;
 			if (splitEl.Attribute("class") != null)
@@ -384,7 +386,7 @@ namespace WrapRec.Core
 				return DataContainers[containerId];
 
 			XElement dcEl = ConfigRoot.Descendants("dataContainer")
-				.Where(el => el.Attribute("id").Value == containerId).Single();
+				.Where(el => el.Attribute("id").Value.Inject(Parameters) == containerId).Single();
 
 			bool allowDup = false;
 			if (dcEl.Attribute("allowDuplicates") != null && dcEl.Attribute("allowDuplicates").Value == "true")
@@ -404,7 +406,7 @@ namespace WrapRec.Core
 		public static DatasetReader ParseDataReader(string readerId)
 		{
 			XElement readerEl = ConfigRoot.Descendants("reader")
-				.Where(el => el.Attribute("id").Value == readerId).Single();
+				.Where(el => el.Attribute("id").Value.Inject(Parameters) == readerId).Single();
 
 			FeedbackSlice sliceType = FeedbackSlice.NOT_APPLICABLE;
 			XAttribute sliceTypeAttr = readerEl.Attribute("sliceType");
@@ -501,7 +503,7 @@ Model Parameteres:
 			Logger.Current.Info("---------------------------------------");
 		}
 
-		private void WriteResultsToFile(Experiment exp)
+		public void WriteResultsToFile(Experiment exp)
 		{
             var allResults = exp.EvaluationContext.GetResults().ToList();
 			var resultFields = allResults.SelectMany(dic => dic.Keys).Distinct().ToList();
@@ -511,7 +513,7 @@ Model Parameteres:
             // TODO: if model is used in multiple splits, the header will not be written for the new splits
 			if (!_loggedModels[exp.Id].Contains(exp.Model.Id))
 			{
-				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates" }
+				string expHeader = new string[] { "ExpeimentId", "ModelId", "SplitId", "ContainerId", "AllowDuplicates", "CurrentIter", "EpochTime" }
 					.Concat(exp.Model.GetModelParameters().Select(kv => kv.Key))
 					.Concat(new string[] { "TrainTime", "EvaluationTime", "PureTrainTime", "PureEvaluationTime", "TotalTime", "PureTotalTime" })
 					.Concat(Parameters.Keys)
@@ -523,7 +525,7 @@ Model Parameteres:
                 _loggedModels[exp.Id].Add(exp.Model.Id);
 			}
 
-			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id, exp.Split.Container.AllowDuplicates.ToString() }
+			string expInfo = new string[] { exp.Id, exp.Model.Id, exp.Split.Id, exp.Split.Container.Id, exp.Split.Container.AllowDuplicates.ToString(), exp.CurrentIter.ToString(), exp.EpochTime.ToString() }
 				.Concat(exp.Model.GetModelParameters().Select(kv => kv.Value))
 				.Concat(new string[] { exp.TrainTime.ToString(), exp.EvaluationTime.ToString(), exp.Model.PureTrainTime.ToString(), exp.Model.PureEvaluationTime.ToString(), 
 					(exp.TrainTime + exp.EvaluationTime).ToString(), (exp.Model.PureTrainTime + exp.Model.PureEvaluationTime).ToString() })
@@ -545,7 +547,7 @@ Model Parameteres:
 						results += ResultSeparator;
 				}
 
-				_resultWriters[exp.Id].WriteLine(expInfo + ResultSeparator + results);
+				_resultWriters[exp.Id].WriteLine((expInfo + ResultSeparator + results).Replace("\r",""));
 			}
 
 			_resultWriters[exp.Id].Flush();

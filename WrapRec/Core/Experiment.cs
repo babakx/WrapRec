@@ -27,25 +27,47 @@ namespace WrapRec.Core
 		public ExperimentManager ExperimentManager { get; set; }
 		public Dictionary<string, string> SetupParameters { get; set; }
 		public ExperimentType Type { get; set; }
+	    public int CurrentIter { get; private set; }
+        public int MultiEval { get; private set; }
+        public int EpochTime { get; private set; }
 
-		public virtual void Setup()
-		{
-			if (!Split.Container.IsLoaded)
-			{
-				Logger.Current.Info("Loading DataContainer '{0}'...", Split.Container.Id);
-				Split.Container.Load();
-			}
-			if (!EvaluationContext.IsSetuped)
-			{
-				Logger.Current.Info("Setuping evaluation context '{0}'...", EvaluationContext.Id);
-				EvaluationContext.Setup();
-			}
-				
-			Logger.Current.Info("Setuping model '{0}'...", Model.Id);
-			Model.Setup();
-		}
-		
-		public virtual void Run()
+	    public virtual void Setup()
+	    {
+	        if (!Split.Container.IsLoaded)
+	        {
+	            Logger.Current.Info("Loading DataContainer '{0}'...", Split.Container.Id);
+	            Split.Container.Load();
+	        }
+	        if (!EvaluationContext.IsSetuped)
+	        {
+	            Logger.Current.Info("Setuping evaluation context '{0}'...", EvaluationContext.Id);
+	            EvaluationContext.Setup();
+	        }
+
+	        Logger.Current.Info("Setuping model '{0}'...", Model.Id);
+	        Model.Setup();
+
+	        if (SetupParameters.ContainsKey("multiEval"))
+	        {
+	            MultiEval = int.Parse(SetupParameters["multiEval"]);
+                Model.Iterated += ModelIterated;
+            }
+	    }
+
+	    private void ModelIterated(object sender, int epochTime)
+	    {
+            CurrentIter++;
+            if (CurrentIter%MultiEval == 0)
+            {
+                Logger.Current.Info("Evaluating on iteration {0}. Iteration time: {1} milliseconds.", CurrentIter, epochTime);
+                Model.Evaluate(Split, EvaluationContext);
+                EpochTime = epochTime;
+	            ExperimentManager.WriteResultsToFile(this);
+                EvaluationContext.Clear();
+            }
+        }
+
+        public virtual void Run()
 		{
 			Logger.Current.Info("Training...");
             TrainTime = (int)Wrap.MeasureTime(delegate() { Model.Train(Split); }).TotalMilliseconds;

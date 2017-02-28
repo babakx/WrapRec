@@ -9,7 +9,7 @@ using WrapRec.Data;
 namespace WrapRec.Evaluation
 {
 	
-	public class RatingBasedRankingEvaluatorsOpr : RankingEvaluatorsOpr
+	public class RatingBasedRankingEvaluators : RankingEvaluators
 	{
 		Dictionary<User, float> _averageRating;
 		float _averageAllUsers;
@@ -25,13 +25,13 @@ namespace WrapRec.Evaluation
 		public override IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
 			float threshold = _averageRating.ContainsKey(user) ? _averageRating[user] : _averageAllUsers;
-			return user.Feedbacks//.Where(f => f.SliceType == FeedbackSlice.TEST && ((Rating)f).Value > threshold)
+			return user.Feedbacks //.Where(f => f.SliceType == FeedbackSlice.TEST) // && ((Rating)f).Value > threshold)
 				.Select(f => f.Item.Id).Distinct();
 		}
 
 		protected override string GetEvaluatorName()
 		{
-			return "RBR-OPR";
+			return "RBR";
 		}
 	}
 }
