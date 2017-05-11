@@ -11,6 +11,7 @@ namespace WrapRec.IO
 	public enum DataType
 	{
 		Ratings,
+        TimeAwareRating,
 		PosFeedback,
 		NegFeedback,
 		UserAttributes,

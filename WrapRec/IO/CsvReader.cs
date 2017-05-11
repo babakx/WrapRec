@@ -64,7 +64,8 @@ namespace WrapRec.IO
 			switch (DataType)
 			{
 				case DataType.Ratings:
-					LoadRatings(container);
+                case DataType.TimeAwareRating:
+                    LoadRatings(container);
 					break;
 				case DataType.PosFeedback:
 				// TODO its now working fine, but make sure you change the type of negative feedback to negativex
@@ -146,10 +147,9 @@ namespace WrapRec.IO
 				EnrichFeedback(rating);
 			}
 			while (Reader.Read());
-
 		}
 
-	    public virtual void LoadUserContext(DataContainer container)
+        public virtual void LoadUserContext(DataContainer container)
 	    {
             if (Header == null)
                 throw new WrapRecException(string.Format("Expect field headers or attribute 'header' in reader '{0}'.", Id));

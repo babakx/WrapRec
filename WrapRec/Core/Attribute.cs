@@ -21,6 +21,8 @@ namespace WrapRec.Core
 
 		public AttributeType Type { get; set; }
 
+        public int Group { get; set; }
+
 		public Tuple<int, float> Translation { get; set; }
 	}
 }

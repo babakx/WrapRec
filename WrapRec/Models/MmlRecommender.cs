@@ -14,6 +14,7 @@ using MyMediaLite.RatingPrediction;
 using WrapRec.IO;
 using MyMediaLite.DataType;
 using MyMediaLite.ItemRecommendation;
+using WrapRec.Utils;
 
 namespace WrapRec.Models
 {
@@ -37,7 +38,9 @@ namespace WrapRec.Models
 				Type mmlRecommenderType = Helpers.ResolveType(SetupParameters["ml-class"]);
 				MmlRecommenderInstance = (IRecommender)mmlRecommenderType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
-				if (typeof(IRatingPredictor).IsAssignableFrom(mmlRecommenderType))
+			    if (typeof(ITimeAwareRatingPredictor).IsAssignableFrom(mmlRecommenderType))
+			        DataType = DataType.TimeAwareRating;
+                else if (typeof(IRatingPredictor).IsAssignableFrom(mmlRecommenderType))
 					DataType = DataType.Ratings;
 				else if (typeof(ItemRecommender).IsAssignableFrom(mmlRecommenderType))
 					DataType = DataType.PosFeedback;
@@ -45,13 +48,13 @@ namespace WrapRec.Models
 					throw new WrapRecException(string.Format("Unknown MmlRecommender class: {0}", SetupParameters["ml-class"]));
 
 				// Set properties
-				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class"))
+				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class" && kv.Key != "numGroups"))
 				{
 					PropertyInfo pi = MmlRecommenderInstance.GetType().GetProperty(param.Key);
 
 					// in case the value of attribute is empty ignore
 					// empty attributes are only used for logging purposes
-					if (String.IsNullOrEmpty(param.Value))
+					if (string.IsNullOrEmpty(param.Value))
 						continue;
 					
 					object paramVal;
@@ -82,8 +85,22 @@ namespace WrapRec.Models
 				}
 				((IRatingPredictor)MmlRecommenderInstance).Ratings = mmlFeedback;
 			}
-			else
-			{
+            else if (DataType == IO.DataType.TimeAwareRating)
+            {
+                var mmlFeedback = new TimedRatings();
+                var firstRatingMl10M = new DateTime(1998, 11, 1);
+
+                foreach (var feedback in split.Train)
+                {
+                    var rating = (Rating)feedback;
+                    var time = firstRatingMl10M.AddDays(double.Parse(feedback.Attributes["timestamp"].Value));
+                    mmlFeedback.Add(UsersMap.ToInternalID(rating.User.Id), ItemsMap.ToInternalID(rating.Item.Id), 
+                        rating.Value, time);
+                }
+                ((ITimeAwareRatingPredictor)MmlRecommenderInstance).Ratings = mmlFeedback;
+            }
+            else
+            {
 				var mmlFeedback = new PosOnlyFeedback<SparseBooleanMatrix>();
 				foreach (var feedback in split.Train)
 				{
@@ -105,11 +122,24 @@ namespace WrapRec.Models
 			
 			PureEvaluationTime = (int)Wrap.MeasureTime(delegate()
 			{
-				if (DataType == DataType.Ratings)
-					foreach (var feedback in split.Test)
-						context.PredictedScores.Add(feedback, Predict(feedback));
-	
-				context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
+			    if (DataType == DataType.Ratings)
+			    {
+			        foreach (var feedback in split.Test)
+			            context.PredictedScores.Add(feedback, Predict(feedback));
+			    }
+			    else if (DataType == DataType.TimeAwareRating)
+			    {
+			        var predictor = (ITimeAwareRatingPredictor) MmlRecommenderInstance;
+                    var firstRatingMl10M = new DateTime(1998, 11, 01);
+
+                    foreach (var feedback in split.Test)
+			        {
+                        var time = firstRatingMl10M.AddDays(double.Parse(feedback.Attributes["timestamp"].Value));
+                        context.PredictedScores.Add(feedback, 
+                            predictor.Predict(UsersMap.ToInternalID(feedback.User.Id), ItemsMap.ToInternalID(feedback.Item.Id), time));
+			        }
+			    }
+			    context.Evaluators.ForEach(e => e.Evaluate(context, this, split));
 			}).TotalMilliseconds;
 		}
 

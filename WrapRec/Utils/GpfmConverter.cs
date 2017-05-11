@@ -65,8 +65,8 @@ namespace WrapRec.Utils
                 trainPointWriter.WriteLine($"{mUserId},{nNegItemId},-1");
                 trainPairWriter.WriteLine($"{mUserId},{mItemId},{nNegItemId},1");
                 trainPairWriter.WriteLine($"{mUserId},{nNegItemId},{mItemId},-1");
-                testWriter.WriteLine($"{mUserId},{mItemId},1");
-                testOrgWriter.WriteLine($"{f.User.Id},{f.Item.Id},1");
+                //testWriter.WriteLine($"{mUserId},{mItemId},1");
+                //testOrgWriter.WriteLine($"{f.User.Id},{f.Item.Id},1");
             }
 
             foreach (var f in Split.Test)
@@ -84,7 +84,7 @@ namespace WrapRec.Utils
             foreach (var user in c.Users.Values)
             {
                 int count = 0;
-                foreach (var item in c.Items.Values.Shuffle())
+                foreach (var item in c.Items.Values.Shuffle().Take(100))
                 {
                     if (!c.FeedbacksDic.ContainsKey(user.Id, item.Id))
                     {
