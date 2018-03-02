@@ -125,7 +125,7 @@ namespace WrapRec.Evaluation
 
 		public virtual IEnumerable<string> GetRelevantItems(Split split, User user)
 		{
-			return user.Feedbacks//.Where(f => _isSliceRelevant(f) && f.FeedbackType != FeedbackType.Negative)
+			return user.Feedbacks.Where(f => _isSliceRelevant(f) && f.FeedbackType != FeedbackType.Negative)
 				.Select(f => f.Item.Id).Distinct();
 		}
 
@@ -287,9 +287,12 @@ namespace WrapRec.Evaluation
 
 					context.AddResultsSet("rankingMeasures", results);
 
-                    if (_perUserMetrics != null)
+				    if (_perUserMetrics != null)
+				    {
+				        _perUserMetrics[maxCand, k].Flush();
                         _perUserMetrics[maxCand, k].Close();
-                }
+				    }
+				}
             }
 		}
 

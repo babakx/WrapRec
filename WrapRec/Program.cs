@@ -14,7 +14,8 @@ namespace WrapRec
 	{
 		static void Main(string[] args)
 		{
-            try
+
+            //try
             {
                 string usage = @"WrapRec 2.0 recommendation toolkit. \nUsage: WrapRec.exe configFile [cwd=current-working-directory] [params]";
 
@@ -44,14 +45,14 @@ namespace WrapRec
 
                 em.RunExperiments();
             }
-            catch (Exception ex)
+            //catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+            //    Console.WriteLine(ex.Message);
             }
 
-#if DEBUG
+//#if DEBUG
             Console.Read();
-#endif
+//#endif
 		}
         
     }
