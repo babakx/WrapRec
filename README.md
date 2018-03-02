@@ -4,8 +4,10 @@ WrapRec is an open-source project, developed with C# which aims to simplify the 
 
 Check [WrapRec website](http://babakx.github.io/WrapRec) for more information about WrapRec.
 
+## New Features
+For new features and models that are added to WrapRec, check [WrapRec Extensions](https://github.com/babakx/WrapRec.Extensions).
 
-##Features
+## Features
 
 * __Easy to use__
 To perform experiments with WrapWrec all you need to do is to write your settings in a configuration file.
@@ -29,12 +31,12 @@ Without requiring to modify the WrapRec source code, you can define your own ext
 WrapRec is a configuration-based tool. All the settings and design choices should be defined in a configuration file.
 After configuring the configuration file, WrapRec can be simply used by the following command:
 
-####Windowds
+#### Windowds
 ```
 wraprec.exe [config.xml]
 ```
 
-####Linux and Mac
+#### Linux and Mac
 ```
 mono wraprec.exe [config.xml]
 ```
