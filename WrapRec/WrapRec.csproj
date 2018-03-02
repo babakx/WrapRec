@@ -142,6 +142,7 @@
     <Compile Include="Evaluation\RankingEvaluatorFromFile.cs" />
     <Compile Include="Evaluation\RankingEvaluators.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsAttributeAware.cs" />
+    <Compile Include="Evaluation\RankingEvaluatorsContextAware.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsExtendedRelevantItems.cs" />
     <Compile Include="Evaluation\RankingEvaluatorsOpr.cs" />
     <Compile Include="Evaluation\RatingBasedRankingEvaluators.cs" />

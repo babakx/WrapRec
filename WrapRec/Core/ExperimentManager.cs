@@ -123,7 +123,7 @@ namespace WrapRec.Core
 
 		private void RunSingleExperiment(Experiment e)
 		{
-			try
+			//try
 			{
 				// setuping cannot be asynchronized since different experiments can have shared split and context
 				// the first experiment, from experiments with shared split and/or evaluation context, will setup split and eval context
@@ -158,7 +158,8 @@ namespace WrapRec.Core
 				}
 				numSuccess++;
 			}
-			catch (Exception ex)
+            return;
+		    Exception ex;
 			{
 				string err;
 				if (e.Type == ExperimentType.Evaluation)

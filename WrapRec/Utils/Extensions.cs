@@ -129,5 +129,15 @@ namespace WrapRec.Utils
 			}
 		}
 
+        public static IEnumerable<Tuple<int, float>> NormalizeSumToOne(this IEnumerable<Tuple<int, float>> source, bool normalize = true)
+        {
+            if (normalize)
+            {
+                var sum = source.Sum(i => i.Item2);
+                return source.Select(i => new Tuple<int, float>(i.Item1, i.Item2/sum));
+            }
+            return source;
+        }
+
 	}
 }

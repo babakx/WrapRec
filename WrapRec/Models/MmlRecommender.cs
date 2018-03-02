@@ -48,7 +48,7 @@ namespace WrapRec.Models
 					throw new WrapRecException(string.Format("Unknown MmlRecommender class: {0}", SetupParameters["ml-class"]));
 
 				// Set properties
-				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class" && kv.Key != "numGroups"))
+				foreach (var param in SetupParameters.Where(kv => kv.Key != "ml-class" && kv.Key != "numGroups" && kv.Key != "ingoreFeatures"))
 				{
 					PropertyInfo pi = MmlRecommenderInstance.GetType().GetProperty(param.Key);
 

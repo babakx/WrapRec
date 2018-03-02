@@ -10,7 +10,7 @@ namespace WrapRec.Core
     {
         public string Id { get; set; }
 
-        public Dictionary<string, Attribute> Attributes { get; protected set; }
+        public Dictionary<string, Attribute> Attributes { get; set; }
 
         public Entity()
         {

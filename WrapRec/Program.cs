@@ -50,9 +50,9 @@ namespace WrapRec
             //    Console.WriteLine(ex.Message);
             }
 
-#if DEBUG
+//#if DEBUG
             Console.Read();
-#endif
+//#endif
 		}
         
     }

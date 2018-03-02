@@ -94,7 +94,7 @@ namespace WrapRec.IO
 
             if (header.Value == "md")
 				foreach (string attr in fieldValue.Split('|'))
-					yield return new Core.Attribute() { Name = header.Key, Value = attr, Type = AttributeType.Discrete };
+					yield return new Core.Attribute() { Name = header.Key + attr, Value = attr, Type = AttributeType.Discrete };
 			else if (header.Value == "r")
 				yield return new Core.Attribute() { Name = header.Key, Value = fieldValue, Type = AttributeType.RealValued };
             else if (header.Value == "b")
@@ -162,7 +162,6 @@ namespace WrapRec.IO
                 foreach (var h in Header.Skip(1))
                     foreach (var attr in GetAttributes(h))
                         user.Attributes.Add(attr.Name, attr);
-
             }
             while (Reader.Read());
         }
