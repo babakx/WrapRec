@@ -9,7 +9,7 @@
   </models>
   <data>
     <dataReaders>
-      <reader id="ml100k-all" path="ml-100k/u.data" sliceType="other" dataType="ratings"
+      <reader id="ml100k-all" path="examples/ml-100k/u.data" sliceType="other" dataType="ratings"
         class="WrapRec.IO.CsvReader" hasHeader="false" delimiter="\t" />
     </dataReaders>
     <dataContainers>
